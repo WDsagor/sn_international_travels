@@ -1,0 +1,66 @@
+import React from "react";
+import { Shield, UserPlus, KeyRound, Edit2 } from "lucide-react";
+const Users = () => {
+  return (
+    <div className="min-h-screen bg-gray-50 p-6 font-sans">
+      {/* Header */}
+      <div className="flex items-center justify-between mb-8">
+        <div>
+          <h1 className="text-2xl font-bold text-gray-900">
+            Staff & Roles Portal
+          </h1>
+          <p className="text-sm text-gray-500">
+            Manage internal users, security access, and system roles
+          </p>
+        </div>
+        <button className="flex items-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors">
+          <UserPlus className="w-4 h-4" /> Add New Staff
+        </button>
+      </div>
+
+      {/* Staff Grid Matrix */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {/* Sample User Card */}
+        <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-6 relative overflow-hidden">
+          <div className="absolute top-0 right-0 w-24 h-24 bg-indigo-50 rounded-bl-full pointer-events-none" />
+
+          <div className="flex items-center gap-4 mb-4 relative z-10">
+            <div className="w-12 h-12 rounded-xl bg-indigo-600 text-white flex items-center justify-center font-bold text-lg shadow-md shadow-indigo-200">
+              ZS
+            </div>
+            <div>
+              <h3 className="font-bold text-gray-900">Zahid Hasan</h3>
+              <p className="text-xs text-gray-400">zahid@agency.com</p>
+            </div>
+          </div>
+
+          <div className="space-y-2 text-sm text-gray-600 border-t border-b border-gray-100 py-3 my-4">
+            <div className="flex justify-between">
+              <span className="text-gray-400 text-xs">Access Level:</span>
+              <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-semibold bg-indigo-50 text-indigo-700 border border-indigo-100">
+                Accounts
+              </span>
+            </div>
+            <div className="flex justify-between">
+              <span className="text-gray-400 text-xs">Phone:</span>
+              <span className="text-xs font-medium text-gray-800">
+                01988776655
+              </span>
+            </div>
+          </div>
+
+          <div className="flex gap-2 relative z-10">
+            <button className="flex-1 flex items-center justify-center gap-1 py-2 bg-gray-50 hover:bg-gray-100 text-gray-600 rounded-lg text-xs font-medium transition-colors border border-gray-200">
+              <Edit2 className="w-3 h-3" /> Edit Profile
+            </button>
+            <button className="flex-1 flex items-center justify-center gap-1 py-2 bg-red-50 hover:bg-red-100 text-red-600 rounded-lg text-xs font-medium transition-colors border border-red-100">
+              <KeyRound className="w-3 h-3" /> Reset Pin
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default Users;

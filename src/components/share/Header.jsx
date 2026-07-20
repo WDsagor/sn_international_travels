@@ -1,0 +1,59 @@
+import {
+  LayoutDashboard,
+  Ticket,
+  Users,
+  CreditCard,
+  Settings,
+  Menu,
+  X,
+  Bell,
+  User as UserIcon,
+  LogOut,
+} from "lucide-react";
+import React from "react";
+
+const Header = ({ isOpen, setIsOpen }) => {
+  return (
+    <header className="fixed top-0 left-0 right-0 h-16 bg-white border-b border-gray-200 z-40 flex items-center justify-between px-4 lg:px-6">
+      <div className="flex items-center gap-3">
+        <button
+          onClick={() => setIsOpen(!isOpen)}
+          className="p-1.5 rounded-lg text-gray-500 hover:bg-gray-100 lg:hidden focus:outline-none"
+        >
+          {isOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
+        </button>
+        <div className="flex items-center gap-2">
+          <div className="w-8 h-8 rounded-lg bg-blue-600 flex items-center justify-center text-white font-bold shadow-md shadow-blue-200">
+            SN
+          </div>
+          <span className="text-lg font-bold bg-linear-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent hidden sm:block uppercase">
+            International Travels
+          </span>
+        </div>
+      </div>
+
+      <div className="flex items-center gap-4">
+        <button className="p-2 text-gray-400 hover:text-gray-600 relative rounded-full hover:bg-gray-50">
+          <Bell className="w-5 h-5" />
+          <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-red-500 rounded-full" />
+        </button>
+        <div className="h-6 w-px bg-gray-200 hidden sm:block" />
+        <div className="flex items-center gap-2.5 p-1.5 rounded-lg">
+          <div className="w-8 h-8 rounded-full bg-indigo-100 text-indigo-700 flex items-center justify-center font-semibold text-sm">
+            A
+          </div>
+          <div className="hidden sm:block text-left">
+            <p className="text-xs font-bold text-gray-900 leading-none">
+              Admin User
+            </p>
+            <p className="text-[10px] text-gray-400 font-medium mt-0.5">
+              Accounts Dept.
+            </p>
+          </div>
+        </div>
+      </div>
+    </header>
+  );
+};
+
+export default Header;
