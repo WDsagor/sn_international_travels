@@ -10,9 +10,15 @@ import {
   RefreshCw,
 } from "lucide-react";
 import TicketModal from "../components/TicketModal";
+import ReceivePaymentModal from "../components/ReceivePaymentModal";
 
 const Dashboard = () => {
   const [showModal, setShowModal] = useState(false);
+  const [isPaymentOpen, setIsPaymentOpen] = useState(false);
+
+  const handlePaymentSubmit = (data) => {
+    console.log("Payment Received Data:", data);
+  };
   const handleTicketSubmit = (formData) => {
     console.log("New Ticket Created Data:", formData);
     // এখানে আপনার API কল বা টেবিলে নতুন ডেটা পুশ করার লজিক লিখতে পারেন
@@ -72,9 +78,17 @@ const Dashboard = () => {
           >
             <Plus className="w-4 h-4" /> Issue Ticket
           </button>
-          <button className="flex-1 sm:flex-initial flex items-center justify-center gap-2 bg-white border border-gray-200 hover:bg-gray-50 text-gray-700 px-4 py-2.5 rounded-xl text-sm font-medium transition-colors shadow-sm cursor-pointer">
+          <button
+            className="flex-1 sm:flex-initial flex items-center justify-center gap-2 bg-green-600 border border-gray-200 hover:bg-green-700 text-white px-4 py-2.5 rounded-xl text-sm font-medium transition-colors shadow-sm cursor-pointer"
+            onClick={() => setIsPaymentOpen(true)}
+          >
             <Plus className="w-4 h-4" /> Receive Payment
           </button>
+          <ReceivePaymentModal
+            isOpen={isPaymentOpen}
+            onClose={setIsPaymentOpen}
+            onSubmitSuccess={handlePaymentSubmit}
+          />
         </div>
         <TicketModal
           isOpen={showModal}

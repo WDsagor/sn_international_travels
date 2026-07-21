@@ -2,7 +2,6 @@ import React from "react";
 import { useForm } from "react-hook-form";
 import { X } from "lucide-react";
 
-// ভেন্ডর তালিকা
 const VENDOR_LIST = [
   { id: "v1", name: "Mostofa Kamal" },
   { id: "v2", name: "Fly Deals Travel" },
@@ -10,7 +9,13 @@ const VENDOR_LIST = [
   { id: "v4", name: "SkyLink Aviation" },
 ];
 
-// এয়ারলাইন কোড ও নামসহ তালিকা
+const STAFF_LIST = [
+  { id: "s1", name: "Sagar Islam", role: "Ticketing Executive" },
+  { id: "s2", name: "Tanvir Ahmed", role: "Sales Manager" },
+  { id: "s3", name: "Farhana Akter", role: "Reservation Officer" },
+  { id: "s4", name: "Admin" },
+];
+
 const AIRLINE_LIST = [
   { id: "bg", code: "BG", name: "Biman Bangladesh Airlines" },
   { id: "bs", code: "BS", name: "US-Bangla Airlines" },
@@ -44,15 +49,15 @@ const TicketModal = ({ isOpen, onClose, onSubmitSuccess }) => {
   } = useForm({
     defaultValues: {
       pnr: "",
-      ticketNo: "",
+      ticketType: "one_way",
       issueDate: new Date().toISOString().split("T")[0],
       passengerName: "",
       route: "",
       travelDate: "",
       totalPax: 1,
-      baggage: "23KG",
+      issuedBy: "",
       vendor: "",
-      airline: "", // ড্রপডাউন থেকে সিলেক্ট হবে
+      airline: "",
       vendorCost: 0,
       grossPrice: 0,
       status: "issued",
@@ -67,7 +72,7 @@ const TicketModal = ({ isOpen, onClose, onSubmitSuccess }) => {
     const finalData = { ...data, profit: calculatedProfit };
     onSubmitSuccess(finalData);
     reset();
-    onClose();
+    onClose(false);
   };
 
   if (!isOpen) return null;
@@ -75,7 +80,6 @@ const TicketModal = ({ isOpen, onClose, onSubmitSuccess }) => {
   return (
     <div className="fixed inset-0 bg-gray-900/40 backdrop-blur-xs z-50 flex items-center justify-center p-4 transition-all">
       <div className="bg-white rounded-2xl w-full max-w-6xl shadow-xl border border-gray-100 flex flex-col max-h-[90vh] animate-in fade-in zoom-in-95 duration-200">
-        {/* Header */}
         <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100">
           <div>
             <h2 className="text-lg font-bold text-gray-900">
@@ -98,7 +102,6 @@ const TicketModal = ({ isOpen, onClose, onSubmitSuccess }) => {
           onSubmit={handleSubmit(onSubmit)}
           className="overflow-y-auto p-6 space-y-5"
         >
-          {/* Section 1: Ticket & PNR */}
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
             <div>
               <label className="block text-xs font-semibold text-gray-600 uppercase mb-1.5">
@@ -111,17 +114,20 @@ const TicketModal = ({ isOpen, onClose, onSubmitSuccess }) => {
                 className={`w-full text-sm border px-3 py-2 rounded-xl focus:outline-hidden focus:ring-2 focus:ring-blue-500/20 font-mono ${errors.pnr ? "border-red-500 bg-red-50/30" : "border-gray-200"}`}
               />
             </div>
+
             <div>
               <label className="block text-xs font-semibold text-gray-600 uppercase mb-1.5">
-                Ticket Number
+                Ticket Type *
               </label>
-              <input
-                type="text"
-                placeholder="e.g. BG-5542190"
-                {...register("ticketNo")}
-                className="w-full text-sm border border-gray-200 px-3 py-2 rounded-xl focus:outline-hidden focus:ring-2 focus:ring-blue-500/20 font-mono"
-              />
+              <select
+                {...register("ticketType", { required: true })}
+                className="w-full text-sm border border-gray-200 px-3 py-2.5 rounded-xl bg-white focus:outline-hidden focus:ring-2 focus:ring-blue-500/20"
+              >
+                <option value="one_way">One Way</option>
+                <option value="round_trip">Round Trip</option>
+              </select>
             </div>
+
             <div>
               <label className="block text-xs font-semibold text-gray-600 uppercase mb-1.5">
                 Issue Date *
@@ -134,7 +140,6 @@ const TicketModal = ({ isOpen, onClose, onSubmitSuccess }) => {
             </div>
           </div>
 
-          {/* Section 2: Passenger & Route */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
               <label className="block text-xs font-semibold text-gray-600 uppercase mb-1.5">
@@ -151,18 +156,17 @@ const TicketModal = ({ isOpen, onClose, onSubmitSuccess }) => {
             </div>
             <div>
               <label className="block text-xs font-semibold text-gray-600 uppercase mb-1.5">
-                Route (e.g. DAC ➔ JFK) *
+                Route (e.g. DAC ⇌ CXB) *
               </label>
               <input
                 type="text"
-                placeholder="DAC - JFK"
+                placeholder="DAC ⇌ CXB"
                 {...register("route", { required: "Route is required" })}
                 className={`w-full text-sm border px-3 py-2 rounded-xl focus:outline-hidden focus:ring-2 focus:ring-blue-500/20 ${errors.route ? "border-red-500 bg-red-50/30" : "border-gray-200"}`}
               />
             </div>
           </div>
 
-          {/* Section 3: More Passenger Metadata */}
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
             <div>
               <label className="block text-xs font-semibold text-gray-600 uppercase mb-1.5">
@@ -187,22 +191,30 @@ const TicketModal = ({ isOpen, onClose, onSubmitSuccess }) => {
                 className="w-full text-sm border border-gray-200 px-3 py-2 rounded-xl focus:outline-hidden focus:ring-2 focus:ring-blue-500/20"
               />
             </div>
+
             <div>
               <label className="block text-xs font-semibold text-gray-600 uppercase mb-1.5">
-                Baggage Allow
+                Issued By *
               </label>
-              <input
-                type="text"
-                placeholder="2PC x 23KG"
-                {...register("baggage")}
-                className="w-full text-sm border border-gray-200 px-3 py-2 rounded-xl focus:outline-hidden focus:ring-2 focus:ring-blue-500/20"
-              />
+              <select
+                {...register("issuedBy", { required: "Please select value" })}
+                className={`w-full text-sm border px-3 py-2.5 rounded-xl bg-white focus:outline-hidden focus:ring-2 focus:ring-blue-500/20 ${
+                  errors.issuedBy
+                    ? "border-red-500 bg-red-50/30"
+                    : "border-gray-200"
+                }`}
+              >
+                <option value="">Select value</option>
+                {STAFF_LIST.map((staff) => (
+                  <option key={staff.id} value={staff.name}>
+                    {staff.name} {staff.role ? `(${staff.role})` : ""}
+                  </option>
+                ))}
+              </select>
             </div>
           </div>
 
-          {/* Section 4: Dropdowns & Status */}
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-            {/* Vendor Dropdown */}
             <div>
               <label className="block text-xs font-semibold text-gray-600 uppercase mb-1.5">
                 Vendor *
@@ -229,7 +241,7 @@ const TicketModal = ({ isOpen, onClose, onSubmitSuccess }) => {
                   {...register("airline", {
                     required: "Please select an airline",
                   })}
-                  className={`w-full max-h-52 overflow-y-auto text-sm border px-3 py-2.5 rounded-xl bg-white focus:outline-hidden focus:ring-2 focus:ring-blue-500/20 pr-8 truncate ${
+                  className={`w-full text-sm border px-3 py-2.5 rounded-xl bg-white focus:outline-hidden focus:ring-2 focus:ring-blue-500/20 pr-8 truncate ${
                     errors.airline
                       ? "border-red-500 bg-red-50/30"
                       : "border-gray-200"
@@ -246,7 +258,6 @@ const TicketModal = ({ isOpen, onClose, onSubmitSuccess }) => {
               </div>
             </div>
 
-            {/* Status Dropdown */}
             <div>
               <label className="block text-xs font-semibold text-gray-600 uppercase mb-1.5">
                 Status
@@ -262,7 +273,6 @@ const TicketModal = ({ isOpen, onClose, onSubmitSuccess }) => {
             </div>
           </div>
 
-          {/* Section 5: Financials & Auto Profit */}
           <div className="p-4 bg-gray-50 rounded-xl border border-gray-100 grid grid-cols-1 sm:grid-cols-3 gap-4 items-center">
             <div>
               <label className="block text-xs font-bold text-gray-500 uppercase mb-1">
@@ -302,7 +312,6 @@ const TicketModal = ({ isOpen, onClose, onSubmitSuccess }) => {
             </div>
           </div>
 
-          {/* Action Buttons */}
           <div className="flex items-center justify-end gap-3 pt-2 border-t border-gray-100">
             <button
               type="button"
