@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { Plus, Search, SlidersHorizontal, ArrowLeftRight } from "lucide-react";
-import TicketModal from "../components/TicketModal";
+import TicketModal from "../components/modals/TicketModal";
 import { PlaneTakeoff } from "lucide-react";
 
 const Tickets = () => {

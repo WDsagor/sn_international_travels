@@ -44,6 +44,7 @@ const TicketModal = ({ isOpen, onClose, onSubmitSuccess }) => {
     register,
     handleSubmit,
     watch,
+    setValue,
     reset,
     formState: { errors },
   } = useForm({
@@ -66,6 +67,23 @@ const TicketModal = ({ isOpen, onClose, onSubmitSuccess }) => {
 
   const vendorCost = watch("vendorCost") || 0;
   const grossPrice = watch("grossPrice") || 0;
+  const currentTicketType = watch("ticketType");
+  const handleRouteInput = (e) => {
+    let val = e.target.value.toUpperCase();
+    const cleanText = val.replace(/[^A-Z]/g, "");
+    const arrow = currentTicketType === "round_trip" ? "⇌" : "⇒";
+
+    if (cleanText.length > 3) {
+      const fromCode = cleanText.slice(0, 3);
+      const toCode = cleanText.slice(3, 6);
+      val = `${fromCode}${arrow}${toCode}`;
+    } else {
+      val = cleanText;
+    }
+    setValue("route", val, { shouldValidate: true });
+
+    // react-hook-form এ ভ্যালু সেট করা
+  };
   const calculatedProfit = grossPrice - vendorCost;
 
   const onSubmit = (data) => {
@@ -156,13 +174,22 @@ const TicketModal = ({ isOpen, onClose, onSubmitSuccess }) => {
             </div>
             <div>
               <label className="block text-xs font-semibold text-gray-600 uppercase mb-1.5">
-                Route (e.g. DAC ⇌ CXB) *
+                Route (e.g. DAC {currentTicketType === "round_trip" ? "⇌" : "⇒"}{" "}
+                CXB) *
               </label>
               <input
                 type="text"
-                placeholder="DAC ⇌ CXB"
+                placeholder={
+                  currentTicketType === "round_trip" ? "DAC⇌CXB" : "DAC⇒CXB"
+                }
+                maxLength={7}
                 {...register("route", { required: "Route is required" })}
-                className={`w-full text-sm border px-3 py-2 rounded-xl focus:outline-hidden focus:ring-2 focus:ring-blue-500/20 ${errors.route ? "border-red-500 bg-red-50/30" : "border-gray-200"}`}
+                onChange={handleRouteInput}
+                className={`w-full uppercase text-sm border px-3 py-2 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500/20 font-mono ${
+                  errors.route
+                    ? "border-red-500 bg-red-50/30"
+                    : "border-gray-200"
+                }`}
               />
             </div>
           </div>

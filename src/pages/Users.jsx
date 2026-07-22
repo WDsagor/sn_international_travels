@@ -1,6 +1,13 @@
 import React from "react";
 import { Shield, UserPlus, KeyRound, Edit2 } from "lucide-react";
+import AddStaffModal from "../components/modals/AddStaffModal";
+import { useState } from "react";
 const Users = () => {
+  const [isStaffModalOpen, setIsStaffModalOpen] = useState(false);
+
+  const handleAddStaff = (data) => {
+    console.log("New Staff Data:", data);
+  };
   return (
     <div className="min-h-screen bg-gray-50 p-6 font-sans">
       {/* Header */}
@@ -13,9 +20,17 @@ const Users = () => {
             Manage internal users, security access, and system roles
           </p>
         </div>
-        <button className="flex items-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors">
+        <button
+          onClick={() => setIsStaffModalOpen(true)}
+          className="flex items-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors"
+        >
           <UserPlus className="w-4 h-4" /> Add New Staff
         </button>
+        <AddStaffModal
+          isOpen={isStaffModalOpen}
+          onClose={setIsStaffModalOpen}
+          onSubmitSuccess={handleAddStaff}
+        />
       </div>
 
       {/* Staff Grid Matrix */}

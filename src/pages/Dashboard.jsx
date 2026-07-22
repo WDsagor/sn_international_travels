@@ -9,8 +9,8 @@ import {
   Plus,
   RefreshCw,
 } from "lucide-react";
-import TicketModal from "../components/TicketModal";
-import ReceivePaymentModal from "../components/ReceivePaymentModal";
+import TicketModal from "../components/modals/TicketModal";
+import ReceivePaymentModal from "../components/modals/ReceivePaymentModal";
 
 const Dashboard = () => {
   const [showModal, setShowModal] = useState(false);
