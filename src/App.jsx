@@ -1,27 +1,41 @@
 import { useState } from "react";
-import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import {
+  BrowserRouter as Router,
+  Routes,
+  Route,
+  Navigate,
+} from "react-router-dom";
 import Dashboard from "./pages/Dashboard";
 import Tickets from "./pages/Tickets";
 import Clients from "./pages/Clients";
 import Users from "./pages/Users";
-import Layout from "./components/Layouts";
+import Layout from "./components/Layouts"; // নিশ্চিত করুন ফাইল নাম 'Layout.jsx' নাকি 'Layouts.jsx'
 import AllClients from "./pages/AllClients";
+import LoginPage from "./pages/Login";
+import ProtectedRoute from "./components/share/ProtectedRoute";
 
 function App() {
   const [count, setCount] = useState(0);
 
   return (
     <Router>
-      <Layout>
-        <Routes>
-          <Route path="/" element={<Dashboard />} />
-          <Route path="/tickets" element={<Tickets />} />
-          <Route path="/clients" element={<Clients />} />
-          <Route path="/all-clients" element={<AllClients />} />
-          <Route path="/users" element={<Users />} />
-        </Routes>
-      </Layout>
+      <Routes>
+        <Route path="/login" element={<LoginPage />} />
+
+        <Route element={<ProtectedRoute />}>
+          <Route element={<Layout />}>
+            <Route path="/" element={<Dashboard />} />
+            <Route path="/tickets" element={<Tickets />} />
+            <Route path="/clients" element={<Clients />} />
+            <Route path="/all-clients" element={<AllClients />} />
+            <Route path="/users" element={<Users />} />
+          </Route>
+        </Route>
+
+        <Route path="*" element={<Navigate to="/" replace />} />
+      </Routes>
     </Router>
   );
 }
+
 export default App;

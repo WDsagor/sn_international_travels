@@ -44,7 +44,7 @@ const AllClients = () => {
         {VENDOR_LIST.map((v) => (
           <div className=" rounded-xl border border-gray-200 shadow-sm relative overflow-hidden">
             <div className="absolute top-0 right-0 w-20 h-20 bg-linear-to-t from-blue-100  to-indigo-400 rounded-bl-full pointer-events-none" />
-            <div className="p-4 max-w-md rounded-xl border-2 border-blue-500/10 hover:scale-103 hover:bg-green-100/50 transition-all bg-blue-50/30 cursor-pointer">
+            <div className="p-4 max-w-md rounded-xl border-2 border-blue-500/10 hover:scale-103 transition-all bg-blue-50/30 cursor-pointer">
               <div className="flex items-center gap-4 mb-4 relative z-10">
                 <div className="w-12 h-12 rounded-xl bg-indigo-600 text-white flex items-center justify-center font-bold text-lg shadow-md shadow-indigo-200">
                   <User />

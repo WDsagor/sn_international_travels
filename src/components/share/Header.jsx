@@ -11,6 +11,7 @@ import {
   LogOut,
 } from "lucide-react";
 import React from "react";
+import snLogo from "../../assets/images/SN-logo.png";
 
 const Header = ({ isOpen, setIsOpen }) => {
   return (
@@ -23,10 +24,12 @@ const Header = ({ isOpen, setIsOpen }) => {
           {isOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
         </button>
         <div className="flex items-center gap-2">
-          <div className="w-8 h-8 rounded-lg bg-blue-600 flex items-center justify-center text-white font-bold shadow-md shadow-blue-200">
+          {/* <div className="w-8 h-8 rounded-lg bg-blue-600 flex items-center justify-center text-white font-bold shadow-md shadow-blue-200">
+
             SN
-          </div>
-          <span className="text-lg font-bold bg-linear-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent hidden sm:block uppercase">
+          </div> */}
+          <img className="w-8" src={snLogo} alt="logo" />
+          <span className="text-lg font-bold text-blue-600 hidden sm:block uppercase">
             International Travels
           </span>
         </div>

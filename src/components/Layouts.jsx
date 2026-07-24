@@ -1,8 +1,9 @@
 import React, { useState } from "react";
 import Header from "./share/Header";
 import Sidebar from "./share/Sidebar";
+import { Outlet } from "react-router-dom";
 
-const Layout = ({ children }) => {
+const Layout = () => {
   const [isOpen, setIsOpen] = useState(false);
 
   return (
@@ -13,7 +14,7 @@ const Layout = ({ children }) => {
         <Sidebar isOpen={isOpen} setIsOpen={setIsOpen} />
 
         <main className="flex-1 w-full bg-gray-50 p-4 md:p-6 lg:p-8 min-w-0 min-h-[calc(100vh-64px)]">
-          {children}
+          <Outlet />
         </main>
       </div>
     </div>
