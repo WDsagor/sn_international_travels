@@ -2,7 +2,7 @@ import React from "react";
 import { useForm } from "react-hook-form";
 import { X } from "lucide-react";
 
-const VENDOR_LIST = [
+export const VENDOR_LIST = [
   { id: "v1", name: "Mostofa Kamal" },
   { id: "v2", name: "Fly Deals Travel" },
   { id: "v3", name: "B2B Cargo & Ticketing" },

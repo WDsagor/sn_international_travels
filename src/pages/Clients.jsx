@@ -12,6 +12,11 @@ import {
 import { useState } from "react";
 import { UserPlus } from "lucide-react";
 import AddClientModal from "../components/modals/AddClientModal";
+import { Search } from "lucide-react";
+import { VENDOR_LIST } from "../components/modals/TicketModal";
+import { Link } from "react-router-dom";
+import { LucideUsers } from "lucide-react";
+import { UsersRound } from "lucide-react";
 const Clients = () => {
   const [isClientModalOpen, setIsClientModalOpen] = useState(false);
 
@@ -19,7 +24,7 @@ const Clients = () => {
     console.log("New Client Data:", data);
   };
   return (
-    <div className="min-h-screen bg-gray-50 font-sans">
+    <div className="min-h-screen p-4 bg-gray-50 font-sans">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-8 gap-4">
         <div>
           <h1 className="text-2xl font-bold text-gray-900 tracking-tight">
@@ -43,46 +48,27 @@ const Clients = () => {
           onSubmitSuccess={handleAddClient}
         />
       </div>
-
-      <div className="min-h-screen w-full bg-gray-50 font-sans grid grid-cols-1 xl:grid-cols-3 gap-6">
-        {/* Left Column: Client List & Info */}
-
-        <div className="xl:col-span-1 space-y-6">
-          <div className="bg-white p-6 rounded-xl border border-gray-200 shadow-sm">
-            <h2 className="text-lg font-bold text-gray-900 mb-4">
-              Client Accounts
-            </h2>
-            <div className="space-y-3">
-              {/* Active Client Card */}
-              <div className="p-4 rounded-xl border-2 border-blue-500 bg-blue-50/30 cursor-pointer">
-                <div className="flex justify-between items-start mb-2">
-                  <h3 className="font-bold text-gray-900">Universal Travels</h3>
-                  <span className="text-xs font-semibold px-2 py-0.5 bg-amber-100 text-amber-800 rounded">
-                    Due
-                  </span>
-                </div>
-                <div className="space-y-1 text-xs text-gray-500 mb-3">
-                  <p className="flex items-center gap-1">
-                    <Phone className="w-3 h-3" /> 01711223344
-                  </p>
-                  <p className="flex items-center gap-1">
-                    <Mail className="w-3 h-3" /> info@universal.com
-                  </p>
-                </div>
-                <div className="border-t border-gray-200/60 pt-2 flex justify-between">
-                  <span className="text-xs text-gray-400">
-                    Net Outstanding:
-                  </span>
-                  <span className="text-sm font-mono font-bold text-red-600">
-                    ৳45,000
-                  </span>
-                </div>
-              </div>
-            </div>
-          </div>
+      <div className="bg-white flex justify-between items-center gap-5 p-4 rounded-xl border border-gray-200 shadow-sm  mb-6">
+        <div className="w-full max-w-md">
+          <select className="w-full text-sm border border-blue-300 px-3 py-2.5 rounded-xl bg-white focus:outline-hidden focus:ring-2 focus:ring-blue-500/20 ">
+            <option value="">Select client list</option>
+            {VENDOR_LIST.map((v) => (
+              <option key={v.id} value={v.name}>
+                {v.name}
+              </option>
+            ))}
+          </select>
         </div>
-
-        {/* Right Column: Deep Financial Ledger Log */}
+        <Link
+          className="text-sm flex gap-2 items-center border border-blue-100 p-2 px-3 rounded-xl hover:border-blue-300  transition-all text-blue-500"
+          to={"/all-clients"}
+        >
+          {" "}
+          <UsersRound size={16} color="#0080ff" />
+          View clients
+        </Link>
+      </div>
+      <div className="min-h-screen w-full bg-gray-50 font-sans grid grid-cols-1  gap-6">
         <div className="xl:col-span-2 bg-white rounded-xl border border-gray-200 shadow-sm p-6">
           <div className="flex flex-col sm:flex-row justify-between sm:items-center border-b border-gray-100 pb-4 mb-6 gap-4">
             <div>

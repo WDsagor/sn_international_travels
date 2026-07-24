@@ -59,8 +59,7 @@ const Dashboard = () => {
   ]);
 
   return (
-    // Tailwind v4-এ w-full এবং flex-1 এর রেণ্ডারিং আরও ফাস্ট করার জন্য লেআউট অপ্টিমাইজ করা হয়েছে
-    <div className="w-full min-h-screen bg-gray-50 p-4 md:p-6 font-sans">
+    <div className="w-full min-h-screen bg-gray-50 p-4  font-sans">
       {/* Top Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-8 gap-4">
         <div>

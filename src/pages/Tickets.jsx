@@ -10,7 +10,7 @@ const Tickets = () => {
     // এখানে আপনার API কল বা টেবিলে নতুন ডেটা পুশ করার লজিক লিখতে পারেন
   };
   return (
-    <div className="min-h-screen bg-gray-50 font-sans">
+    <div className="min-h-screen p-4 bg-gray-50 font-sans">
       {/* Header */}
       <div className="flex items-center justify-between mb-8">
         <div>

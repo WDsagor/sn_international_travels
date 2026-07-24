@@ -5,6 +5,7 @@ import Tickets from "./pages/Tickets";
 import Clients from "./pages/Clients";
 import Users from "./pages/Users";
 import Layout from "./components/Layouts";
+import AllClients from "./pages/AllClients";
 
 function App() {
   const [count, setCount] = useState(0);
@@ -16,6 +17,7 @@ function App() {
           <Route path="/" element={<Dashboard />} />
           <Route path="/tickets" element={<Tickets />} />
           <Route path="/clients" element={<Clients />} />
+          <Route path="/all-clients" element={<AllClients />} />
           <Route path="/users" element={<Users />} />
         </Routes>
       </Layout>
