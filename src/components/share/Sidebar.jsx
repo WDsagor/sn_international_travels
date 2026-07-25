@@ -1,9 +1,10 @@
 import React from "react";
 import { LayoutDashboard, Ticket, Users, Settings, LogOut } from "lucide-react";
-import { useLocation, Link } from "react-router-dom";
+import { useLocation, Link, useNavigate } from "react-router-dom";
 
 const Sidebar = ({ isOpen, setIsOpen }) => {
   const location = useLocation();
+  const navigate = useNavigate();
 
   const menuItems = [
     { path: "/", label: "Dashboard", icon: LayoutDashboard },
@@ -11,11 +12,12 @@ const Sidebar = ({ isOpen, setIsOpen }) => {
     { path: "/clients", label: "Clients & Ledger", icon: Users },
     { path: "/users", label: "Staff Portal", icon: Settings },
   ];
-
+  const handleLogout = () => {
+    localStorage.removeItem("token", "your_auth_token_here");
+    navigate("/login");
+  };
   return (
     <>
-      {/* --- MOBILE OVERLAY (BACKDROP) --- */}
-      {/* fixed inset-0 যুক্ত করা হয়েছে যাতে মোবাইল স্ক্রিনে মেনু খুললে পুরো ব্যাকগ্রাউন্ড ব্লার হয় */}
       {isOpen && (
         <div
           onClick={() => setIsOpen(false)}
@@ -23,8 +25,6 @@ const Sidebar = ({ isOpen, setIsOpen }) => {
         />
       )}
 
-      {/* --- SIDEBAR --- */}
-      {/* মেইন র‍্যাপার থেকে w-full বাদ দিয়ে সরাসরি <aside> ব্যবহার করা হয়েছে যাতে লেআউট না ভাঙে */}
       <aside
         className={`fixed lg:sticky top-16 left-0 bottom-0 w-64 bg-white border-r border-gray-200 z-30 transition-transform duration-300 transform lg:transform-none flex flex-col justify-between h-[calc(100vh-64px)] 
           ${isOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0"}`}
@@ -61,7 +61,10 @@ const Sidebar = ({ isOpen, setIsOpen }) => {
 
         {/* --- LOGOUT BUTTON --- */}
         <div className="p-4 border-t border-gray-100">
-          <button className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-red-500 hover:bg-red-50 transition-colors group cursor-pointer">
+          <button
+            className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-red-500 hover:bg-red-50 transition-colors group cursor-pointer"
+            onClick={handleLogout}
+          >
             <LogOut className="w-5 h-5 text-red-400 group-hover:text-red-500" />
             Logout
           </button>

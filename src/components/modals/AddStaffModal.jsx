@@ -3,14 +3,7 @@ import { useForm } from "react-hook-form";
 import { X, UserCheck } from "lucide-react";
 
 // স্টাফ রোলের তালিকা
-const ROLE_OPTIONS = [
-  "Ticketing Executive",
-  "Reservation Officer",
-  "Sales Executive",
-  "Accounts Executive",
-  "Branch Manager",
-  "Admin",
-];
+const ROLE_OPTIONS = ["Accounts", "Manager", "Admin", "Staff"];
 
 const AddStaffModal = ({ isOpen, onClose, onSubmitSuccess }) => {
   const {
@@ -76,7 +69,7 @@ const AddStaffModal = ({ isOpen, onClose, onSubmitSuccess }) => {
             <input
               type="text"
               placeholder="e.g. Tanvir Ahmed"
-              {...register("name", { required: "Staff name is required" })}
+              {...register("fullName", { required: "Staff name is required" })}
               className={`w-full text-sm border px-3 py-2 rounded-xl focus:outline-hidden focus:ring-2 focus:ring-blue-500/20 ${
                 errors.name ? "border-red-500 bg-red-50/30" : "border-gray-200"
               }`}
@@ -166,7 +159,7 @@ const AddStaffModal = ({ isOpen, onClose, onSubmitSuccess }) => {
               <input
                 type="number"
                 placeholder="25000"
-                {...register("salary", { valueAsNumber: true })}
+                {...register("monthlySalary", { valueAsNumber: true })}
                 className="w-full text-sm font-semibold font-mono border border-gray-200 px-3 py-2 rounded-xl focus:outline-hidden focus:ring-2 focus:ring-blue-500/20"
               />
             </div>
