@@ -3,7 +3,7 @@ import jwt from "jsonwebtoken";
 export const verifyToken = (req, res, next) => {
   try {
     const authHeader = req.headers.authorization;
-
+    // console.log(authHeader);
     if (!authHeader || !authHeader.startsWith("Bearer ")) {
       return res
         .status(401)
@@ -13,10 +13,7 @@ export const verifyToken = (req, res, next) => {
     const token = authHeader.split(" ")[1];
 
     // Token Verify করা
-    const decoded = jwt.verify(
-      token,
-      process.env.JWT_SECRET || "your_secret_key",
-    );
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
 
     // Request-এ ইউজার তথ্য সেভ করে রাখা
     req.user = decoded;

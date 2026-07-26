@@ -100,6 +100,7 @@ export const getAllUsers = async (req, res) => {
 export const loginUser = async (req, res) => {
   try {
     const { email, password } = req.body;
+    console.log(req);
 
     if (!email || !password) {
       return res.status(400).json({
