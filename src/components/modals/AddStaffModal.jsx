@@ -62,18 +62,41 @@ const AddStaffModal = ({ isOpen, onClose, onSubmitSuccess }) => {
           className="overflow-y-auto p-6 space-y-4"
         >
           {/* Full Name */}
-          <div>
-            <label className="block text-xs font-semibold text-gray-600 uppercase mb-1.5">
-              Full Name *
-            </label>
-            <input
-              type="text"
-              placeholder="e.g. Tanvir Ahmed"
-              {...register("fullName", { required: "Staff name is required" })}
-              className={`w-full text-sm border px-3 py-2 rounded-xl focus:outline-hidden focus:ring-2 focus:ring-blue-500/20 ${
-                errors.name ? "border-red-500 bg-red-50/30" : "border-gray-200"
-              }`}
-            />
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+              <label className="block text-xs font-semibold text-gray-600 uppercase mb-1.5">
+                Full Name *
+              </label>
+              <input
+                type="text"
+                placeholder="e.g. Tanvir Ahmed"
+                {...register("fullName", {
+                  required: "Staff name is required",
+                })}
+                className={`w-full text-sm border px-3 py-2 rounded-xl focus:outline-hidden focus:ring-2 focus:ring-blue-500/20 ${
+                  errors.name
+                    ? "border-red-500 bg-red-50/30"
+                    : "border-gray-200"
+                }`}
+              />
+            </div>
+            <div>
+              <label className="block text-xs font-semibold text-gray-600 uppercase mb-1.5">
+                Password *
+              </label>
+              <input
+                type="text"
+                placeholder="e.g. Tanvir Ahmed"
+                {...register("password", {
+                  required: "Password is required",
+                })}
+                className={`w-full text-sm border px-3 py-2 rounded-xl focus:outline-hidden focus:ring-2 focus:ring-blue-500/20 ${
+                  errors.password
+                    ? "border-red-500 bg-red-50/30"
+                    : "border-gray-200"
+                }`}
+              />
+            </div>
           </div>
 
           {/* Phone & Email */}

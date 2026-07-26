@@ -3,12 +3,14 @@ import { useForm } from "react-hook-form";
 import { Mail, Lock, Eye, EyeOff } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import logo from "../assets/images/SN-logo.png";
+import { useLoginUserMutation } from "../redux/features/user/userApi";
 
 const backgroundImageUrl =
   "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?q=80&w=1920&auto=format&fit=crop";
 
 const LoginPage = () => {
   const [showPassword, setShowPassword] = useState(false);
+  const [loginUser, { isLoading }] = useLoginUserMutation();
 
   const {
     register,
@@ -18,16 +20,21 @@ const LoginPage = () => {
     defaultValues: {
       email: "",
       password: "",
-      rememberMe: false,
     },
   });
 
   const navigate = useNavigate();
 
-  const onSubmit = (data) => {
-    console.log("Login Data Submitted:", data);
-    localStorage.setItem("token", "your_auth_token_here");
-    navigate("/");
+  const onSubmit = async (data) => {
+    try {
+      console.log("Login Data Submitted:", data);
+      const res = await loginUser(data).unwrap();
+      localStorage.setItem("token", res.token);
+      alert("লগইন সফল হয়েছে!");
+      navigate("/");
+    } catch (error) {
+      console.log(error);
+    }
   };
 
   return (
@@ -135,14 +142,14 @@ const LoginPage = () => {
 
           {/* Remember Me & Forgot Password */}
           <div className="flex items-center justify-between text-xs py-1">
-            <label className="flex items-center gap-2 cursor-pointer text-gray-200">
+            {/* <label className="flex items-center gap-2 cursor-pointer text-gray-200">
               <input
                 type="checkbox"
                 {...register("rememberMe")}
                 className="rounded border-white/30 text-blue-600 focus:ring-blue-400 w-4 h-4 cursor-pointer"
               />
               Remember me
-            </label>
+            </label> */}
             <a
               href="#forgot-password"
               className="text-blue-300 hover:text-blue-200 hover:underline font-medium"
@@ -157,7 +164,7 @@ const LoginPage = () => {
             disabled={isSubmitting}
             className="w-full py-2.5 px-4 text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 disabled:opacity-50 rounded-xl shadow-lg hover:shadow-xl transition-all cursor-pointer mt-2"
           >
-            {isSubmitting ? "Signing in..." : "Sign In"}
+            {isLoading ? "Signing in..." : "Sign In"}
           </button>
         </form>
 
