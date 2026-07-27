@@ -2,6 +2,7 @@ import React from "react";
 import { Shield, UserPlus, KeyRound, Edit2 } from "lucide-react";
 import AddStaffModal from "../components/modals/AddStaffModal";
 import { useState } from "react";
+import Swal from "sweetalert2";
 import {
   useCreateUserMutation,
   useGetUsersQuery,
@@ -12,14 +13,31 @@ const Users = () => {
   const [createUser, { isLoading: createLoading }] = useCreateUserMutation();
   const { data, isLoading, isError, error } = useGetUsersQuery();
   console.log(error);
+
   const handleAddStaff = async (data) => {
     try {
       const response = await createUser(data).unwrap();
-      alert("Staff Created Successfully!");
+
+      // Success Alert
+      Swal.fire({
+        icon: "success",
+        title: "Success!",
+        text: "Staff Created Successfully!",
+        confirmButtonColor: "#2563eb", // Tailwind blue-600
+        timer: 2000,
+        showConfirmButton: false,
+      });
     } catch (err) {
       console.error(err);
+
+      // Error Alert
+      Swal.fire({
+        icon: "error",
+        title: "Failed!",
+        text: err?.data?.message || "Failed to create staff. Please try again.",
+        confirmButtonColor: "#dc2626", // Tailwind red-600
+      });
     }
-    // console.log("New Staff Data:", data);
   };
 
   if (isLoading) {

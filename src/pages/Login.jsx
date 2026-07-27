@@ -4,6 +4,7 @@ import { Mail, Lock, Eye, EyeOff } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import logo from "../assets/images/SN-logo.png";
 import { useLoginUserMutation } from "../redux/features/user/userApi";
+import Swal from "sweetalert2";
 
 const backgroundImageUrl =
   "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?q=80&w=1920&auto=format&fit=crop";
@@ -30,10 +31,23 @@ const LoginPage = () => {
       console.log("Login Data Submitted:", data);
       const res = await loginUser(data).unwrap();
       localStorage.setItem("token", res.token);
-      alert("লগইন সফল হয়েছে!");
+      Swal.fire({
+        icon: "success",
+        title: "Success!",
+        text: "Log in Successfully!",
+        confirmButtonColor: "#2563eb", // Tailwind blue-600
+        timer: 2000,
+        showConfirmButton: false,
+      });
       navigate("/");
-    } catch (error) {
-      console.log(error);
+    } catch (err) {
+      // console.log(error);
+      Swal.fire({
+        icon: "error",
+        title: "Login failed!",
+        text: err?.data?.message || "Failed to login. Please try again.",
+        confirmButtonColor: "#dc2626", // Tailwind red-600
+      });
     }
   };
 
