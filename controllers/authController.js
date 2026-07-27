@@ -100,7 +100,7 @@ export const getAllUsers = async (req, res) => {
 export const loginUser = async (req, res) => {
   try {
     const { email, password } = req.body;
-    console.log(req);
+    // console.log(req);
 
     if (!email || !password) {
       return res.status(400).json({
@@ -148,6 +148,101 @@ export const loginUser = async (req, res) => {
       token,
       user: userWithoutPassword,
     });
+  } catch (error) {
+    res.status(500).json({ message: "Server error", error: error.message });
+  }
+};
+
+export const updateUser = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const {
+      fullName,
+      phone,
+      email,
+      password,
+      role,
+      status,
+      joiningDate,
+      monthlySalary,
+      address,
+    } = req.body;
+
+    // ইউজার আছে কিনা চেক করা
+    const existingUser = await prisma.user.findUnique({
+      where: { id },
+    });
+
+    if (!existingUser) {
+      return res.status(404).json({ message: "User not found!" });
+    }
+
+    // ইমেইল পরিবর্তন করতে চাইলে অন্য কারো ইমেইলের সাথে ডুপ্লিকেট হচ্ছে কিনা চেক করা
+    if (email && email !== existingUser.email) {
+      const emailTaken = await prisma.user.findUnique({
+        where: { email },
+      });
+      if (emailTaken) {
+        return res.status(400).json({ message: "Email is already in use!" });
+      }
+    }
+
+    // পাসওয়ার্ড দেওয়া থাকলে হ্যাশ করা
+    let hashedPassword = undefined;
+    if (password) {
+      const salt = await bcrypt.genSalt(10);
+      hashedPassword = await bcrypt.hash(password, salt);
+    }
+
+    // ডাটাবেজে আপডেট করা
+    const updatedUser = await prisma.user.update({
+      where: { id },
+      data: {
+        ...(fullName && { fullName }),
+        ...(phone && { phone }),
+        ...(email && { email }),
+        ...(password && { password: hashedPassword }),
+        ...(role && { role }),
+        ...(status && { status }),
+        ...(joiningDate && { joiningDate: new Date(joiningDate) }),
+        ...(monthlySalary !== undefined && {
+          monthlySalary: parseFloat(monthlySalary),
+        }),
+        ...(address !== undefined && { address }),
+      },
+    });
+
+    // রেসপন্স থেকে পাসওয়ার্ড বাদ দেওয়া
+    const { password: _, ...userWithoutPassword } = updatedUser;
+
+    res.status(200).json({
+      message: "User updated successfully!",
+      user: userWithoutPassword,
+    });
+  } catch (error) {
+    res.status(500).json({ message: "Server error", error: error.message });
+  }
+};
+
+export const deleteUser = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    // ইউজার আছে কিনা চেক করা
+    const existingUser = await prisma.user.findUnique({
+      where: { id },
+    });
+
+    if (!existingUser) {
+      return res.status(404).json({ message: "User not found!" });
+    }
+
+    // ডাটাবেজ থেকে রিমুভ করা
+    await prisma.user.delete({
+      where: { id },
+    });
+
+    res.status(200).json({ message: "User deleted successfully!" });
   } catch (error) {
     res.status(500).json({ message: "Server error", error: error.message });
   }
