@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { X } from "lucide-react";
 
@@ -68,22 +68,58 @@ const TicketModal = ({ isOpen, onClose, onSubmitSuccess }) => {
   const vendorCost = watch("vendorCost") || 0;
   const grossPrice = watch("grossPrice") || 0;
   const currentTicketType = watch("ticketType");
+
+  useEffect(() => {
+    setValue("route", "", { shouldValidate: false });
+  }, [currentTicketType, setValue]);
+
   const handleRouteInput = (e) => {
-    let val = e.target.value.toUpperCase();
-    const cleanText = val.replace(/[^A-Z]/g, "");
-    const arrow = currentTicketType === "round_trip" ? "⇌" : "⇒";
+    const cleanText = e.target.value.toUpperCase().replace(/[^A-Z]/g, "");
+    const isReturn =
+      currentTicketType === "round_trip" || currentTicketType === "multi_city";
+    const arrow = isReturn ? "⇋" : "⇒";
 
-    if (cleanText.length > 3) {
-      const fromCode = cleanText.slice(0, 3);
-      const toCode = cleanText.slice(3, 6);
-      val = `${fromCode}${arrow}${toCode}`;
-    } else {
-      val = cleanText;
+    if (!cleanText) {
+      setValue("route", "", { shouldValidate: true });
+      return;
     }
-    setValue("route", val, { shouldValidate: true });
 
-    // react-hook-form এ ভ্যালু সেট করা
+    const codes = cleanText.match(/.{1,3}/g) || [];
+
+    if (currentTicketType === "multi_city") {
+      const pairs = [];
+      for (let i = 0; i < codes.length; i += 2) {
+        const from = codes[i];
+        const to = codes[i + 1];
+
+        if (from && to) {
+          pairs.push(`${from}${arrow}${to}`);
+        } else if (from) {
+          if (from.length === 3) {
+            pairs.push(`${from}${arrow}`);
+          } else {
+            pairs.push(from);
+          }
+        }
+      }
+      setValue("route", pairs.join(", "), { shouldValidate: true });
+      return;
+    }
+
+    const from = codes[0] || "";
+    const to = codes[1] || "";
+
+    if (from.length === 3 && !to) {
+      setValue("route", `${from}${arrow}`, { shouldValidate: true });
+    } else if (to) {
+      setValue("route", `${from}${arrow}${to.slice(0, 3)}`, {
+        shouldValidate: true,
+      });
+    } else {
+      setValue("route", from, { shouldValidate: true });
+    }
   };
+
   const calculatedProfit = grossPrice - vendorCost;
 
   const onSubmit = (data) => {
@@ -98,6 +134,7 @@ const TicketModal = ({ isOpen, onClose, onSubmitSuccess }) => {
   return (
     <div className="fixed inset-0 bg-gray-900/40 backdrop-blur-xs z-50 flex items-center justify-center p-4 transition-all">
       <div className="bg-white rounded-2xl w-full max-w-6xl shadow-xl border border-gray-100 flex flex-col max-h-[90vh] animate-in fade-in zoom-in-95 duration-200">
+        {/* Modal Header */}
         <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100">
           <div>
             <h2 className="text-lg font-bold text-gray-900">
@@ -108,6 +145,7 @@ const TicketModal = ({ isOpen, onClose, onSubmitSuccess }) => {
             </p>
           </div>
           <button
+            type="button"
             onClick={() => onClose(false)}
             className="p-1.5 hover:bg-gray-100 rounded-lg text-gray-400 hover:text-gray-600 transition-colors cursor-pointer"
           >
@@ -115,11 +153,12 @@ const TicketModal = ({ isOpen, onClose, onSubmitSuccess }) => {
           </button>
         </div>
 
-        {/* Form Body */}
+        {/* Modal Body / Form */}
         <form
           onSubmit={handleSubmit(onSubmit)}
           className="overflow-y-auto p-6 space-y-5"
         >
+          {/* Row 1: PNR, Ticket Type, Issue Date */}
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
             <div>
               <label className="block text-xs font-semibold text-gray-600 uppercase mb-1.5">
@@ -129,7 +168,9 @@ const TicketModal = ({ isOpen, onClose, onSubmitSuccess }) => {
                 type="text"
                 placeholder="e.g. PNR98765"
                 {...register("pnr", { required: "PNR is required" })}
-                className={`w-full text-sm border px-3 py-2 rounded-xl focus:outline-hidden focus:ring-2 focus:ring-blue-500/20 font-mono ${errors.pnr ? "border-red-500 bg-red-50/30" : "border-gray-200"}`}
+                className={`w-full text-sm border px-3 py-2 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500/20 font-mono ${
+                  errors.pnr ? "border-red-500 bg-red-50/30" : "border-gray-200"
+                }`}
               />
             </div>
 
@@ -139,10 +180,11 @@ const TicketModal = ({ isOpen, onClose, onSubmitSuccess }) => {
               </label>
               <select
                 {...register("ticketType", { required: true })}
-                className="w-full text-sm border border-gray-200 px-3 py-2.5 rounded-xl bg-white focus:outline-hidden focus:ring-2 focus:ring-blue-500/20"
+                className="w-full text-sm border border-gray-200 px-3 py-2.5 rounded-xl bg-white focus:outline-none focus:ring-2 focus:ring-blue-500/20"
               >
                 <option value="one_way">One Way</option>
                 <option value="round_trip">Round Trip</option>
+                <option value="multi_city">Multi City</option>
               </select>
             </div>
 
@@ -153,11 +195,12 @@ const TicketModal = ({ isOpen, onClose, onSubmitSuccess }) => {
               <input
                 type="date"
                 {...register("issueDate", { required: true })}
-                className="w-full text-sm border border-gray-200 px-3 py-2 rounded-xl focus:outline-hidden focus:ring-2 focus:ring-blue-500/20"
+                className="w-full text-sm border border-gray-200 px-3 py-2 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500/20"
               />
             </div>
           </div>
 
+          {/* Row 2: Passenger Name, Route */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
               <label className="block text-xs font-semibold text-gray-600 uppercase mb-1.5">
@@ -169,21 +212,47 @@ const TicketModal = ({ isOpen, onClose, onSubmitSuccess }) => {
                 {...register("passengerName", {
                   required: "Passenger name is required",
                 })}
-                className={`w-full text-sm border px-3 py-2 rounded-xl focus:outline-hidden focus:ring-2 focus:ring-blue-500/20 ${errors.passengerName ? "border-red-500 bg-red-50/30" : "border-gray-200"}`}
+                className={`w-full text-sm border px-3 py-2 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500/20 ${
+                  errors.passengerName
+                    ? "border-red-500 bg-red-50/30"
+                    : "border-gray-200"
+                }`}
               />
             </div>
+
             <div>
               <label className="block text-xs font-semibold text-gray-600 uppercase mb-1.5">
-                Route (e.g. DAC {currentTicketType === "round_trip" ? "⇌" : "⇒"}{" "}
+                Route (e.g. DAC{" "}
+                {currentTicketType === "round_trip" ||
+                currentTicketType === "multi_city"
+                  ? "⇋"
+                  : "⇒"}{" "}
                 CXB) *
               </label>
               <input
                 type="text"
                 placeholder={
-                  currentTicketType === "round_trip" ? "DAC⇌CXB" : "DAC⇒CXB"
+                  currentTicketType === "round_trip" ||
+                  currentTicketType === "multi_city"
+                    ? "DAC⇋CXB"
+                    : "DAC⇒CXB"
                 }
-                maxLength={7}
-                {...register("route", { required: "Route is required" })}
+                {...register("route", {
+                  required: "Route is required",
+                  validate: (value) => {
+                    if (currentTicketType === "multi_city") {
+                      const isValid =
+                        /^([A-Z]{3}⇋[A-Z]{3})(,\s*[A-Z]{3}⇋[A-Z]{3})*$/.test(
+                          value,
+                        );
+                      return (
+                        isValid ||
+                        "Please enter valid complete pairs (e.g. DAB⇋DAC, DXB⇋MAA)"
+                      );
+                    }
+                    return true;
+                  },
+                })}
                 onChange={handleRouteInput}
                 className={`w-full uppercase text-sm border px-3 py-2 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500/20 font-mono ${
                   errors.route
@@ -194,6 +263,7 @@ const TicketModal = ({ isOpen, onClose, onSubmitSuccess }) => {
             </div>
           </div>
 
+          {/* Row 3: Travel Date, Total Pax, Issued By */}
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
             <div>
               <label className="block text-xs font-semibold text-gray-600 uppercase mb-1.5">
@@ -204,9 +274,14 @@ const TicketModal = ({ isOpen, onClose, onSubmitSuccess }) => {
                 {...register("travelDate", {
                   required: "Travel date is required",
                 })}
-                className={`w-full text-sm border px-3 py-2 rounded-xl focus:outline-hidden focus:ring-2 focus:ring-blue-500/20 ${errors.travelDate ? "border-red-500 bg-red-50/30" : "border-gray-200"}`}
+                className={`w-full text-sm border px-3 py-2 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500/20 ${
+                  errors.travelDate
+                    ? "border-red-500 bg-red-50/30"
+                    : "border-gray-200"
+                }`}
               />
             </div>
+
             <div>
               <label className="block text-xs font-semibold text-gray-600 uppercase mb-1.5">
                 Total Pax Details
@@ -215,7 +290,7 @@ const TicketModal = ({ isOpen, onClose, onSubmitSuccess }) => {
                 type="text"
                 placeholder="3 Persons (2 Adult, 1 Child)"
                 {...register("totalPax")}
-                className="w-full text-sm border border-gray-200 px-3 py-2 rounded-xl focus:outline-hidden focus:ring-2 focus:ring-blue-500/20"
+                className="w-full text-sm border border-gray-200 px-3 py-2 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500/20"
               />
             </div>
 
@@ -225,7 +300,7 @@ const TicketModal = ({ isOpen, onClose, onSubmitSuccess }) => {
               </label>
               <select
                 {...register("issuedBy", { required: "Please select value" })}
-                className={`w-full text-sm border px-3 py-2.5 rounded-xl bg-white focus:outline-hidden focus:ring-2 focus:ring-blue-500/20 ${
+                className={`w-full text-sm border px-3 py-2.5 rounded-xl bg-white focus:outline-none focus:ring-2 focus:ring-blue-500/20 ${
                   errors.issuedBy
                     ? "border-red-500 bg-red-50/30"
                     : "border-gray-200"
@@ -241,6 +316,7 @@ const TicketModal = ({ isOpen, onClose, onSubmitSuccess }) => {
             </div>
           </div>
 
+          {/* Row 4: Vendor, Airline, Status */}
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
             <div>
               <label className="block text-xs font-semibold text-gray-600 uppercase mb-1.5">
@@ -248,7 +324,11 @@ const TicketModal = ({ isOpen, onClose, onSubmitSuccess }) => {
               </label>
               <select
                 {...register("vendor", { required: "Please select a vendor" })}
-                className={`w-full text-sm border px-3 py-2.5 rounded-xl bg-white focus:outline-hidden focus:ring-2 focus:ring-blue-500/20 ${errors.vendor ? "border-red-500 bg-red-50/30" : "border-gray-200"}`}
+                className={`w-full text-sm border px-3 py-2.5 rounded-xl bg-white focus:outline-none focus:ring-2 focus:ring-blue-500/20 ${
+                  errors.vendor
+                    ? "border-red-500 bg-red-50/30"
+                    : "border-gray-200"
+                }`}
               >
                 <option value="">Select Vendor</option>
                 {VENDOR_LIST.map((v) => (
@@ -263,26 +343,23 @@ const TicketModal = ({ isOpen, onClose, onSubmitSuccess }) => {
               <label className="block text-xs font-semibold text-gray-600 uppercase mb-1.5">
                 Airline *
               </label>
-              <div className="relative w-full">
-                <select
-                  {...register("airline", {
-                    required: "Please select an airline",
-                  })}
-                  className={`w-full text-sm border px-3 py-2.5 rounded-xl bg-white focus:outline-hidden focus:ring-2 focus:ring-blue-500/20 pr-8 truncate ${
-                    errors.airline
-                      ? "border-red-500 bg-red-50/30"
-                      : "border-gray-200"
-                  }`}
-                  style={{ maxWidth: "100%" }}
-                >
-                  <option value="">Select Airline</option>
-                  {AIRLINE_LIST.map((a) => (
-                    <option key={a.id} value={`${a.code} - ${a.name}`}>
-                      {a.code} - {a.name}
-                    </option>
-                  ))}
-                </select>
-              </div>
+              <select
+                {...register("airline", {
+                  required: "Please select an airline",
+                })}
+                className={`w-full text-sm border px-3 py-2.5 rounded-xl bg-white focus:outline-none focus:ring-2 focus:ring-blue-500/20 truncate ${
+                  errors.airline
+                    ? "border-red-500 bg-red-50/30"
+                    : "border-gray-200"
+                }`}
+              >
+                <option value="">Select Airline</option>
+                {AIRLINE_LIST.map((a) => (
+                  <option key={a.id} value={`${a.code} - ${a.name}`}>
+                    {a.code} - {a.name}
+                  </option>
+                ))}
+              </select>
             </div>
 
             <div>
@@ -291,7 +368,7 @@ const TicketModal = ({ isOpen, onClose, onSubmitSuccess }) => {
               </label>
               <select
                 {...register("status")}
-                className="w-full text-sm border border-gray-200 px-3 py-2.5 rounded-xl bg-white focus:outline-hidden focus:ring-2 focus:ring-blue-500/20"
+                className="w-full text-sm border border-gray-200 px-3 py-2.5 rounded-xl bg-white focus:outline-none focus:ring-2 focus:ring-blue-500/20"
               >
                 <option value="issued">Issued</option>
                 <option value="reissue">Reissue</option>
@@ -300,6 +377,7 @@ const TicketModal = ({ isOpen, onClose, onSubmitSuccess }) => {
             </div>
           </div>
 
+          {/* Pricing Box */}
           <div className="p-4 bg-gray-50 rounded-xl border border-gray-100 grid grid-cols-1 sm:grid-cols-3 gap-4 items-center">
             <div>
               <label className="block text-xs font-bold text-gray-500 uppercase mb-1">
@@ -311,9 +389,10 @@ const TicketModal = ({ isOpen, onClose, onSubmitSuccess }) => {
                   valueAsNumber: true,
                   required: true,
                 })}
-                className="w-full text-sm font-semibold font-mono border border-gray-200 px-3 py-2 rounded-xl bg-white focus:outline-hidden focus:ring-2 focus:ring-blue-500/20"
+                className="w-full text-sm font-semibold font-mono border border-gray-200 px-3 py-2 rounded-xl bg-white focus:outline-none focus:ring-2 focus:ring-blue-500/20"
               />
             </div>
+
             <div>
               <label className="block text-xs font-bold text-gray-500 uppercase mb-1">
                 Gross Price (৳) *
@@ -324,21 +403,27 @@ const TicketModal = ({ isOpen, onClose, onSubmitSuccess }) => {
                   valueAsNumber: true,
                   required: true,
                 })}
-                className="w-full text-sm font-semibold font-mono border border-gray-200 px-3 py-2 rounded-xl bg-white focus:outline-hidden focus:ring-2 focus:ring-blue-500/20"
+                className="w-full text-sm font-semibold font-mono border border-gray-200 px-3 py-2 rounded-xl bg-white focus:outline-none focus:ring-2 focus:ring-blue-500/20"
               />
             </div>
+
             <div>
               <span className="block text-xs font-bold text-gray-500 uppercase mb-1">
                 Net Profit (Auto)
               </span>
               <div
-                className={`text-base font-bold font-mono px-3 py-2 rounded-xl border ${calculatedProfit >= 0 ? "bg-green-50 text-green-700 border-green-200" : "bg-red-50 text-red-700 border-red-200"}`}
+                className={`text-base font-bold font-mono px-3 py-2 rounded-xl border ${
+                  calculatedProfit >= 0
+                    ? "bg-green-50 text-green-700 border-green-200"
+                    : "bg-red-50 text-red-700 border-red-200"
+                }`}
               >
                 ৳{calculatedProfit.toLocaleString()}
               </div>
             </div>
           </div>
 
+          {/* Form Actions */}
           <div className="flex items-center justify-end gap-3 pt-2 border-t border-gray-100">
             <button
               type="button"
