@@ -26,6 +26,7 @@ model Client {
   id             String   @id @default(uuid())
   clientType     String   @default("Individual")
   phone          String   @unique
+  fullName      String
   email          String?  @unique
   company        String?
   openingBalance Float    @default(0)

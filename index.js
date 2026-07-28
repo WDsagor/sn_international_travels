@@ -3,6 +3,7 @@ import cors from "cors";
 import dotenv from "dotenv";
 import prisma from "./prisma/prisma.js";
 import userRoutes from "./routes/userRoutes.js";
+import clientRoutes from "./routes/clientRoutes.js";
 
 dotenv.config();
 
@@ -19,6 +20,7 @@ app.get("/", (req, res) => {
   res.send("SN Travel API Server is running smoothly! 🚀");
 });
 app.use("/api/users", userRoutes);
+app.use("/api/clients", clientRoutes);
 // Database Connection Check
 async function main() {
   try {

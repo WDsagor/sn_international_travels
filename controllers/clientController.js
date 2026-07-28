@@ -1,4 +1,4 @@
-import prisma from "../prisma/prisma";
+import prisma from "../prisma/prisma.js";
 
 export const createClient = async (req, res) => {
   try {
@@ -12,7 +12,7 @@ export const createClient = async (req, res) => {
       address,
       status,
     } = req.body;
-
+    // console.log(req.body);
     // Required Field Check (CLIENT TYPE, FULL NAME, PHONE NUMBER)
     if (!clientType || !fullName || !phone) {
       return res.status(400).json({
@@ -56,12 +56,13 @@ export const createClient = async (req, res) => {
         status: status || "active",
       },
     });
-
+    // console.log(newClient);
     res.status(201).json({
       message: "Client created successfully!",
       client: newClient,
     });
   } catch (error) {
+    console.log(error);
     res.status(500).json({ message: "Server error", error: error.message });
   }
 };

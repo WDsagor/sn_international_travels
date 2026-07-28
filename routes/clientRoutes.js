@@ -1,15 +1,14 @@
 import express from "express";
-import { verifyToken } from "../Middleware/verifyToken";
-import { verifyAdmin } from "../Middleware/verifyAdmin";
+
 import {
   createClient,
   deleteClient,
   getAllClients,
   getClientById,
   updateClient,
-} from "../controllers/clientController";
-
-// import { verifyToken, verifyAdmin } from "../middlewares/authMiddleware.js";
+} from "../controllers/clientController.js";
+import { verifyToken } from "../Middleware/verifyToken.js";
+import { verifyAdmin } from "../Middleware/verifyAdmin.js";
 
 const router = express.Router();
 
