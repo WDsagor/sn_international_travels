@@ -14,7 +14,7 @@ model User {
   email         String     @unique
   password      String     
   role          Role    @default(Staff)
-  status        Status  @default(Inactive)
+  status        Status  @default(active)
   joiningDate   DateTime?
   monthlySalary Float?
   address       String?   
@@ -22,7 +22,18 @@ model User {
   createdAt     DateTime    @default(now())
   updatedAt     DateTime    @updatedAt
 }
-
+model Client {
+  id             String   @id @default(uuid())
+  clientType     String   @default("Individual")
+  phone          String   @unique
+  email          String?  @unique
+  company        String?
+  openingBalance Float    @default(0)
+  address        String?
+  status         Status   @default(active)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+}
 enum Role {
   Accounts
   Manager

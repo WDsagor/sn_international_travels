@@ -138,7 +138,7 @@ export const loginUser = async (req, res) => {
         email: user.email,
       },
       process.env.JWT_SECRET || "your_secret_key",
-      { expiresIn: "1d" },
+      { expiresIn: "12h" },
     );
 
     const { password: _, ...userWithoutPassword } = user;
