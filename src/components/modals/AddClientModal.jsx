@@ -1,29 +1,66 @@
 import React from "react";
 import { useForm } from "react-hook-form";
 import { X, UserPlus } from "lucide-react";
+import Swal from "sweetalert2";
+import { useEffect } from "react";
+import {
+  useAddClientMutation,
+  useUpdateClientMutation,
+} from "../../redux/api/clientApi";
 
-const AddClientModal = ({ isOpen, onClose, onSubmitSuccess }) => {
+const AddClientModal = ({ isOpen, onClose, selectedClient = null }) => {
   const {
     register,
     handleSubmit,
     reset,
     formState: { errors },
-  } = useForm({
-    defaultValues: {
-      name: "",
-      phone: "",
-      email: "",
-      clientType: "individual", // individual or agent
-      companyName: "",
-      openingBalance: 0,
-      address: "",
-    },
-  });
-
-  const onSubmit = (data) => {
-    onSubmitSuccess(data);
-    reset();
-    onClose(false);
+  } = useForm();
+  const [addClient, { isLoading: isAdding }] = useAddClientMutation();
+  const [updateClient, { isLoading: isUpdating }] = useUpdateClientMutation();
+  useEffect(() => {
+    if (selectedClient) {
+      reset(selectedClient);
+    } else {
+      reset({
+        clientType: "Individual",
+        fullName: "",
+        phone: "",
+        email: "",
+        company: "",
+        openingBalance: 0,
+        address: "",
+      });
+    }
+  }, [selectedClient, reset, isOpen]);
+  const onSubmit = async (data) => {
+    try {
+      if (selectedClient) {
+        await updateClient({ id: selectedClient.id, ...data }).unwrap();
+        Swal.fire({
+          icon: "success",
+          title: "Updated!",
+          text: "Client updated successfully!",
+          timer: 1500,
+          showConfirmButton: false,
+        });
+      } else {
+        await addClient(data).unwrap();
+        Swal.fire({
+          icon: "success",
+          title: "Success!",
+          text: "New Client created successfully!",
+          timer: 1500,
+          showConfirmButton: false,
+        });
+      }
+      onClose();
+    } catch (err) {
+      Swal.fire({
+        icon: "error",
+        title: "Failed!",
+        text: err?.data?.message || "Something went wrong!",
+      });
+    }
   };
 
   if (!isOpen) return null;
@@ -39,7 +76,7 @@ const AddClientModal = ({ isOpen, onClose, onSubmitSuccess }) => {
             </div>
             <div>
               <h2 className="text-lg font-bold text-gray-900">
-                Add New Client
+                {selectedClient ? "Edit Client Profile" : "Add New Client"}
               </h2>
               <p className="text-xs text-gray-500">
                 Create a new customer or B2B agent profile
@@ -81,7 +118,9 @@ const AddClientModal = ({ isOpen, onClose, onSubmitSuccess }) => {
               <input
                 type="text"
                 placeholder="e.g. Rahim Ali"
-                {...register("name", { required: "Client name is required" })}
+                {...register("fullname", {
+                  required: "Client name is required",
+                })}
                 className={`w-full text-sm border px-3 py-2 rounded-xl focus:outline-hidden focus:ring-2 focus:ring-blue-500/20 ${
                   errors.name
                     ? "border-red-500 bg-red-50/30"
@@ -131,7 +170,7 @@ const AddClientModal = ({ isOpen, onClose, onSubmitSuccess }) => {
               <input
                 type="text"
                 placeholder="e.g. Sky Travels"
-                {...register("companyName")}
+                {...register("company")}
                 className="w-full text-sm border border-gray-200 px-3 py-2 rounded-xl focus:outline-hidden focus:ring-2 focus:ring-blue-500/20"
               />
             </div>
@@ -173,9 +212,10 @@ const AddClientModal = ({ isOpen, onClose, onSubmitSuccess }) => {
             </button>
             <button
               type="submit"
+              disabled={isAdding || isUpdating}
               className="px-5 py-2 text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 rounded-xl shadow-xs transition-colors cursor-pointer"
             >
-              Save Client
+              {isAdding || isUpdating ? "Saving..." : "Save Client"}
             </button>
           </div>
         </form>
