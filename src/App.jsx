@@ -9,10 +9,11 @@ import Dashboard from "./pages/Dashboard";
 import Tickets from "./pages/Tickets";
 import Clients from "./pages/Clients";
 import Users from "./pages/Users";
-import Layout from "./components/Layouts"; // নিশ্চিত করুন ফাইল নাম 'Layout.jsx' নাকি 'Layouts.jsx'
+import Layout from "./components/Layouts";
 import AllClients from "./pages/AllClients";
 import LoginPage from "./pages/Login";
 import ProtectedRoute from "./components/share/ProtectedRoute";
+import AllClientList from "./pages/AllClientsList";
 
 function App() {
   const [count, setCount] = useState(0);
@@ -26,8 +27,8 @@ function App() {
           <Route element={<Layout />}>
             <Route path="/" element={<Dashboard />} />
             <Route path="/tickets" element={<Tickets />} />
-            <Route path="/clients" element={<Clients />} />
-            <Route path="/all-clients" element={<AllClients />} />
+            <Route path="/clients" element={<AllClientList />} />
+            <Route path="/all-clients" element={<Clients />} />
             <Route path="/users" element={<Users />} />
           </Route>
         </Route>

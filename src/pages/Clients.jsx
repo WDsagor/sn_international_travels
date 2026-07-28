@@ -11,7 +11,7 @@ import {
 } from "lucide-react";
 import { useState } from "react";
 import { UserPlus } from "lucide-react";
-import AddClientModal from "../components/modals/AddClientModal";
+import AddClientModal from "../components/modals/ClientModal";
 import { Search } from "lucide-react";
 import { VENDOR_LIST } from "../components/modals/TicketModal";
 import { Link } from "react-router-dom";

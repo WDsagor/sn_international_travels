@@ -8,7 +8,7 @@ import {
   useUpdateClientMutation,
 } from "../../redux/api/clientApi";
 
-const AddClientModal = ({ isOpen, onClose, selectedClient = null }) => {
+const ClientModal = ({ isOpen, onClose, selectedClient = null }) => {
   const {
     register,
     handleSubmit,
@@ -33,6 +33,7 @@ const AddClientModal = ({ isOpen, onClose, selectedClient = null }) => {
     }
   }, [selectedClient, reset, isOpen]);
   const onSubmit = async (data) => {
+    console.log(data);
     try {
       if (selectedClient) {
         await updateClient({ id: selectedClient.id, ...data }).unwrap();
@@ -106,8 +107,8 @@ const AddClientModal = ({ isOpen, onClose, selectedClient = null }) => {
                 {...register("clientType")}
                 className="w-full text-sm border border-gray-200 px-3 py-2.5 rounded-xl bg-white focus:outline-hidden focus:ring-2 focus:ring-blue-500/20"
               >
-                <option value="individual">Individual</option>
-                <option value="agent">Corporate / Agent</option>
+                <option value="Individual">Individual</option>
+                <option value="Agent">Corporate / Agent</option>
               </select>
             </div>
 
@@ -118,11 +119,11 @@ const AddClientModal = ({ isOpen, onClose, selectedClient = null }) => {
               <input
                 type="text"
                 placeholder="e.g. Rahim Ali"
-                {...register("fullname", {
+                {...register("fullName", {
                   required: "Client name is required",
                 })}
                 className={`w-full text-sm border px-3 py-2 rounded-xl focus:outline-hidden focus:ring-2 focus:ring-blue-500/20 ${
-                  errors.name
+                  errors.fullName
                     ? "border-red-500 bg-red-50/30"
                     : "border-gray-200"
                 }`}
@@ -224,4 +225,4 @@ const AddClientModal = ({ isOpen, onClose, selectedClient = null }) => {
   );
 };
 
-export default AddClientModal;
+export default ClientModal;

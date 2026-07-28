@@ -1,6 +1,6 @@
 import { UserPlus } from "lucide-react";
 import React from "react";
-import AddClientModal from "../components/modals/AddClientModal";
+import AddClientModal from "../components/modals/ClientModal";
 import { useState } from "react";
 import { VENDOR_LIST } from "../components/modals/TicketModal";
 import { Link } from "react-router-dom";
@@ -33,11 +33,6 @@ const AllClients = () => {
             <UserPlus className="w-4 h-4" /> Add New Client
           </button>
         </div>
-        <AddClientModal
-          isOpen={isClientModalOpen}
-          onClose={setIsClientModalOpen}
-          onSubmitSuccess={handleAddClient}
-        />
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-5">
@@ -78,6 +73,11 @@ const AllClients = () => {
           </div>
         ))}
       </div>
+      <AddClientModal
+        isOpen={isClientModalOpen}
+        onClose={setIsClientModalOpen}
+        onSubmitSuccess={handleAddClient}
+      />
     </div>
   );
 };
