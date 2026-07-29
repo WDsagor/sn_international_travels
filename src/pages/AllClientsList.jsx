@@ -12,6 +12,7 @@ import { Phone } from "lucide-react";
 import { Mail } from "lucide-react";
 import { CircleChevronRight } from "lucide-react";
 import { Eye } from "lucide-react";
+import { Link } from "react-router-dom";
 
 const AllClientList = () => {
   const { data: clients = [], isLoading, isError } = useGetClientsQuery();
@@ -59,7 +60,6 @@ const AllClientList = () => {
     setSelectedClient(client);
     setIsModalOpen(true);
   };
-
   const handleAddNew = () => {
     setSelectedClient(null);
     setIsModalOpen(true);
@@ -114,7 +114,6 @@ const AllClientList = () => {
               </div>
             ) : (
               filteredClients?.map((client) => {
-                // নেগেটিভ ব্যালেন্স থাকলে Due, পজিটিভ থাকলে Balance
                 const isDue = (client.openingBalance || 0) < 0;
 
                 return (
@@ -122,11 +121,9 @@ const AllClientList = () => {
                     key={client.id}
                     className="   cursor-pointer group rounded-2xl border border-blue-100/80 shadow-md relative overflow-hidden p-3 flex flex-col justify-between"
                   >
-                    {/* Top-Right Decorative Curve Accent */}
                     <div className="absolute top-0 right-0 w-20 h-20 bg-linear-to-t from-blue-100  to-indigo-400 rounded-bl-full pointer-events-none" />
 
                     <div className="p-2 max-w-md  group-hover:scale-103 transition-all ">
-                      {/* Header Section: Avatar, Full Name & Main Email */}
                       <div className="flex items-center gap-3.5 mb-4 relative z-10">
                         <div className="w-12 h-12 rounded-2xl bg-indigo-600 text-white flex items-center justify-center shadow-md shadow-indigo-100 shrink-0">
                           <User className="w-6 h-6" />
@@ -143,13 +140,11 @@ const AllClientList = () => {
                         </div>
                       </div>
 
-                      {/* Company / Type & Dynamic Status Badge */}
                       <div className="flex justify-between items-center mb-3">
                         <h4 className="font-bold text-gray-900 text-sm">
                           {client.company || client.clientType || "Individual"}
                         </h4>
 
-                        {/* Dynamic Status Tag (Due vs Balance) */}
                         <span
                           className={`text-xs font-semibold px-2.5 py-0.5 rounded-md ${
                             isDue
@@ -161,7 +156,6 @@ const AllClientList = () => {
                         </span>
                       </div>
 
-                      {/* Contact Information */}
                       <div className="space-y-1.5 text-xs text-gray-500 mb-4">
                         <p className="flex items-center gap-2">
                           <Phone className="w-3.5 h-3.5 text-gray-400 shrink-0" />
@@ -175,7 +169,6 @@ const AllClientList = () => {
                         )}
                       </div>
 
-                      {/* Divider Line */}
                       <div className="border-t border-gray-200/60 pt-3 flex justify-between items-center">
                         <span className="text-xs text-gray-400 font-medium">
                           {isDue ? "Net Outstanding:" : "Available Balance:"}
@@ -193,27 +186,28 @@ const AllClientList = () => {
                       </div>
                     </div>
 
-                    {/* Bottom Action Icons */}
-                    <div className="flex  justify-between items-center">
-                      <button className="px-10 cursor-pointer flex items-center justify-center gap-1 py-2 bg-gray-50 hover:bg-gray-100 text-gray-600 rounded-lg text-xs font-medium transition-colors border border-gray-200">
-                        <Eye className="w-4 h-4" size={20} strokeWidth={1.5} />{" "}
-                        Details
-                      </button>
+                    <div className="flex flex-col xs:flex-row sm:flex-row items-center gap-2 pt-2 border-t border-gray-50">
+                      <Link
+                        className="w-full xs:w-auto flex-1 cursor-pointer flex items-center justify-center gap-1.5 py-2 px-3 bg-gray-50 hover:bg-gray-100 text-gray-700 rounded-xl text-xs font-medium transition-colors border border-gray-200"
+                        to={`/clients/${client.id}`}
+                      >
+                        <Eye className="w-3.5 h-3.5 text-gray-500" /> Details
+                      </Link>
 
-                      <div className="flex items-center justify-end gap-3">
+                      <div className="flex items-center gap-2 w-full xs:w-auto flex-1">
                         <button
                           onClick={() => handleEdit(client)}
-                          className="px-5 cursor-pointer flex items-center justify-center gap-1 py-2 bg-gray-50 hover:bg-green-100 text-green-600 rounded-lg text-xs font-medium transition-colors border border-gray-200"
+                          className="flex-1 cursor-pointer flex items-center justify-center gap-1.5 py-2 px-3 bg-emerald-50/50 hover:bg-emerald-100 text-emerald-700 rounded-xl text-xs font-medium transition-colors border border-emerald-200/60"
                           title="Edit Client"
                         >
-                          <Edit2 className="w-4 h-4" /> Edit
+                          <Edit2 className="w-3.5 h-3.5" /> Edit
                         </button>
                         <button
                           onClick={() => handleDelete(client.id)}
-                          className="px-5 cursor-pointer flex items-center justify-center gap-1 py-2 bg-gray-50 hover:bg-red-100 text-red-600 rounded-lg text-xs font-medium transition-colors border border-gray-200"
+                          className="flex-1 cursor-pointer flex items-center justify-center gap-1.5 py-2 px-3 bg-red-50/50 hover:bg-red-100 text-red-700 rounded-xl text-xs font-medium transition-colors border border-red-200/60"
                           title="Delete Client"
                         >
-                          <Trash2 className="w-4 h-4" /> Delete
+                          <Trash2 className="w-3.5 h-3.5" /> Delete
                         </button>
                       </div>
                     </div>
@@ -225,7 +219,6 @@ const AllClientList = () => {
         )}
       </div>
 
-      {/* Modal Import */}
       <ClientModal
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}

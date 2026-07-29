@@ -10,7 +10,6 @@ import Tickets from "./pages/Tickets";
 import Clients from "./pages/Clients";
 import Users from "./pages/Users";
 import Layout from "./components/Layouts";
-import AllClients from "./pages/AllClients";
 import LoginPage from "./pages/Login";
 import ProtectedRoute from "./components/share/ProtectedRoute";
 import AllClientList from "./pages/AllClientsList";
@@ -28,7 +27,7 @@ function App() {
             <Route path="/" element={<Dashboard />} />
             <Route path="/tickets" element={<Tickets />} />
             <Route path="/clients" element={<AllClientList />} />
-            <Route path="/all-clients" element={<Clients />} />
+            <Route path="/clients/:id" element={<Clients />} />
             <Route path="/users" element={<Users />} />
           </Route>
         </Route>

@@ -11,18 +11,25 @@ import {
 } from "lucide-react";
 import { useState } from "react";
 import { UserPlus } from "lucide-react";
-import AddClientModal from "../components/modals/ClientModal";
 import { Search } from "lucide-react";
 import { VENDOR_LIST } from "../components/modals/TicketModal";
 import { Link } from "react-router-dom";
 import { LucideUsers } from "lucide-react";
 import { UsersRound } from "lucide-react";
-const Clients = () => {
-  const [isClientModalOpen, setIsClientModalOpen] = useState(false);
+import ClientModal from "../components/modals/ClientModal";
+import { Download } from "lucide-react";
+import { useGetClientsQuery } from "../redux/api/clientApi";
 
-  const handleAddClient = (data) => {
-    console.log("New Client Data:", data);
+const Clients = () => {
+  const { data: clients = [], isLoading, isError } = useGetClientsQuery();
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [selectedClient, setSelectedClient] = useState(null);
+
+  const handleAddNew = () => {
+    setSelectedClient(null);
+    setIsModalOpen(true);
   };
+
   return (
     <div className="min-h-screen p-4 bg-gray-50 font-sans">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-8 gap-4">
@@ -36,37 +43,39 @@ const Clients = () => {
         </div>
         <div>
           <button
-            onClick={() => setIsClientModalOpen(true)}
+            onClick={handleAddNew}
             className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2.5 rounded-xl text-sm font-medium transition-colors cursor-pointer"
           >
             <UserPlus className="w-4 h-4" /> Add New Client
           </button>
         </div>
-        <AddClientModal
-          isOpen={isClientModalOpen}
-          onClose={setIsClientModalOpen}
-          onSubmitSuccess={handleAddClient}
-        />
       </div>
-      <div className="bg-white flex justify-between items-center gap-5 p-4 rounded-xl border border-gray-200 shadow-sm  mb-6">
+      <div className="bg-white flex justify-between items-center gap-5 p-3 rounded-xl border border-gray-200 shadow-sm  mb-6">
         <div className="w-full max-w-md">
-          <select className="w-full text-sm border border-blue-300 px-3 py-2.5 rounded-xl bg-white focus:outline-hidden focus:ring-2 focus:ring-blue-500/20 ">
-            <option value="">Select client list</option>
-            {VENDOR_LIST.map((v) => (
-              <option key={v.id} value={v.name}>
-                {v.name}
-              </option>
-            ))}
-          </select>
+          {isLoading ? (
+            <p className="text-center text-sm font-medium text-gray-500">
+              Loading clients...
+            </p>
+          ) : isError ? (
+            <p className=" text-center text-sm font-semibold text-red-500">
+              Failed to load data!
+            </p>
+          ) : (
+            <select className="w-full text-sm border border-blue-300 px-3 py-2.5 rounded-xl bg-white focus:outline-hidden focus:ring-2 focus:ring-blue-500/20 ">
+              <option value="">Select client list</option>
+              {clients?.map((client) => (
+                <option key={client.id} value={client.fullName}>
+                  {client.fullName}
+                </option>
+              ))}
+            </select>
+          )}
         </div>
-        <Link
-          className="text-sm flex gap-2 items-center border border-blue-100 p-2 px-3 rounded-xl hover:border-blue-300  transition-all text-blue-500"
-          to={"/all-clients"}
-        >
+        <button className="text-sm flex gap-2 items-center border border-blue-200  bg-blue-50 py-1.5 px-5 rounded-xl font-sans cursor-pointer hover:bg-blue-100 transition-colors  text-blue-700">
           {" "}
-          <UsersRound size={16} color="#0080ff" />
-          View clients
-        </Link>
+          <Download size={20} />
+          Report
+        </button>
       </div>
       <div className="min-h-screen w-full bg-gray-50 font-sans grid grid-cols-1  gap-6">
         <div className="xl:col-span-2 bg-white rounded-xl border border-gray-200 shadow-sm p-6">
@@ -146,6 +155,11 @@ const Clients = () => {
           </div>
         </div>
       </div>
+      <ClientModal
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        selectedClient={selectedClient}
+      />
     </div>
   );
 };
