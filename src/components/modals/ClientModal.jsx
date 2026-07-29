@@ -33,27 +33,30 @@ const ClientModal = ({ isOpen, onClose, selectedClient = null }) => {
     }
   }, [selectedClient, reset, isOpen]);
   const onSubmit = async (data) => {
-    console.log(data);
     try {
-      if (selectedClient) {
-        await updateClient({ id: selectedClient.id, ...data }).unwrap();
-        Swal.fire({
-          icon: "success",
-          title: "Updated!",
-          text: "Client updated successfully!",
-          timer: 1500,
-          showConfirmButton: false,
-        });
+      const payload = {
+        ...data,
+        openingBalance: Number(data.openingBalance) || 0,
+        email: data.email || null,
+        company: data.company || null,
+        address: data.address || null,
+      };
+
+      const isEdit = Boolean(selectedClient);
+      if (isEdit) {
+        await updateClient({ id: selectedClient.id, ...payload }).unwrap();
       } else {
-        await addClient(data).unwrap();
-        Swal.fire({
-          icon: "success",
-          title: "Success!",
-          text: "New Client created successfully!",
-          timer: 1500,
-          showConfirmButton: false,
-        });
+        await addClient(payload).unwrap();
       }
+
+      Swal.fire({
+        icon: "success",
+        title: isEdit ? "Updated!" : "Success!",
+        text: `Client ${isEdit ? "updated" : "created"} successfully!`,
+        timer: 1500,
+        showConfirmButton: false,
+      });
+
       onClose();
     } catch (err) {
       Swal.fire({
@@ -69,7 +72,6 @@ const ClientModal = ({ isOpen, onClose, selectedClient = null }) => {
   return (
     <div className="fixed inset-0 bg-gray-900/40 backdrop-blur-xs z-50 flex items-center justify-center p-4 transition-all">
       <div className="bg-white rounded-2xl w-full max-w-4xl shadow-xl border border-gray-100 flex flex-col max-h-[90vh] animate-in fade-in zoom-in-95 duration-200">
-        {/* Header */}
         <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100">
           <div className="flex items-center gap-2.5">
             <div className="p-2 bg-blue-50 text-blue-600 rounded-xl">
@@ -85,19 +87,18 @@ const ClientModal = ({ isOpen, onClose, selectedClient = null }) => {
             </div>
           </div>
           <button
-            onClick={() => onClose(false)}
+            type="button"
+            onClick={onClose}
             className="p-1.5 hover:bg-gray-100 rounded-lg text-gray-400 hover:text-gray-600 transition-colors cursor-pointer"
           >
             <X className="w-5 h-5" />
           </button>
         </div>
 
-        {/* Form Body */}
         <form
           onSubmit={handleSubmit(onSubmit)}
           className="overflow-y-auto p-6 space-y-4"
         >
-          {/* Client Type & Name */}
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
             <div>
               <label className="block text-xs font-semibold text-gray-600 uppercase mb-1.5">
@@ -128,10 +129,14 @@ const ClientModal = ({ isOpen, onClose, selectedClient = null }) => {
                     : "border-gray-200"
                 }`}
               />
+              {errors.fullName && (
+                <span className="text-[10px] text-red-500 mt-1 block">
+                  {errors.fullName.message}
+                </span>
+              )}
             </div>
           </div>
 
-          {/* Phone & Email */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
               <label className="block text-xs font-semibold text-gray-600 uppercase mb-1.5">
@@ -140,13 +145,20 @@ const ClientModal = ({ isOpen, onClose, selectedClient = null }) => {
               <input
                 type="text"
                 placeholder="01712345678"
-                {...register("phone", { required: "Phone number is required" })}
+                {...register("phone", {
+                  required: "Phone number is required",
+                })}
                 className={`w-full text-sm border px-3 py-2 rounded-xl focus:outline-hidden focus:ring-2 focus:ring-blue-500/20 font-mono ${
                   errors.phone
                     ? "border-red-500 bg-red-50/30"
                     : "border-gray-200"
                 }`}
               />
+              {errors.phone && (
+                <span className="text-[10px] text-red-500 mt-1 block">
+                  {errors.phone.message}
+                </span>
+              )}
             </div>
 
             <div>
@@ -162,7 +174,6 @@ const ClientModal = ({ isOpen, onClose, selectedClient = null }) => {
             </div>
           </div>
 
-          {/* Company Name & Opening Balance */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
               <label className="block text-xs font-semibold text-gray-600 uppercase mb-1.5">
@@ -182,14 +193,16 @@ const ClientModal = ({ isOpen, onClose, selectedClient = null }) => {
               </label>
               <input
                 type="number"
+                step="any"
                 placeholder="0.00"
-                {...register("openingBalance", { valueAsNumber: true })}
+                {...register("openingBalance", {
+                  setValueAs: (v) => (v === "" || isNaN(v) ? 0 : parseFloat(v)),
+                })}
                 className="w-full text-sm font-semibold font-mono border border-gray-200 px-3 py-2 rounded-xl focus:outline-hidden focus:ring-2 focus:ring-blue-500/20"
               />
             </div>
           </div>
 
-          {/* Address */}
           <div>
             <label className="block text-xs font-semibold text-gray-600 uppercase mb-1.5">
               Address
@@ -202,11 +215,10 @@ const ClientModal = ({ isOpen, onClose, selectedClient = null }) => {
             ></textarea>
           </div>
 
-          {/* Action Buttons */}
           <div className="flex items-center justify-end gap-3 pt-3 border-t border-gray-100">
             <button
               type="button"
-              onClick={() => onClose(false)}
+              onClick={onClose}
               className="px-4 py-2 text-sm font-medium text-gray-500 border border-gray-200 rounded-xl hover:bg-gray-50 transition-colors cursor-pointer"
             >
               Cancel
@@ -214,7 +226,7 @@ const ClientModal = ({ isOpen, onClose, selectedClient = null }) => {
             <button
               type="submit"
               disabled={isAdding || isUpdating}
-              className="px-5 py-2 text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 rounded-xl shadow-xs transition-colors cursor-pointer"
+              className="px-5 py-2 text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 rounded-xl shadow-xs transition-colors cursor-pointer disabled:opacity-50"
             >
               {isAdding || isUpdating ? "Saving..." : "Save Client"}
             </button>
