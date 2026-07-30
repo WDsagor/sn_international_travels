@@ -12,7 +12,7 @@ const Users = () => {
   const [isStaffModalOpen, setIsStaffModalOpen] = useState(false);
   const [createUser, { isLoading: createLoading }] = useCreateUserMutation();
   const { data, isLoading, isError, error } = useGetUsersQuery();
-  console.log(error);
+  // console.log(error);
 
   const handleAddStaff = async (data) => {
     try {
@@ -28,7 +28,7 @@ const Users = () => {
         showConfirmButton: false,
       });
     } catch (err) {
-      console.error(err);
+      // console.error(err);
 
       // Error Alert
       Swal.fire({

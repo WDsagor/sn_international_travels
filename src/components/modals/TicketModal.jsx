@@ -1,19 +1,20 @@
 import React, { useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { X } from "lucide-react";
+import { useGetUsersQuery } from "../../redux/features/user/userApi";
+import { useGetClientsQuery } from "../../redux/api/clientApi";
+import {
+  useCreateTicketMutation,
+  useUpdateTicketMutation,
+} from "../../redux/api/ticketApi";
+import { formatDateForInput } from "../../utils/dateFormate";
+import Swal from "sweetalert2";
 
 export const VENDOR_LIST = [
   { id: "v1", name: "Mostofa Kamal" },
   { id: "v2", name: "Fly Deals Travel" },
   { id: "v3", name: "B2B Cargo & Ticketing" },
   { id: "v4", name: "SkyLink Aviation" },
-];
-
-const STAFF_LIST = [
-  { id: "s1", name: "Sagar Islam", role: "Ticketing Executive" },
-  { id: "s2", name: "Tanvir Ahmed", role: "Sales Manager" },
-  { id: "s3", name: "Farhana Akter", role: "Reservation Officer" },
-  { id: "s4", name: "Admin" },
 ];
 
 const AIRLINE_LIST = [
@@ -39,7 +40,18 @@ const AIRLINE_LIST = [
   { id: "6e", code: "6E", name: "IndiGo" },
 ];
 
-const TicketModal = ({ isOpen, onClose, onSubmitSuccess }) => {
+const TicketModal = ({
+  isOpen,
+  onClose,
+  initialData = null,
+  onSubmitSuccess,
+}) => {
+  const isEditMode = Boolean(initialData);
+
+  // Redux RTK Mutations
+  const [createTicket, { isLoading: isCreating }] = useCreateTicketMutation();
+  const [updateTicket, { isLoading: isUpdating }] = useUpdateTicketMutation();
+
   const {
     register,
     handleSubmit,
@@ -49,29 +61,80 @@ const TicketModal = ({ isOpen, onClose, onSubmitSuccess }) => {
     formState: { errors },
   } = useForm({
     defaultValues: {
-      pnr: "",
+      pnrCode: "",
       ticketType: "one_way",
       issueDate: new Date().toISOString().split("T")[0],
       passengerName: "",
       route: "",
       travelDate: "",
-      totalPax: 1,
-      issuedBy: "",
-      vendor: "",
+      totalPax: "",
+      issuedById: "",
+      clientId: "",
       airline: "",
-      vendorCost: 0,
-      grossPrice: 0,
+      netCost: 0,
+      clientPrice: 0,
+      serviceCharge: 0,
       status: "issued",
     },
   });
 
-  const vendorCost = watch("vendorCost") || 0;
-  const grossPrice = watch("grossPrice") || 0;
+  // Watch Form Values (Fixed neCost -> netCost typo)
+  const netCost = watch("netCost") || 0;
+  const clientPrice = watch("clientPrice") || 0;
+  const serviceCharge = watch("serviceCharge") || 0;
   const currentTicketType = watch("ticketType");
+  const currentStatus = watch("status");
 
+  // Dynamic status flag for extra Service Charge field
+  const showServiceCharge = ["reissue", "refund", "void"].includes(
+    currentStatus,
+  );
+
+  // RTK Queries for Dropdowns
+  const { data, isLoading: usersLoading } = useGetUsersQuery();
+  const { data: clients = [], isLoading: clientsLoading } =
+    useGetClientsQuery();
+  const users = data?.users || data || [];
+
+  // Populate data in Edit Mode or reset in Create Mode when Modal Opens
   useEffect(() => {
-    setValue("route", "", { shouldValidate: false });
-  }, [currentTicketType, setValue]);
+    if (!isOpen) return;
+
+    if (initialData) {
+      reset({
+        ...initialData,
+        issueDate: formatDateForInput(initialData.issueDate),
+        travelDate: formatDateForInput(initialData.travelDate),
+        serviceCharge: initialData?.serviceCharge || 0,
+        netCost: initialData?.netCost || 0,
+        clientPrice: initialData?.clientPrice || 0,
+      });
+    } else {
+      reset({
+        pnrCode: "",
+        ticketType: "one_way",
+        issueDate: new Date().toISOString().split("T")[0],
+        passengerName: "",
+        route: "",
+        travelDate: "",
+        totalPax: "",
+        issuedById: "",
+        clientId: "",
+        airline: "",
+        netCost: 0,
+        clientPrice: 0,
+        serviceCharge: 0,
+        status: "issued",
+      });
+    }
+  }, [initialData, reset, isOpen]);
+
+  // Handle Route auto-clear logic on type switch
+  useEffect(() => {
+    if (isOpen && !initialData) {
+      setValue("route", "", { shouldValidate: false });
+    }
+  }, [currentTicketType, setValue, initialData, isOpen]);
 
   const handleRouteInput = (e) => {
     const cleanText = e.target.value.toUpperCase().replace(/[^A-Z]/g, "");
@@ -120,16 +183,69 @@ const TicketModal = ({ isOpen, onClose, onSubmitSuccess }) => {
     }
   };
 
-  const calculatedProfit = grossPrice - vendorCost;
+  // Calculate profit including service charge when applicable (Safe against NaN)
+  const numClientPrice = Number(clientPrice) || 0;
+  const numNetCost = Number(netCost) || 0;
+  const numServiceCharge = showServiceCharge ? Number(serviceCharge) || 0 : 0;
 
-  const onSubmit = (data) => {
-    const finalData = { ...data, profit: calculatedProfit };
-    onSubmitSuccess(finalData);
-    reset();
-    onClose(false);
+  const calculatedProfit = numClientPrice - numNetCost + numServiceCharge;
+
+  const onSubmit = async (formData) => {
+    const payload = {
+      ...formData,
+      netCost: Number(formData.netCost) || 0,
+      clientPrice: Number(formData.clientPrice) || 0,
+      serviceCharge: showServiceCharge
+        ? Number(formData.serviceCharge) || 0
+        : 0,
+      profit: calculatedProfit,
+    };
+
+    try {
+      if (isEditMode) {
+        await updateTicket({ id: initialData.id, ...payload }).unwrap();
+
+        // Success alert for update
+        Swal.fire({
+          icon: "success",
+          title: "Updated Successfully!",
+          text: "Ticket details have been updated.",
+          timer: 2000,
+          showConfirmButton: false,
+        });
+      } else {
+        await createTicket(payload).unwrap();
+
+        // Success alert for creation
+        Swal.fire({
+          icon: "success",
+          title: "Created Successfully!",
+          text: "New ticket has been issued.",
+          timer: 2000,
+          showConfirmButton: false,
+        });
+      }
+
+      if (onSubmitSuccess) onSubmitSuccess(payload);
+      reset();
+      onClose(false);
+    } catch (err) {
+      console.error("Redux Mutation Error:", err);
+
+      // Error alert
+      Swal.fire({
+        icon: "error",
+        title: "Something went wrong!",
+        text:
+          err?.data?.message || err?.message || "Failed to save the ticket.",
+        confirmButtonColor: "#2563eb",
+      });
+    }
   };
 
   if (!isOpen) return null;
+
+  const isSubmitting = isCreating || isUpdating;
 
   return (
     <div className="fixed inset-0 bg-gray-900/40 backdrop-blur-xs z-50 flex items-center justify-center p-4 transition-all">
@@ -138,10 +254,10 @@ const TicketModal = ({ isOpen, onClose, onSubmitSuccess }) => {
         <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100">
           <div>
             <h2 className="text-lg font-bold text-gray-900">
-              Issue New Ticket
+              {isEditMode ? "Update Ticket Details" : "Issue New Ticket"}
             </h2>
             <p className="text-xs text-gray-500">
-              Enter ticket details and vendor financial logging
+              Enter ticket details and financial logging
             </p>
           </div>
           <button
@@ -153,7 +269,7 @@ const TicketModal = ({ isOpen, onClose, onSubmitSuccess }) => {
           </button>
         </div>
 
-        {/* Modal Body / Form */}
+        {/* Modal Form */}
         <form
           onSubmit={handleSubmit(onSubmit)}
           className="overflow-y-auto p-6 space-y-5"
@@ -167,9 +283,11 @@ const TicketModal = ({ isOpen, onClose, onSubmitSuccess }) => {
               <input
                 type="text"
                 placeholder="e.g. PNR98765"
-                {...register("pnr", { required: "PNR is required" })}
-                className={`w-full text-sm border px-3 py-2 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500/20 font-mono ${
-                  errors.pnr ? "border-red-500 bg-red-50/30" : "border-gray-200"
+                {...register("pnrCode", { required: "PNR is required" })}
+                className={`w-full uppercase text-sm border px-3 py-2 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500/20 font-mono ${
+                  errors.pnrCode
+                    ? "border-red-500 bg-red-50/30"
+                    : "border-gray-200"
                 }`}
               />
             </div>
@@ -298,45 +416,61 @@ const TicketModal = ({ isOpen, onClose, onSubmitSuccess }) => {
               <label className="block text-xs font-semibold text-gray-600 uppercase mb-1.5">
                 Issued By *
               </label>
-              <select
-                {...register("issuedBy", { required: "Please select value" })}
-                className={`w-full text-sm border px-3 py-2.5 rounded-xl bg-white focus:outline-none focus:ring-2 focus:ring-blue-500/20 ${
-                  errors.issuedBy
-                    ? "border-red-500 bg-red-50/30"
-                    : "border-gray-200"
-                }`}
-              >
-                <option value="">Select value</option>
-                {STAFF_LIST.map((staff) => (
-                  <option key={staff.id} value={staff.name}>
-                    {staff.name} {staff.role ? `(${staff.role})` : ""}
-                  </option>
-                ))}
-              </select>
+              {usersLoading ? (
+                <div className="text-xs text-gray-400 py-2">
+                  Loading users...
+                </div>
+              ) : (
+                <select
+                  {...register("issuedById", {
+                    required: "Please select value",
+                  })}
+                  className={`w-full text-sm border px-3 py-2.5 rounded-xl bg-white focus:outline-none focus:ring-2 focus:ring-blue-500/20 ${
+                    errors.issuedById
+                      ? "border-red-500 bg-red-50/30"
+                      : "border-gray-200"
+                  }`}
+                >
+                  <option value="">Select value</option>
+                  {users.map((user) => (
+                    <option key={user?.id} value={user?.id}>
+                      {user?.fullName} {user?.role ? `(${user?.role})` : ""}
+                    </option>
+                  ))}
+                </select>
+              )}
             </div>
           </div>
 
-          {/* Row 4: Vendor, Airline, Status */}
+          {/* Row 4: Client, Airline, Status */}
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
             <div>
               <label className="block text-xs font-semibold text-gray-600 uppercase mb-1.5">
-                Vendor *
+                Client *
               </label>
-              <select
-                {...register("vendor", { required: "Please select a vendor" })}
-                className={`w-full text-sm border px-3 py-2.5 rounded-xl bg-white focus:outline-none focus:ring-2 focus:ring-blue-500/20 ${
-                  errors.vendor
-                    ? "border-red-500 bg-red-50/30"
-                    : "border-gray-200"
-                }`}
-              >
-                <option value="">Select Vendor</option>
-                {VENDOR_LIST.map((v) => (
-                  <option key={v.id} value={v.name}>
-                    {v.name}
-                  </option>
-                ))}
-              </select>
+              {clientsLoading ? (
+                <div className="text-xs text-gray-400 py-2">
+                  Loading clients...
+                </div>
+              ) : (
+                <select
+                  {...register("clientId", {
+                    required: "Please select a client",
+                  })}
+                  className={`w-full text-sm border px-3 py-2.5 rounded-xl bg-white focus:outline-none focus:ring-2 focus:ring-blue-500/20 ${
+                    errors.clientId
+                      ? "border-red-500 bg-red-50/30"
+                      : "border-gray-200"
+                  }`}
+                >
+                  <option value="">Select client</option>
+                  {clients?.map((client) => (
+                    <option key={client.id} value={client.id}>
+                      {client.fullName}
+                    </option>
+                  ))}
+                </select>
+              )}
             </div>
 
             <div>
@@ -368,24 +502,29 @@ const TicketModal = ({ isOpen, onClose, onSubmitSuccess }) => {
               </label>
               <select
                 {...register("status")}
-                className="w-full text-sm border border-gray-200 px-3 py-2.5 rounded-xl bg-white focus:outline-none focus:ring-2 focus:ring-blue-500/20"
+                className="w-full text-sm border border-gray-200 px-3 py-2.5 rounded-xl bg-white focus:outline-none focus:ring-2 focus:ring-blue-500/20 uppercase"
               >
                 <option value="issued">Issued</option>
                 <option value="reissue">Reissue</option>
-                <option value="cancel">Cancel</option>
+                <option value="refund">Refund</option>
+                <option value="void">Void</option>
               </select>
             </div>
           </div>
 
           {/* Pricing Box */}
-          <div className="p-4 bg-gray-50 rounded-xl border border-gray-100 grid grid-cols-1 sm:grid-cols-3 gap-4 items-center">
+          <div
+            className={`p-4 bg-gray-50 rounded-xl border border-gray-100 grid grid-cols-1 ${
+              showServiceCharge ? "sm:grid-cols-4" : "sm:grid-cols-3"
+            } gap-4 items-center`}
+          >
             <div>
               <label className="block text-xs font-bold text-gray-500 uppercase mb-1">
-                Vendor Cost (৳) *
+                Net Cost (৳) *
               </label>
               <input
                 type="number"
-                {...register("vendorCost", {
+                {...register("netCost", {
                   valueAsNumber: true,
                   required: true,
                 })}
@@ -395,17 +534,32 @@ const TicketModal = ({ isOpen, onClose, onSubmitSuccess }) => {
 
             <div>
               <label className="block text-xs font-bold text-gray-500 uppercase mb-1">
-                Gross Price (৳) *
+                Client Price (৳) *
               </label>
               <input
                 type="number"
-                {...register("grossPrice", {
+                {...register("clientPrice", {
                   valueAsNumber: true,
                   required: true,
                 })}
                 className="w-full text-sm font-semibold font-mono border border-gray-200 px-3 py-2 rounded-xl bg-white focus:outline-none focus:ring-2 focus:ring-blue-500/20"
               />
             </div>
+
+            {/* Service Charge: Conditionally renders for reissue, refund, or void */}
+            {showServiceCharge && (
+              <div className="animate-in fade-in duration-200">
+                <label className="block text-xs font-bold text-amber-600 uppercase mb-1">
+                  Service Charge (৳)
+                </label>
+                <input
+                  type="number"
+                  {...register("serviceCharge", { valueAsNumber: true })}
+                  placeholder="0"
+                  className="w-full text-sm font-semibold font-mono border border-amber-300 bg-amber-50 px-3 py-2 rounded-xl focus:outline-none focus:ring-2 focus:ring-amber-500/20"
+                />
+              </div>
+            )}
 
             <div>
               <span className="block text-xs font-bold text-gray-500 uppercase mb-1">
@@ -423,7 +577,7 @@ const TicketModal = ({ isOpen, onClose, onSubmitSuccess }) => {
             </div>
           </div>
 
-          {/* Form Actions */}
+          {/* Form Action Buttons */}
           <div className="flex items-center justify-end gap-3 pt-2 border-t border-gray-100">
             <button
               type="button"
@@ -434,9 +588,14 @@ const TicketModal = ({ isOpen, onClose, onSubmitSuccess }) => {
             </button>
             <button
               type="submit"
-              className="px-5 py-2 text-sm font-medium text-white bg-blue-600 rounded-xl hover:bg-blue-700 shadow-xs transition-colors cursor-pointer"
+              disabled={isSubmitting}
+              className="px-5 py-2 text-sm font-medium text-white bg-blue-600 rounded-xl hover:bg-blue-700 shadow-xs transition-colors cursor-pointer disabled:opacity-50"
             >
-              Confirm & Log Ticket
+              {isSubmitting
+                ? "Saving..."
+                : isEditMode
+                  ? "Update Ticket"
+                  : "Confirm & Log Ticket"}
             </button>
           </div>
         </form>

@@ -1,14 +1,58 @@
 import React, { useState } from "react";
-import { Plus, Search, SlidersHorizontal, ArrowLeftRight } from "lucide-react";
+import { Plus, Search, PlaneTakeoff, Edit3, UserCheck } from "lucide-react";
 import TicketModal from "../components/modals/TicketModal";
-import { PlaneTakeoff } from "lucide-react";
+import { useGetTicketsQuery } from "../redux/api/ticketApi";
+import { customDateFormate } from "../utils/dateFormate";
 
 const Tickets = () => {
   const [showModal, setShowModal] = useState(false);
-  const handleTicketSubmit = (formData) => {
-    console.log("New Ticket Created Data:", formData);
-    // এখানে আপনার API কল বা টেবিলে নতুন ডেটা পুশ করার লজিক লিখতে পারেন
+  const [selectedTicket, setSelectedTicket] = useState(null);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [selectedStatus, setSelectedStatus] = useState("All Status");
+
+  // Redux Fetching with Search & Filter State
+  const {
+    data: ticketsData = [],
+    isLoading,
+    isError,
+    error,
+  } = useGetTicketsQuery({
+    search: searchTerm,
+    status: selectedStatus,
+  });
+
+  const handleOpenCreateModal = () => {
+    setSelectedTicket(null);
+    setShowModal(true);
   };
+
+  const handleOpenEditModal = (ticket) => {
+    setSelectedTicket(ticket);
+    setShowModal(true);
+  };
+
+  const handleCloseModal = () => {
+    setShowModal(false);
+    setSelectedTicket(null);
+  };
+
+  const getStatusBadge = (status) => {
+    switch (status?.toLowerCase()) {
+      case "issued":
+        return "bg-green-50 text-green-700 border-green-200";
+      case "reissue":
+        return "bg-amber-50 text-amber-700 border-amber-200";
+      case "refund":
+      case "refunded":
+        return "bg-purple-50 text-purple-700 border-purple-200";
+      case "void":
+      case "cancel":
+        return "bg-red-50 text-red-700 border-red-200";
+      default:
+        return "bg-gray-50 text-gray-700 border-gray-200";
+    }
+  };
+
   return (
     <div className="min-h-screen p-4 bg-gray-50 font-sans">
       {/* Header */}
@@ -22,137 +66,201 @@ const Tickets = () => {
           </p>
         </div>
         <button
-          onClick={() => setShowModal(true)}
-          className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors"
+          onClick={handleOpenCreateModal}
+          className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors cursor-pointer"
         >
           <Plus className="w-4 h-4" /> New Ticket Issue
         </button>
-        <TicketModal
-          isOpen={showModal}
-          onClose={setShowModal}
-          onSubmitSuccess={handleTicketSubmit}
-        />
       </div>
 
       {/* Filter Bar */}
-      <div className="bg-white p-4 rounded-xl border border-gray-200 shadow-sm flex flex-col md:flex-row gap-4 justify-between items-center mb-6">
+      <div className="bg-white p-4 rounded-xl border border-gray-200 shadow-xs flex flex-col md:flex-row gap-4 justify-between items-center mb-6">
         <div className="relative w-full md:w-96">
           <Search className="absolute left-3 top-2.5 h-4 w-4 text-gray-400" />
           <input
             type="text"
-            placeholder="Search PNR, Ticket No, or Passenger..."
-            className="w-full pl-9 pr-4 py-2 bg-gray-50 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+            placeholder="Search PNR, Airline, or Passenger..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="w-full pl-9 pr-4 py-2 bg-gray-50 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20"
           />
         </div>
         <div className="flex gap-2 w-full md:w-auto">
-          <select className="bg-gray-50 border border-gray-200 px-3 py-2 rounded-lg text-sm focus:outline-none w-full md:w-auto">
-            <option>All Status</option>
-            <option>Issued</option>
-            <option>Reissue</option>
-            <option>Cancel</option>
-            <option>Refunded</option>
+          <select
+            value={selectedStatus}
+            onChange={(e) => setSelectedStatus(e.target.value)}
+            className="bg-gray-50 border border-gray-200 px-3 py-2 rounded-lg text-sm focus:outline-none w-full md:w-auto cursor-pointer uppercase"
+          >
+            <option value="All Status">All Status</option>
+            <option value="issued">Issued</option>
+            <option value="reissue">Reissue</option>
+            <option value="refund">Refund</option>
+            <option value="void">Void</option>
           </select>
         </div>
       </div>
 
       {/* Tickets Table */}
-      <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
+      <div className="bg-white rounded-xl border border-gray-200 shadow-xs overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full text-left border-collapse">
-            <thead className="bg-gray-200 text-xs font-semibold text-gray-700 uppercase tracking-wider border-b border-gray-200">
+            <thead className="bg-gray-100 text-xs font-semibold text-gray-700 uppercase tracking-wider border-b border-gray-200">
               <tr>
                 <th className="px-4 py-3">PNR & Issue Date</th>
                 <th className="px-4 py-3">Travel Details</th>
-                <th className="px-4 py-3">Vendor</th>
+                <th className="px-4 py-3">Client</th>
                 <th className="px-4 py-3">Airline</th>
-                <th className="px-4 py-3 text-right">Vendor Cost</th>
-                <th className="px-4 py-3 text-right">Gross Price</th>
+                <th className="px-4 py-3 text-right">Net Cost</th>
+                <th className="px-4 py-3 text-right">Client Price</th>
+                <th className="px-4 py-3 text-right">Service Charge</th>
                 <th className="px-4 py-3 text-right">Profit</th>
                 <th className="px-4 py-3">Status</th>
                 <th className="px-4 py-3 text-center">Actions</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-100 text-sm text-gray-700">
-              <tr className="hover:bg-blue-50/70 transition-colors">
-                <td className="px-4 py-2">
-                  <div className="font-mono font-bold text-gray-900">
-                    PNR98765
-                  </div>
+              {isLoading ? (
+                <tr>
+                  <td colSpan="10" className="text-center py-8 text-gray-500">
+                    Loading tickets...
+                  </td>
+                </tr>
+              ) : isError ? (
+                <tr>
+                  <td colSpan="10" className="text-center py-8 text-red-500">
+                    Failed to load tickets:{" "}
+                    {error?.message || "Something went wrong"}
+                  </td>
+                </tr>
+              ) : ticketsData?.length === 0 ? (
+                <tr>
+                  <td colSpan="10" className="text-center py-8 text-gray-400">
+                    No tickets found.
+                  </td>
+                </tr>
+              ) : (
+                ticketsData?.map((ticket) => {
+                  // Issuer Name Extraction (Handles Object or Direct Field)
+                  const issuerName =
+                    ticket?.issuedBy?.fullName ||
+                    ticket?.issuedBy ||
+                    ticket?.issuedUser?.fullName ||
+                    "N/A";
 
-                  <div className="text-[11px] text-gray-400 mt-0.5">
-                    20 Jul 2026
-                  </div>
-                </td>
+                  return (
+                    <tr
+                      key={ticket.id}
+                      className="hover:bg-blue-50/50 transition-colors"
+                    >
+                      <td className="px-4 py-3">
+                        <div className="font-mono font-bold text-gray-900 uppercase">
+                          {ticket.pnrCode}
+                        </div>
+                        <div className="text-[11px] text-gray-400 mt-0.5">
+                          {customDateFormate(ticket.issueDate)}
+                        </div>
+                      </td>
 
-                <td className="px-4 py-2">
-                  <div className="font-medium text-gray-900">Rahim Ali</div>
+                      <td className="px-4 py-3">
+                        <div className="font-medium text-gray-900">
+                          {ticket.passengerName}
+                        </div>
+                        <div className="text-[11px] flex items-center gap-1 text-amber-600 font-medium py-0.5">
+                          <PlaneTakeoff size={14} strokeWidth={1.5} />
+                          <span>{customDateFormate(ticket.travelDate)}</span>
+                        </div>
+                        <div className="relative group w-max mt-0.5">
+                          <div className="text-xs text-blue-600 font-semibold flex items-center gap-1 cursor-pointer hover:text-blue-800 transition-colors">
+                            {ticket.route}
+                          </div>
 
-                  {/* Fly/Travel Date */}
-                  <div className="text-[11px] flex gap-1 text-amber-600 font-medium  py-0.5 rounded">
-                    <PlaneTakeoff
-                      size={16}
-                      strokeWidth={0.75}
-                      absoluteStrokeWidth
-                    />
-                    <span>15 Aug 2026</span>
-                  </div>
-                  <div className="relative group w-max mt-0.5">
-                    <div className="text-xs text-blue-600 font-semibold flex items-center gap-1 cursor-pointer hover:text-blue-800 transition-colors">
-                      DAC ➔ JFK
-                    </div>
+                          <div className="absolute bottom-full left-0 mb-2 hidden group-hover:block w-56 bg-gray-900 text-white text-xs rounded-xl p-3 shadow-xl z-50">
+                            <p className="font-bold text-blue-400 border-b border-gray-700 pb-1 mb-1.5 uppercase tracking-wide">
+                              Passenger Details
+                            </p>
+                            <div className="space-y-1 text-gray-300">
+                              <p>
+                                <span className="text-gray-400">Primary:</span>{" "}
+                                {ticket.passengerName}
+                              </p>
+                              <p>
+                                <span className="text-gray-400">
+                                  Pax Details:
+                                </span>{" "}
+                                {ticket.totalPax || "N/A"}
+                              </p>
+                            </div>
+                            <div className="absolute top-full left-4 -mt-1 border-4 border-transparent border-t-gray-900" />
+                          </div>
+                        </div>
+                      </td>
 
-                    <div className="absolute bottom-0 left-0 mb-2 hidden group-hover:block w-56 h-auto bg-gray-900 text-white text-xs rounded-xl p-3 shadow-xl z-99 animate-in fade-in zoom-in-95 duration-150">
-                      <p className="font-bold text-blue-400 border-b border-gray-700 pb-1 mb-1.5 uppercase tracking-wide">
-                        Passenger Details
-                      </p>
-                      <div className="space-y-1 text-gray-300">
-                        <p>
-                          <span className="text-gray-400">Primary:</span> Rahim
-                          Ali
-                        </p>
-                        <p>
-                          <span className="text-gray-400">Total Pax:</span> 3
-                          Persons (2 Adult, 1 Child)
-                        </p>
-                      </div>
+                      <td className="px-4 py-3 font-medium">
+                        {ticket?.client?.fullName}
+                      </td>
+                      <td className="px-4 py-3 font-medium">
+                        {ticket.airline}
+                      </td>
 
-                      {/* টুলটিপের নিচের ছোট্ট তীর চিহ্ন (Arrow) */}
-                      <div className="absolute top-full left-4 -mt-1 border-4 border-transparent border-t-gray-900" />
-                    </div>
-                  </div>
-                </td>
+                      <td className="px-4 py-3 text-right font-mono text-gray-500">
+                        ৳{Number(ticket.netCost || 0).toLocaleString()}
+                      </td>
+                      <td className="px-4 py-3 text-right font-mono font-semibold text-gray-900">
+                        ৳{Number(ticket.clientPrice || 0).toLocaleString()}
+                      </td>
+                      <td className="px-4 py-3 text-right font-mono text-amber-600">
+                        ৳{Number(ticket.serviceCharge || 0).toLocaleString()}
+                      </td>
+                      <td className="px-4 py-3 text-right font-mono font-semibold text-green-600">
+                        ৳{Number(ticket.netProfit || 0).toLocaleString()}
+                      </td>
 
-                <td className="px-4 py-2 font-medium">Mostofa Kamal</td>
-                <td className="px-4 py-2 font-medium">Biman Bangladesh</td>
+                      {/* Status Column with Issuer Hover Tooltip */}
+                      <td className="px-4 py-3 relative group">
+                        <span
+                          className={`inline-flex px-2.5 py-0.5 rounded-full text-xs font-semibold border capitalize cursor-pointer ${getStatusBadge(
+                            ticket.status,
+                          )}`}
+                        >
+                          {ticket.status}
+                        </span>
 
-                <td className="px-4 py-2 text-right font-mono text-gray-500">
-                  ৳78,000
-                </td>
+                        {/* Issuer Hover Tooltip */}
+                        <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 hidden group-hover:flex items-center gap-1.5 bg-gray-900 text-white text-xs px-3 py-1.5 rounded-lg shadow-xl z-50 whitespace-nowrap animate-in fade-in zoom-in-95 pointer-events-none">
+                          <UserCheck className="w-3.5 h-3.5 text-blue-400" />
+                          <span>
+                            Issued By:{" "}
+                            <strong className="text-gray-100 font-semibold">
+                              {issuerName}
+                            </strong>
+                          </span>
+                          <div className="absolute top-full left-1/2 -translate-x-1/2 border-4 border-transparent border-t-gray-900" />
+                        </div>
+                      </td>
 
-                <td className="px-4 py-2 text-right font-mono font-semibold text-gray-900">
-                  ৳85,000
-                </td>
-
-                <td className="px-4 py-2 text-right font-mono font-semibold text-green-600">
-                  ৳7,000
-                </td>
-
-                <td className="px-4 py-2">
-                  <span className="inline-flex px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-50 text-green-700 border border-green-200">
-                    Issued
-                  </span>
-                </td>
-
-                <td className="px-4 py-2 text-center">
-                  <button className="text-blue-600 hover:text-blue-800 text-xs font-semibold px-2.5 py-1 bg-blue-50 hover:bg-blue-100 rounded-lg transition-colors cursor-pointer">
-                    Change Status
-                  </button>
-                </td>
-              </tr>
+                      <td className="px-4 py-3 text-center">
+                        <button
+                          onClick={() => handleOpenEditModal(ticket)}
+                          className="inline-flex items-center gap-1 text-blue-600 hover:text-blue-800 text-xs font-semibold px-2.5 py-1 bg-blue-50 hover:bg-blue-100 rounded-lg transition-colors cursor-pointer"
+                        >
+                          <Edit3 className="w-3.5 h-3.5" />
+                          Edit
+                        </button>
+                      </td>
+                    </tr>
+                  );
+                })
+              )}
             </tbody>
           </table>
         </div>
       </div>
+
+      <TicketModal
+        isOpen={showModal}
+        onClose={handleCloseModal}
+        initialData={selectedTicket}
+      />
     </div>
   );
 };
