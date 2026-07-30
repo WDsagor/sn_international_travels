@@ -4,6 +4,7 @@ import dotenv from "dotenv";
 import prisma from "./prisma/prisma.js";
 import userRoutes from "./routes/userRoutes.js";
 import clientRoutes from "./routes/clientRoutes.js";
+import ticketRoutes from "./routes/ticketRoutes.js";
 
 dotenv.config();
 
@@ -21,6 +22,7 @@ app.get("/", (req, res) => {
 });
 app.use("/api/users", userRoutes);
 app.use("/api/clients", clientRoutes);
+app.use("/api/tickets", ticketRoutes);
 // Database Connection Check
 async function main() {
   try {

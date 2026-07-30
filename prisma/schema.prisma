@@ -8,39 +8,75 @@ datasource db {
 }
 
 model User {
-  id            String      @id @default(uuid())
+  id            String    @id @default(uuid())
   fullName      String
   phone         String
-  email         String     @unique
-  password      String     
-  role          Role    @default(Staff)
-  status        Status  @default(active)
+  email         String    @unique
+  password      String
+  role          Role      @default(Staff)
+  status        Status    @default(active)
   joiningDate   DateTime?
   monthlySalary Float?
-  address       String?   
+  address       String?
+  totalProfit   Float     @default(0)
 
-  createdAt     DateTime    @default(now())
-  updatedAt     DateTime    @updatedAt
+  tickets       Ticket[]
+
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
 }
+
 model Client {
   id             String   @id @default(uuid())
   clientType     String   @default("Individual")
   phone          String   @unique
-  fullName      String
+  fullName       String
   email          String?  @unique
   company        String?
   openingBalance Float    @default(0)
   address        String?
   status         Status   @default(active)
+
+  tickets        Ticket[]
+
   createdAt      DateTime @default(now())
   updatedAt      DateTime @updatedAt
 }
+
+
+model Ticket {
+  id           String    @id @default(uuid())
+  pnrCode      String    
+  ticketType   String
+  issueDate    DateTime
+  passengerName String
+  route        String
+  travelDate   DateTime?
+  totalPax     String       
+  airline      String
+  status       String    @default("Issued")
+  netCost      Float
+  clientPrice  Float
+  serviceCharge Float     @default(0)
+  netProfit    Float 
+
+  issuedById   String
+  issuedBy     User      @relation(fields: [issuedById], references: [id])
+
+  clientId     String
+  client       Client    @relation(fields: [clientId], references: [id])
+
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+}
+
 enum Role {
   Accounts
   Manager
   Admin
   Staff
 }
+
 enum Status {
   active
   Inactive
