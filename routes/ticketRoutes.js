@@ -1,16 +1,14 @@
 import express from "express";
 
-import { verifyToken } from "../middleware/verifyToken.js";
 import {
   createTicket,
   deleteTicket,
   getTickets,
   updateTicket,
 } from "../controllers/ticketController.js";
+import { verifyToken } from "../Middleware/verifyToken.js";
 
 const router = express.Router();
-
-// router.use(verifyToken);
 
 router.get("/", verifyToken, getTickets);
 router.post("/", verifyToken, createTicket);
