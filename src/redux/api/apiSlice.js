@@ -12,6 +12,6 @@ export const apiSlice = createApi({
       return headers;
     },
   }),
-  tagTypes: ["User", "Account"], // Re-fetching/Caching-এর জন্য Tag
+  tagTypes: ["User", "Account"],
   endpoints: (builder) => ({}),
 });

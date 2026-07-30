@@ -119,7 +119,7 @@ const AllClientList = () => {
                 return (
                   <div
                     key={client.id}
-                    className="   cursor-pointer group rounded-2xl border border-blue-100/80 shadow-md relative overflow-hidden p-3 flex flex-col justify-between"
+                    className=" bg-white   cursor-pointer group rounded-2xl border border-blue-100/80 shadow-md relative overflow-hidden p-3 flex flex-col justify-between"
                   >
                     <div className="absolute top-0 right-0 w-20 h-20 bg-linear-to-t from-blue-100  to-indigo-400 rounded-bl-full pointer-events-none" />
 
