@@ -1,5 +1,8 @@
 import prisma from "../prisma/prisma.js";
 
+// ----------------------------------------------------
+// 1. CREATE CLIENT
+// ----------------------------------------------------
 export const createClient = async (req, res) => {
   try {
     const {
@@ -12,15 +15,13 @@ export const createClient = async (req, res) => {
       address,
       status,
     } = req.body;
-    // console.log(req.body);
-    // Required Field Check (CLIENT TYPE, FULL NAME, PHONE NUMBER)
+
     if (!clientType || !fullName || !phone) {
       return res.status(400).json({
         message: "Client Type, Full Name, and Phone Number are required!",
       });
     }
 
-    // Phone Duplication Check
     const existingPhone = await prisma.client.findUnique({
       where: { phone },
     });
@@ -31,7 +32,6 @@ export const createClient = async (req, res) => {
       });
     }
 
-    // Email Duplication Check
     if (email) {
       const existingEmail = await prisma.client.findUnique({
         where: { email },
@@ -43,7 +43,7 @@ export const createClient = async (req, res) => {
         });
       }
     }
-    // Create Client in DB
+
     const newClient = await prisma.client.create({
       data: {
         clientType: clientType || "Individual",
@@ -56,26 +56,73 @@ export const createClient = async (req, res) => {
         status: status || "active",
       },
     });
-    // console.log(newClient);
+
     res.status(201).json({
       message: "Client created successfully!",
       client: newClient,
     });
   } catch (error) {
-    console.log(error);
+    console.error(error);
     res.status(500).json({ message: "Server error", error: error.message });
   }
 };
+
+// ----------------------------------------------------
+// 2. GET ALL CLIENTS (With Dynamic currentDue Calculation)
+// ----------------------------------------------------
 export const getAllClients = async (req, res) => {
   try {
     const clients = await prisma.client.findMany({
+      include: {
+        tickets: {
+          select: {
+            clientPrice: true,
+            serviceCharge: true,
+            status: true,
+          },
+        },
+        payments: {
+          select: {
+            amount: true,
+          },
+        },
+      },
       orderBy: { createdAt: "desc" },
     });
-    res.status(200).json(clients);
+
+    const clientsWithDue = clients.map((client) => {
+      const totalTickets = client.tickets.reduce((sum, t) => {
+        if (t.status === "Refunded" || t.status === "Voided") {
+          return sum + (t.serviceCharge || 0);
+        }
+        return sum + ((t.clientPrice || 0) + (t.serviceCharge || 0));
+      }, 0);
+
+      const totalPayments = client.payments.reduce(
+        (sum, p) => sum + (p.amount || 0),
+        0,
+      );
+
+      const currentDue =
+        (client.openingBalance || 0) + totalTickets - totalPayments;
+
+      const { tickets, payments, ...clientData } = client;
+
+      return {
+        ...clientData,
+        currentDue,
+      };
+    });
+
+    res.status(200).json(clientsWithDue);
   } catch (error) {
     res.status(500).json({ message: "Server error", error: error.message });
   }
 };
+
+// ----------------------------------------------------
+// 3. UPDATE CLIENT
+// ----------------------------------------------------
 export const updateClient = async (req, res) => {
   try {
     const { id } = req.params;
@@ -136,30 +183,93 @@ export const updateClient = async (req, res) => {
     res.status(500).json({ message: "Server error", error: error.message });
   }
 };
+
+// ----------------------------------------------------
+// 4. GET CLIENT BY ID & LEDGER
+// ----------------------------------------------------
 export const getClientById = async (req, res) => {
   try {
     const { id } = req.params;
 
+    if (
+      !id ||
+      id === "undefined" ||
+      id === "null" ||
+      typeof id !== "string" ||
+      id.trim() === ""
+    ) {
+      console.error("❌ Invalid ID received:", id);
+      return res.status(400).json({
+        success: false,
+        message: "Valid Client UUID is required.",
+      });
+    }
+
+    const cleanId = id.trim();
+
+    // ২. Prisma Query
     const client = await prisma.client.findUnique({
-      where: { id },
+      where: { id: cleanId },
+      include: {
+        tickets: {
+          select: {
+            id: true,
+            pnrCode: true,
+            passengerName: true,
+            ticketType: true,
+            clientPrice: true,
+            serviceCharge: true,
+            netCost: true,
+            netProfit: true,
+            status: true,
+            issueDate: true,
+            createdAt: true,
+          },
+          orderBy: { createdAt: "desc" },
+        },
+        payments: {
+          select: {
+            id: true,
+            amount: true,
+            paymentMethod: true,
+            trxId: true,
+            note: true,
+            paymentDate: true,
+            createdAt: true,
+          },
+          orderBy: { createdAt: "desc" },
+        },
+      },
     });
 
     if (!client) {
-      return res.status(404).json({ message: "Client not found!" });
+      return res.status(404).json({
+        success: false,
+        message: "Client not found.",
+      });
     }
 
-    res.status(200).json(client);
+    return res.status(200).json({
+      success: true,
+      data: client,
+    });
   } catch (error) {
-    res.status(500).json({ message: "Server error", error: error.message });
+    console.error("Error fetching client ledger:", error);
+    return res.status(500).json({
+      success: false,
+      message: "Server error while fetching client ledger.",
+      error: error.message,
+    });
   }
 };
 
-// ২. Client ডিলিট করার API (Delete Client)
+// ----------------------------------------------------
+// 5. DELETE CLIENT
+// ----------------------------------------------------
 export const deleteClient = async (req, res) => {
   try {
     const { id } = req.params;
 
-    // ক্লায়েন্ট আছে কিনা চেক করা
     const existingClient = await prisma.client.findUnique({
       where: { id },
     });
@@ -168,7 +278,6 @@ export const deleteClient = async (req, res) => {
       return res.status(404).json({ message: "Client not found!" });
     }
 
-    // DB থেকে ডিলিট করা
     await prisma.client.delete({
       where: { id },
     });

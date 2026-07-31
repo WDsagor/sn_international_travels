@@ -7,7 +7,6 @@ const prisma = new PrismaClient();
 export const getTickets = async (req, res) => {
   try {
     const { search, status } = req.query;
-
     const whereClause = {};
 
     if (search) {
@@ -88,7 +87,6 @@ export const createTicket = async (req, res) => {
       clientId,
     } = req.body;
 
-    // Quick Validation Check
     if (!issuedById || !clientId) {
       return res.status(400).json({
         message: "issuedById and clientId are required!",
@@ -100,9 +98,7 @@ export const createTicket = async (req, res) => {
     const price = Number(clientPrice) || 0;
 
     const calculatedProfit = price - cost + charge;
-    const totalClientPrice = price + charge;
 
-    // 🟢 timeout & maxWait বাড়ানো হয়েছে
     const result = await prisma.$transaction(
       async (tx) => {
         const ticket = await tx.ticket.create({
@@ -125,6 +121,7 @@ export const createTicket = async (req, res) => {
           },
         });
 
+        // স্টাফের প্রফিট আপডেট করা হচ্ছে
         await tx.user.update({
           where: { id: issuedById },
           data: {
@@ -132,23 +129,16 @@ export const createTicket = async (req, res) => {
           },
         });
 
-        await tx.client.update({
-          where: { id: clientId },
-          data: {
-            openingBalance: { increment: totalClientPrice },
-          },
-        });
-
         return ticket;
       },
       {
-        maxWait: 10000, // ট্রানজ্যাকশন কানেকশন পাওয়ার জন্য ১০ সেকেন্ড ওয়েট
-        timeout: 15000, // পুরো ট্রানজ্যাকশন এক্সিকিউট করতে ১৫ সেকেন্ড সময়
+        maxWait: 10000,
+        timeout: 15000,
       },
     );
 
     res.status(201).json({
-      message: "Ticket created successfully and balances updated!",
+      message: "Ticket created successfully!",
       data: result,
     });
   } catch (error) {
@@ -196,37 +186,26 @@ export const updateTicket = async (req, res) => {
     const currentCharge = Number(serviceCharge) || 0;
 
     let newNetProfit = 0;
-    let newTotalClientAmount = 0;
 
     if (status === "Refunded" || status === "Voided") {
       newNetProfit = currentCharge;
-      newTotalClientAmount = currentCharge;
     } else {
       newNetProfit = currentPrice - currentCost + currentCharge;
-      newTotalClientAmount = currentPrice + currentCharge;
     }
 
     const oldProfit = oldTicket.netProfit;
-    const oldClientTotal = oldTicket.clientPrice + oldTicket.serviceCharge;
-
     const targetIssuedById = issuedById || oldTicket.issuedById;
     const targetClientId = clientId || oldTicket.clientId;
 
-    // 🟢 timeout & maxWait বাড়ানো হয়েছে
     const updatedTicket = await prisma.$transaction(
       async (tx) => {
-        // Revert Old Balances
+        // পুরোনো ইউজারের প্রফিট রিভার্ট করা
         await tx.user.update({
           where: { id: oldTicket.issuedById },
           data: { totalProfit: { decrement: oldProfit } },
         });
 
-        await tx.client.update({
-          where: { id: oldTicket.clientId },
-          data: { openingBalance: { decrement: oldClientTotal } },
-        });
-
-        // Update Ticket Data
+        // টিকিট আপডেট
         const ticket = await tx.ticket.update({
           where: { id },
           data: {
@@ -248,22 +227,17 @@ export const updateTicket = async (req, res) => {
           },
         });
 
-        // Apply New Balances
+        // নতুন ইউজারের প্রফিট অ্যাড করা
         await tx.user.update({
           where: { id: targetIssuedById },
           data: { totalProfit: { increment: newNetProfit } },
-        });
-
-        await tx.client.update({
-          where: { id: targetClientId },
-          data: { openingBalance: { increment: newTotalClientAmount } },
         });
 
         return ticket;
       },
       {
         maxWait: 10000,
-        timeout: 20000, // ৪টি আপডেট আছে তাই ২০ সেকেন্ড টাইমআউট
+        timeout: 20000,
       },
     );
 
@@ -295,18 +269,11 @@ export const deleteTicket = async (req, res) => {
       return res.status(404).json({ message: "Ticket not found!" });
     }
 
-    const totalClientAmount = ticket.clientPrice + ticket.serviceCharge;
-
     await prisma.$transaction(
       async (tx) => {
         await tx.user.update({
           where: { id: ticket.issuedById },
           data: { totalProfit: { decrement: ticket.netProfit } },
-        });
-
-        await tx.client.update({
-          where: { id: ticket.clientId },
-          data: { openingBalance: { decrement: totalClientAmount } },
         });
 
         await tx.ticket.delete({
@@ -320,7 +287,7 @@ export const deleteTicket = async (req, res) => {
     );
 
     res.status(200).json({
-      message: "Ticket deleted and balances reverted successfully!",
+      message: "Ticket deleted successfully!",
     });
   } catch (error) {
     console.error("Delete Ticket Error:", error);

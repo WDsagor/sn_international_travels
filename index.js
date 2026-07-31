@@ -2,9 +2,10 @@ import express from "express";
 import cors from "cors";
 import dotenv from "dotenv";
 import prisma from "./prisma/prisma.js";
-import userRoutes from "./routes/userRoutes.js";
-import clientRoutes from "./routes/clientRoutes.js";
-import ticketRoutes from "./routes/ticketRoutes.js";
+import userRoutes from "./routes/user.routes.js";
+import clientRoutes from "./routes/client.routes.js";
+import ticketRoutes from "./routes/ticket.routes.js";
+import paymentRoutes from "./routes/payment.routes.js";
 
 dotenv.config();
 
@@ -23,6 +24,7 @@ app.get("/", (req, res) => {
 app.use("/api/users", userRoutes);
 app.use("/api/clients", clientRoutes);
 app.use("/api/tickets", ticketRoutes);
+app.use("/api/payments", paymentRoutes);
 // Database Connection Check
 async function main() {
   try {
