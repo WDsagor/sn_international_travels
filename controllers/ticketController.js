@@ -15,6 +15,11 @@ export const getTickets = async (req, res) => {
         { pnrCode: { contains: search, mode: "insensitive" } },
         { passengerName: { contains: search, mode: "insensitive" } },
         { airline: { contains: search, mode: "insensitive" } },
+        {
+          client: {
+            fullName: { contains: search, mode: "insensitive" },
+          },
+        },
       ];
     }
 
