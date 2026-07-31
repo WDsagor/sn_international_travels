@@ -106,16 +106,16 @@ const Tickets = () => {
           <table className="w-full text-left border-collapse">
             <thead className="bg-gray-100 text-xs font-semibold text-gray-700 uppercase tracking-wider border-b border-gray-200">
               <tr>
-                <th className="px-4 py-3">PNR & Issue Date</th>
-                <th className="px-4 py-3">Travel Details</th>
-                <th className="px-4 py-3">Client</th>
-                <th className="px-4 py-3">Airline</th>
-                <th className="px-4 py-3 text-right">Net Cost</th>
-                <th className="px-4 py-3 text-right">Client Price</th>
-                <th className="px-4 py-3 text-right">Service Charge</th>
-                <th className="px-4 py-3 text-right">Profit</th>
-                <th className="px-4 py-3">Status</th>
-                <th className="px-4 py-3 text-center">Actions</th>
+                <th className="p-4">PNR & Date</th>
+                <th className="p-4">Travel Details</th>
+                <th className="p-4">Client</th>
+                <th className="p-4">Airline</th>
+                <th className="p-4 text-right">Net Cost</th>
+                <th className="p-4 text-right">Client Price</th>
+                <th className="p-4 text-right">Ser. Charge</th>
+                <th className="p-4 text-right">Profit</th>
+                <th className="p-4">Status</th>
+                <th className="p-4 text-center">Actions</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-100 text-sm text-gray-700">
@@ -174,11 +174,12 @@ const Tickets = () => {
                             {ticket.route}
                           </div>
 
-                          <div className="absolute bottom-full left-0 mb-2 hidden group-hover:block w-56 bg-gray-900 text-white text-xs rounded-xl p-3 shadow-xl z-50">
-                            <p className="font-bold text-blue-400 border-b border-gray-700 pb-1 mb-1.5 uppercase tracking-wide">
+                          <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-3 hidden group-hover:flex group-hover:flex-col items-center gap-1.5 bg-gray-900 text-white text-xs  rounded-lg py-1.5 shadow-xl z-50 whitespace-nowrap animate-in fade-in zoom-in-95 pointer-events-none">
+                            <p className="font-bold text-blue-400  uppercase tracking-wide px-3">
                               Passenger Details
                             </p>
-                            <div className="space-y-1 text-gray-300">
+                            <div className="border-b w-full border-gray-600" />
+                            <div className=" text-gray-300 px-3">
                               <p>
                                 <span className="text-gray-400">Primary:</span>{" "}
                                 {ticket.passengerName}
@@ -190,7 +191,7 @@ const Tickets = () => {
                                 {ticket.totalPax || "N/A"}
                               </p>
                             </div>
-                            <div className="absolute top-full left-4 -mt-1 border-4 border-transparent border-t-gray-900" />
+                            <div className="absolute top-full left-1/2 -translate-x-1/2 border-4 border-transparent border-t-gray-900" />
                           </div>
                         </div>
                       </td>
@@ -226,14 +227,22 @@ const Tickets = () => {
                         </span>
 
                         {/* Issuer Hover Tooltip */}
-                        <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 hidden group-hover:flex items-center gap-1.5 bg-gray-900 text-white text-xs px-3 py-1.5 rounded-lg shadow-xl z-50 whitespace-nowrap animate-in fade-in zoom-in-95 pointer-events-none">
-                          <UserCheck className="w-3.5 h-3.5 text-blue-400" />
-                          <span>
-                            Issued By:{" "}
-                            <strong className="text-gray-100 font-semibold">
-                              {issuerName}
-                            </strong>
-                          </span>
+                        <div className="absolute bottom-full left-1/2 -translate-x-1/2 -mb-6 hidden group-hover:flex group-hover:flex-col items-center gap-0.5 bg-gray-900 text-white text-xs  py-1.5 rounded-lg shadow-xl z-50 whitespace-nowrap animate-in fade-in zoom-in-95 pointer-events-none">
+                          <p className="flex px-3 gap-1 uppercase  text-blue-400 font-bold">
+                            <UserCheck className="w-3.5 h-3.5" />
+                            Issued By
+                          </p>
+                          <div className="border-b w-full border-gray-600" />
+                          <strong className="text-gray-100 px-3 font-semibold">
+                            {issuerName}
+                          </strong>
+                          <p className="px-3">
+                            <span className="text-gray-400  mr-2 ">
+                              Last Update:
+                            </span>
+                            {customDateFormate(ticket.updatedAt)}
+                          </p>
+
                           <div className="absolute top-full left-1/2 -translate-x-1/2 border-4 border-transparent border-t-gray-900" />
                         </div>
                       </td>

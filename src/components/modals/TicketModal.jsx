@@ -58,7 +58,7 @@ const TicketModal = ({
     watch,
     setValue,
     reset,
-    formState: { errors },
+    formState: { errors, isDirty },
   } = useForm({
     defaultValues: {
       pnrCode: "",
@@ -576,8 +576,6 @@ const TicketModal = ({
               </div>
             </div>
           </div>
-
-          {/* Form Action Buttons */}
           <div className="flex items-center justify-end gap-3 pt-2 border-t border-gray-100">
             <button
               type="button"
@@ -588,14 +586,18 @@ const TicketModal = ({
             </button>
             <button
               type="submit"
-              disabled={isSubmitting}
-              className="px-5 py-2 text-sm font-medium text-white bg-blue-600 rounded-xl hover:bg-blue-700 shadow-xs transition-colors cursor-pointer disabled:opacity-50"
+              disabled={isSubmitting || (isEditMode && !isDirty)}
+              className={`px-4 py-2 rounded-lg font-medium transition-colors ${
+                isSubmitting || (isEditMode && !isDirty)
+                  ? "bg-gray-300 text-gray-500 cursor-not-allowed"
+                  : "bg-blue-600 hover:bg-blue-700 text-white cursor-pointer"
+              }`}
             >
               {isSubmitting
-                ? "Saving..."
+                ? "Processing..."
                 : isEditMode
                   ? "Update Ticket"
-                  : "Confirm & Log Ticket"}
+                  : "Create Ticket"}
             </button>
           </div>
         </form>
