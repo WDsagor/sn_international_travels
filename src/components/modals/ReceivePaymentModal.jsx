@@ -1,24 +1,32 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { useForm } from "react-hook-form";
-import { X, Wallet } from "lucide-react";
-
-// ক্লায়েন্ট লিস্ট (উদাহরণস্বরূপ)
-const CLIENT_LIST = [
-  { id: "c1", name: "Rahim Ali", dueAmount: 15000 },
-  { id: "c2", name: "Karim Uddin", dueAmount: 45000 },
-  { id: "c3", name: "Sky Travels Ltd", dueAmount: 85000 },
-];
+import { X, Wallet, Loader2 } from "lucide-react";
+import Swal from "sweetalert2";
+import {
+  useGetClientsQuery,
+  useReceivePaymentMutation,
+} from "../../redux/api/clientApi";
 
 // পেমেন্ট মেথড লিস্ট
 const PAYMENT_METHODS = [
-  { id: "cash", label: "Cash" },
-  { id: "bank", label: "Bank Transfer" },
-  { id: "bkash", label: "bKash" },
-  { id: "nagad", label: "Nagad" },
-  { id: "cheque", label: "Cheque" },
+  { id: "CASH", label: "Cash" },
+  { id: "BANK", label: "Bank Transfer" },
+  { id: "BKASH", label: "bKash" },
+  { id: "NAGAD", label: "Nagad" },
+  { id: "CHEQUE", label: "Cheque" },
 ];
 
-const ReceivePaymentModal = ({ isOpen, onClose, onSubmitSuccess }) => {
+const ReceivePaymentModal = ({ isOpen, onClose }) => {
+  // ১. API থেকে রিয়েল ক্লায়েন্ট ডাটা ফেচ করা
+  const { data: clients = [], isLoading: isClientsLoading } =
+    useGetClientsQuery(undefined, {
+      skip: !isOpen,
+    });
+
+  // ২. পেমেন্ট মিউটেশন হুক
+  const [receivePayment, { isLoading: isSubmitting }] =
+    useReceivePaymentMutation();
+
   const {
     register,
     handleSubmit,
@@ -27,28 +35,73 @@ const ReceivePaymentModal = ({ isOpen, onClose, onSubmitSuccess }) => {
     formState: { errors },
   } = useForm({
     defaultValues: {
-      clientName: "",
+      clientId: "",
       paymentDate: new Date().toISOString().split("T")[0],
       amount: "",
-      paymentMethod: "cash",
+      paymentMethod: "CASH",
       accountNo: "",
       referenceNo: "",
       note: "",
     },
   });
 
-  const selectedClientName = watch("clientName");
+  // মোডাল বন্ধ বা ওপেন হলে ফর্ম রিসেট করা
+  useEffect(() => {
+    if (!isOpen) {
+      reset();
+    }
+  }, [isOpen, reset]);
+
+  // ওয়াচ ভ্যালুসমূহ
+  const selectedClientId = watch("clientId");
   const enteredAmount = watch("amount") || 0;
 
-  // সিলেক্ট করা ক্লায়েন্টের বর্তমান ডিউ খুঁজে বের করা
-  const selectedClient = CLIENT_LIST.find((c) => c.name === selectedClientName);
-  const currentDue = selectedClient ? selectedClient.dueAmount : 0;
+  // ৩. টাইপ ট্রিম করে কাস্টিং নিশ্চিত করা (String or Number Safe)
+  const selectedClient = clients.find(
+    (c) => String(c.id) === String(selectedClientId),
+  );
+
+  const currentDue =
+    selectedClient?.dueAmount ?? selectedClient?.currentDue ?? 0;
   const remainingDue = currentDue - Number(enteredAmount);
 
-  const onSubmit = (data) => {
-    onSubmitSuccess(data);
-    reset();
-    onClose();
+  // 🟢 ৪. ফর্ম সাবমিট হ্যান্ডলার (SweetAlert2 সহ)
+  const onSubmit = async (data) => {
+    try {
+      const formattedData = {
+        ...data,
+        amount: Number(data.amount),
+      };
+
+      // API কল করা
+      await receivePayment(formattedData).unwrap();
+
+      // 🎉 Success Alert
+      Swal.fire({
+        icon: "success",
+        title: "Payment Received!",
+        text: `৳${formattedData.amount.toLocaleString()} received successfully from ${
+          selectedClient?.fullName || selectedClient?.name || "client"
+        }.`,
+        timer: 2500,
+        showConfirmButton: false,
+      });
+
+      reset();
+      onClose();
+    } catch (error) {
+      console.error("Failed to receive payment:", error);
+
+      // ❌ Error Alert
+      Swal.fire({
+        icon: "error",
+        title: "Payment Failed",
+        text:
+          error?.data?.message ||
+          "Something went wrong while processing the payment. Please try again.",
+        confirmButtonColor: "#ef4444",
+      });
+    }
   };
 
   if (!isOpen) return null;
@@ -72,7 +125,8 @@ const ReceivePaymentModal = ({ isOpen, onClose, onSubmitSuccess }) => {
             </div>
           </div>
           <button
-            onClick={() => onClose(false)}
+            type="button"
+            onClick={onClose}
             className="p-1.5 hover:bg-gray-100 rounded-lg text-gray-400 hover:text-gray-600 transition-colors cursor-pointer"
           >
             <X className="w-5 h-5" />
@@ -90,18 +144,34 @@ const ReceivePaymentModal = ({ isOpen, onClose, onSubmitSuccess }) => {
               Select Client / Customer *
             </label>
             <select
-              {...register("clientName", {
+              {...register("clientId", {
                 required: "Please select a client",
               })}
-              className={`w-full text-sm border px-3 py-2.5 rounded-xl bg-white focus:outline-hidden focus:ring-2 focus:ring-blue-500/20 ${errors.clientName ? "border-red-500 bg-red-50/30" : "border-gray-200"}`}
+              className={`w-full text-sm border px-3 py-2.5 rounded-xl bg-white focus:outline-hidden focus:ring-2 focus:ring-blue-500/20 ${
+                errors.clientId
+                  ? "border-red-500 bg-red-50/30"
+                  : "border-gray-200"
+              }`}
             >
-              <option value="">Select Client</option>
-              {CLIENT_LIST.map((c) => (
-                <option key={c.id} value={c.name}>
-                  {c.name} (Due: ৳{c.dueAmount.toLocaleString()})
+              <option value="">
+                {isClientsLoading
+                  ? "Loading clients..."
+                  : "-- Select Client --"}
+              </option>
+              {clients.map((c) => (
+                <option key={c.id} value={c.id}>
+                  {c.fullName || c.name} {c.company ? `(${c.company})` : ""}{" "}
+                  {c.dueAmount !== undefined
+                    ? `- Due: ৳${c.dueAmount.toLocaleString()}`
+                    : ""}
                 </option>
               ))}
             </select>
+            {errors.clientId && (
+              <span className="text-xs text-red-500 mt-1 block">
+                {errors.clientId.message}
+              </span>
+            )}
           </div>
 
           {/* Date & Amount */}
@@ -112,7 +182,7 @@ const ReceivePaymentModal = ({ isOpen, onClose, onSubmitSuccess }) => {
               </label>
               <input
                 type="date"
-                {...register("paymentDate", { required: true })}
+                {...register("paymentDate", { required: "Date is required" })}
                 className="w-full text-sm border border-gray-200 px-3 py-2 rounded-xl focus:outline-hidden focus:ring-2 focus:ring-blue-500/20"
               />
             </div>
@@ -122,19 +192,29 @@ const ReceivePaymentModal = ({ isOpen, onClose, onSubmitSuccess }) => {
               </label>
               <input
                 type="number"
+                step="any"
                 placeholder="0.00"
                 {...register("amount", {
                   required: "Amount is required",
-                  min: 1,
+                  min: { value: 1, message: "Amount must be greater than 0" },
                 })}
-                className={`w-full text-sm font-semibold font-mono border px-3 py-2 rounded-xl focus:outline-hidden focus:ring-2 focus:ring-blue-500/20 ${errors.amount ? "border-red-500 bg-red-50/30" : "border-gray-200"}`}
+                className={`w-full text-sm font-semibold font-mono border px-3 py-2 rounded-xl focus:outline-hidden focus:ring-2 focus:ring-blue-500/20 ${
+                  errors.amount
+                    ? "border-red-500 bg-red-50/30"
+                    : "border-gray-200"
+                }`}
               />
+              {errors.amount && (
+                <span className="text-xs text-red-500 mt-1 block">
+                  {errors.amount.message}
+                </span>
+              )}
             </div>
           </div>
 
           {/* Due Balance Calculation Box */}
           {selectedClient && (
-            <div className="p-3 bg-gray-50 rounded-xl border border-gray-100 flex items-center justify-between text-xs">
+            <div className="p-3 bg-gray-50 rounded-xl border border-gray-100 flex items-center justify-between text-xs animate-in fade-in duration-150">
               <div>
                 <span className="text-gray-500 block">Current Due:</span>
                 <span className="font-mono font-bold text-gray-800">
@@ -144,7 +224,9 @@ const ReceivePaymentModal = ({ isOpen, onClose, onSubmitSuccess }) => {
               <div className="text-right">
                 <span className="text-gray-500 block">Remaining Due:</span>
                 <span
-                  className={`font-mono font-bold ${remainingDue <= 0 ? "text-green-600" : "text-amber-600"}`}
+                  className={`font-mono font-bold ${
+                    remainingDue <= 0 ? "text-green-600" : "text-amber-600"
+                  }`}
                 >
                   ৳{remainingDue.toLocaleString()}
                 </span>
@@ -152,7 +234,7 @@ const ReceivePaymentModal = ({ isOpen, onClose, onSubmitSuccess }) => {
             </div>
           )}
 
-          {/* Payment Method & Account */}
+          {/* Payment Method & Transaction Ref */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
               <label className="block text-xs font-semibold text-gray-600 uppercase mb-1.5">
@@ -199,16 +281,19 @@ const ReceivePaymentModal = ({ isOpen, onClose, onSubmitSuccess }) => {
           <div className="flex items-center justify-end gap-3 pt-3 border-t border-gray-100">
             <button
               type="button"
-              onClick={() => onClose(false)}
-              className="px-4 py-2 text-sm font-medium text-gray-500 border border-gray-200 rounded-xl hover:bg-gray-50 transition-colors cursor-pointer"
+              onClick={onClose}
+              disabled={isSubmitting}
+              className="px-4 py-2 text-sm font-medium text-gray-500 border border-gray-200 rounded-xl hover:bg-gray-50 transition-colors cursor-pointer disabled:opacity-50"
             >
               Cancel
             </button>
             <button
               type="submit"
-              className="px-5 py-2 text-sm font-medium text-white bg-green-600 hover:bg-green-700 rounded-xl shadow-xs transition-colors cursor-pointer"
+              disabled={isSubmitting}
+              className="px-5 py-2 text-sm font-medium text-white bg-green-600 hover:bg-green-700 rounded-xl shadow-xs transition-colors cursor-pointer flex items-center gap-2 disabled:opacity-50"
             >
-              Save Payment
+              {isSubmitting && <Loader2 className="w-4 h-4 animate-spin" />}
+              {isSubmitting ? "Saving..." : "Save Payment"}
             </button>
           </div>
         </form>

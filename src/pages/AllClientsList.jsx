@@ -114,7 +114,7 @@ const AllClientList = () => {
               </div>
             ) : (
               filteredClients?.map((client) => {
-                const isDue = (client.openingBalance || 0) < 0;
+                const isDue = (client.currentDue || 0) < 0;
 
                 return (
                   <div
@@ -178,10 +178,7 @@ const AllClientList = () => {
                             isDue ? "text-red-600" : "text-emerald-600"
                           }`}
                         >
-                          ৳
-                          {Math.abs(
-                            client.openingBalance || 0,
-                          ).toLocaleString()}
+                          ৳{Math.abs(client.currentDue || 0).toLocaleString()}
                         </span>
                       </div>
                     </div>

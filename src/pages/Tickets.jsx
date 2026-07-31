@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { Plus, Search, PlaneTakeoff, Edit3, UserCheck } from "lucide-react";
 import TicketModal from "../components/modals/TicketModal";
 import { useGetTicketsQuery } from "../redux/api/ticketApi";
-import { customDateFormate } from "../utils/dateFormate";
+import { formatDate } from "../utils/dateFormate";
 
 const Tickets = () => {
   const [showModal, setShowModal] = useState(false);
@@ -79,7 +79,7 @@ const Tickets = () => {
           <Search className="absolute left-3 top-2.5 h-4 w-4 text-gray-400" />
           <input
             type="text"
-            placeholder="Search PNR, Airline, or Passenger..."
+            placeholder="Search PNR, Airline, Client or Passenger..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             className="w-full pl-9 pr-4 py-2 bg-gray-50 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20"
@@ -157,7 +157,7 @@ const Tickets = () => {
                           {ticket.pnrCode}
                         </div>
                         <div className="text-[11px] text-gray-400 mt-0.5">
-                          {customDateFormate(ticket.issueDate)}
+                          {formatDate(ticket.issueDate)}
                         </div>
                       </td>
 
@@ -167,7 +167,7 @@ const Tickets = () => {
                         </div>
                         <div className="text-[11px] flex items-center gap-1 text-amber-600 font-medium py-0.5">
                           <PlaneTakeoff size={14} strokeWidth={1.5} />
-                          <span>{customDateFormate(ticket.travelDate)}</span>
+                          <span>{formatDate(ticket.travelDate)}</span>
                         </div>
                         <div className="relative group w-max mt-0.5">
                           <div className="text-xs text-blue-600 font-semibold flex items-center gap-1 cursor-pointer hover:text-blue-800 transition-colors">
@@ -240,7 +240,7 @@ const Tickets = () => {
                             <span className="text-gray-400  mr-2 ">
                               Last Update:
                             </span>
-                            {customDateFormate(ticket.updatedAt)}
+                            {formatDate(ticket.updatedAt)}
                           </p>
 
                           <div className="absolute top-full left-1/2 -translate-x-1/2 border-4 border-transparent border-t-gray-900" />
