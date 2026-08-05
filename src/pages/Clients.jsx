@@ -1,5 +1,5 @@
 import React, { useState, useMemo, useEffect } from "react";
-import { useParams, useNavigate } from "react-router-dom"; // 🟢 useParams এবং useNavigate ইম্পোর্ট
+import { useParams, useNavigate } from "react-router-dom";
 import {
   UserPlus,
   FileText,
@@ -8,22 +8,21 @@ import {
   AlertCircle,
   User,
 } from "lucide-react";
-import {
-  useGetClientByIdQuery,
-  useGetClientsQuery,
-} from "../redux/api/clientApi";
+
 import ClientModal from "../components/modals/ClientModal";
 import ReceivePaymentModal from "../components/modals/ReceivePaymentModal";
 import { formatCurrency, formatDate } from "../utils/dateFormate";
-
-// 🟢 হেলপার: নিরাপদ তারিখ ফরম্যাটিং
+import {
+  useGetClientByIdQuery,
+  useGetClientsQuery,
+} from "../redux/features/clients/clientApiSlice";
 
 const Clients = () => {
-  // 🟢 ১. Path parameter থেকে id পড়া (যেমন: /clients/4beca03a-ca9b...)
+  // ১. URL Path থেকে id গ্রহণ
   const { id: urlClientId } = useParams();
   const navigate = useNavigate();
 
-  // ২. সব ক্লায়েন্টের তালিকা ফেচ করা
+  // ২. ক্লায়েন্ট লিস্ট ফেচ করা
   const {
     data: clientsData,
     isLoading: isClientsLoading,
@@ -42,7 +41,7 @@ const Clients = () => {
   const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false);
   const [selectedClientModal, setSelectedClientModal] = useState(null);
 
-  // 🟢 ৪. URL Path থেকে ID পেয়ে State-এ সেট করা
+  // ৪. URL Path থেকে ID পেয়ে State-এ সেট
   useEffect(() => {
     if (urlClientId) {
       setSelectedClientId(urlClientId);
@@ -51,110 +50,42 @@ const Clients = () => {
     }
   }, [urlClientId]);
 
-  // 🟢 ৫. Dropdown সিলেক্ট করলে Dynamic URL Path এ নিয়ে যাওয়া
+  // ৫. ড্রপডাউন পরিবর্তন হ্যান্ডলার
   const handleClientSelect = (e) => {
     const id = e.target.value;
     setSelectedClientId(id);
     if (id) {
-      navigate(`/clients/${id}`); // Path-এ আইডি যোগ করা
+      navigate(`/clients/${id}`);
     } else {
-      navigate(`/clients`); // ক্লায়েন্ট সিলেক্ট না থাকলে মূল পাথে ফিরে যাওয়া
+      navigate(`/clients`);
     }
   };
 
-  // ৬. সেফ সিলেক্টেড আইডি ভ্যালিডেশন
+  // ৬. আইডি ভ্যালিডেশন
   const isValidClientId = Boolean(
     selectedClientId &&
     selectedClientId !== "undefined" &&
     selectedClientId !== "null",
   );
 
-  // ৭. সিলেক্টেড ক্লায়েন্টের বিস্তারিত ফেচ করা
+  // ৭. ব্যাকএন্ড থেকে নির্দিষ্ট ক্লায়েন্টের ডাটা ও প্রস্তুতকৃত লেজার ফেচ
   const {
-    data: clientDetails,
+    data: clientDetailsResponse,
     isLoading: isLedgerLoading,
     isError: isLedgerError,
   } = useGetClientByIdQuery(selectedClientId, {
     skip: !isValidClientId,
   });
 
+  // ব্যাকএন্ড রেসপন্স অবজেক্ট এক্সট্র্যাক্ট
+  const clientInfo = clientDetailsResponse?.data || clientDetailsResponse || {};
+  const ledgerList = clientInfo?.ledger || [];
+  const currentDue = clientInfo?.totalOutstandingDue ?? 0;
+
   const handleAddNew = () => {
     setSelectedClientModal(null);
     setIsModalOpen(true);
   };
-
-  // ক্লায়েন্ট ইনফরমেশন অবজেক্ট Extraction
-  const clientInfo = clientDetails?.data || clientDetails;
-
-  // ৮. Tickets ও Payments মিলিয়ে ডায়নামিক Ledger Transactions তৈরি
-  const { ledgerList, currentDue } = useMemo(() => {
-    if (!clientInfo) return { ledgerList: [], currentDue: 0 };
-
-    const openingBalance = Number(clientInfo.openingBalance || 0);
-    const tickets = Array.isArray(clientInfo.tickets) ? clientInfo.tickets : [];
-    const payments = Array.isArray(clientInfo.payments)
-      ? clientInfo.payments
-      : [];
-
-    // Ticket (Debit) Entries
-    const ticketEntries = tickets.map((t) => {
-      const isVoidOrRefund = t.status === "Refunded" || t.status === "Voided";
-      const debitAmount = isVoidOrRefund
-        ? Number(t.serviceCharge || 0)
-        : Number(t.clientPrice || 0) + Number(t.serviceCharge || 0);
-
-      const rawDate = t.issueDate || t.createdAt;
-
-      return {
-        id: `ticket-${t.id || Math.random()}`,
-        rawDate: rawDate ? new Date(rawDate) : new Date(0),
-        formattedDate: formatDate(rawDate),
-        details: `Ticket Issued: ${t.pnrCode || "N/A"}`,
-        subDetails: `Passenger: ${t.passengerName || "N/A"} (${
-          t.ticketType || "Flight"
-        })`,
-        debit: debitAmount,
-        credit: 0,
-      };
-    });
-
-    // Payment (Credit) Entries
-    const paymentEntries = payments.map((p) => {
-      const rawDate = p.paymentDate || p.createdAt;
-
-      return {
-        id: `payment-${p.id || Math.random()}`,
-        rawDate: rawDate ? new Date(rawDate) : new Date(0),
-        formattedDate: formatDate(rawDate),
-        details: `Payment Received (${p.paymentMethod || "Cash"})`,
-        subDetails: p.trxId
-          ? `TrxID: ${p.trxId} ${p.note ? `| ${p.note}` : ""}`
-          : p.note || "N/A",
-        debit: 0,
-        credit: Number(p.amount || 0),
-      };
-    });
-
-    // ট্রানজ্যাকশন সর্টিং
-    const allTransactions = [...ticketEntries, ...paymentEntries].sort(
-      (a, b) => a.rawDate.getTime() - b.rawDate.getTime(),
-    );
-
-    // Running Balance ক্যালকুলেট করা
-    let runningBalance = openingBalance;
-    const computedLedger = allTransactions.map((item) => {
-      runningBalance = runningBalance + item.debit - item.credit;
-      return {
-        ...item,
-        runningBalance,
-      };
-    });
-
-    return {
-      ledgerList: computedLedger,
-      currentDue: runningBalance,
-    };
-  }, [clientInfo]);
 
   return (
     <div className="min-h-screen p-4 sm:p-6 bg-gray-50 font-sans">
@@ -281,7 +212,7 @@ const Clients = () => {
                         currentDue > 0 ? "text-red-600" : "text-emerald-600"
                       }`}
                     >
-                      {formatCurrency(currentDue)}
+                      {formatCurrency(Math.abs(currentDue))}
                     </span>
                   </div>
                   <button className="flex items-center gap-1.5 bg-gray-100 hover:bg-gray-200 text-gray-700 text-xs font-semibold px-3.5 py-2.5 rounded-lg transition-colors cursor-pointer">
@@ -305,30 +236,13 @@ const Clients = () => {
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-gray-100 text-sm text-gray-600">
-                    <tr className="bg-blue-50/40 font-semibold text-blue-700">
-                      <td className="px-4 py-3.5 text-xs  flex flex-col">
-                        <span> Opening</span>
-                        <span>{formatDate(clientInfo?.createdAt)}</span>
-                      </td>
-                      <td className="px-4 py-3.5 ">Opening Balance</td>
-                      <td className="px-4 py-3.5 text-right font-mono text-gray-400">
-                        -
-                      </td>
-                      <td className="px-4 py-3.5 text-right font-mono text-gray-400">
-                        -
-                      </td>
-                      <td className="px-4 py-3.5 text-right font-mono font-bold ">
-                        {formatCurrency(clientInfo?.openingBalance)}
-                      </td>
-                    </tr>
-
                     {ledgerList.length === 0 ? (
                       <tr>
                         <td
                           colSpan="5"
                           className="text-center py-8 text-gray-400 text-xs"
                         >
-                          No transactions recorded after opening balance.
+                          No transactions recorded.
                         </td>
                       </tr>
                     ) : (
@@ -338,7 +252,7 @@ const Clients = () => {
                           className="hover:bg-gray-50/60 transition-colors"
                         >
                           <td className="px-4 py-3.5 text-xs text-gray-500 whitespace-nowrap">
-                            {item.formattedDate}
+                            {formatDate(item.date)}
                           </td>
                           <td className="px-4 py-3.5">
                             <div className="font-medium text-gray-900">
@@ -359,7 +273,8 @@ const Clients = () => {
                               : "-"}
                           </td>
                           <td className="px-4 py-3.5 text-right font-mono font-bold text-gray-900 whitespace-nowrap">
-                            {formatCurrency(item.runningBalance)}
+                            {formatCurrency(Math.abs(item.runningBalance))}
+                            {/* {formatCurrency(item.runningBalance)} */}
                           </td>
                         </tr>
                       ))

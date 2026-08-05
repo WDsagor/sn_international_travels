@@ -1,36 +1,59 @@
-import React, { useState } from "react";
-import { Plus, Search, Edit2, Trash2 } from "lucide-react";
+import React, { useState, useMemo } from "react";
+import {
+  Plus,
+  Search,
+  Edit2,
+  Trash2,
+  User,
+  Phone,
+  Mail,
+  Eye,
+} from "lucide-react";
+import { Link } from "react-router-dom";
+import Swal from "sweetalert2";
 
+import ClientModal from "../components/modals/ClientModal";
 import {
   useDeleteClientMutation,
   useGetClientsQuery,
-} from "../redux/api/clientApi";
-import Swal from "sweetalert2";
-import ClientModal from "../components/modals/ClientModal";
-import { User } from "lucide-react";
-import { Phone } from "lucide-react";
-import { Mail } from "lucide-react";
-import { CircleChevronRight } from "lucide-react";
-import { Eye } from "lucide-react";
-import { Link } from "react-router-dom";
+} from "../redux/features/clients/clientApiSlice";
 
 const AllClientList = () => {
-  const { data: clients = [], isLoading, isError } = useGetClientsQuery();
+  const { data: rawClients, isLoading, isError } = useGetClientsQuery();
   const [deleteClient] = useDeleteClientMutation();
 
   const [searchTerm, setSearchTerm] = useState("");
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedClient, setSelectedClient] = useState(null);
 
-  // Search filter
-  const filteredClients = clients.filter(
-    (client) =>
-      client.fullName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      client.phone.includes(searchTerm) ||
-      client.clientType.toLowerCase().includes(searchTerm.toLowerCase()),
-  );
+  // 1. Safe Array Extraction
+  const clients = useMemo(() => {
+    if (Array.isArray(rawClients)) return rawClients;
+    if (rawClients && Array.isArray(rawClients.data)) return rawClients.data;
+    return [];
+  }, [rawClients]);
 
-  // Delete Handler with SweetAlert
+  // 2. Optimized & Safe Search Filter
+  const filteredClients = useMemo(() => {
+    const term = searchTerm.toLowerCase().trim();
+    if (!term) return clients;
+
+    return clients.filter((client) => {
+      const name = (client.fullName || client.name || "").toLowerCase();
+      const phone = (client.phone || "").toString();
+      const type = (client.clientType || "").toLowerCase();
+      const company = (client.company || "").toLowerCase();
+
+      return (
+        name.includes(term) ||
+        phone.includes(term) ||
+        type.includes(term) ||
+        company.includes(term)
+      );
+    });
+  }, [clients, searchTerm]);
+
+  // Delete Handler
   const handleDelete = (id) => {
     Swal.fire({
       title: "Are you sure?",
@@ -60,6 +83,7 @@ const AllClientList = () => {
     setSelectedClient(client);
     setIsModalOpen(true);
   };
+
   const handleAddNew = () => {
     setSelectedClient(null);
     setIsModalOpen(true);
@@ -113,12 +137,13 @@ const AllClientList = () => {
                 No clients found!
               </div>
             ) : (
-              filteredClients?.map((client) => {
-                const isDue = (client.currentDue || 0) < 0;
+              filteredClients.map((client) => {
+                const clientId = client.id || client._id;
+                const isDue = client?.currentDue > 0;
 
                 return (
                   <div
-                    key={client.id}
+                    key={clientId}
                     className=" bg-white   cursor-pointer group rounded-2xl border border-blue-100/80 shadow-md relative overflow-hidden p-3 flex flex-col justify-between"
                   >
                     <div className="absolute top-0 right-0 w-20 h-20 bg-linear-to-t from-blue-100  to-indigo-400 rounded-bl-full pointer-events-none" />
@@ -130,7 +155,7 @@ const AllClientList = () => {
                         </div>
                         <div className="min-w-0">
                           <h3 className="font-bold text-gray-900 text-base leading-tight truncate">
-                            {client.fullName}
+                            {client.fullName || client.name || "N/A"}
                           </h3>
                           {client.email && (
                             <p className="text-xs text-gray-400 truncate mt-0.5">
@@ -159,7 +184,7 @@ const AllClientList = () => {
                       <div className="space-y-1.5 text-xs text-gray-500 mb-4">
                         <p className="flex items-center gap-2">
                           <Phone className="w-3.5 h-3.5 text-gray-400 shrink-0" />
-                          <span>{client.phone}</span>
+                          <span>{client.phone || "N/A"}</span>
                         </p>
                         {client.email && (
                           <p className="flex items-center gap-2 truncate">
@@ -186,7 +211,7 @@ const AllClientList = () => {
                     <div className="flex flex-col xs:flex-row sm:flex-row items-center gap-2 pt-2 border-t border-gray-50">
                       <Link
                         className="w-full xs:w-auto flex-1 cursor-pointer flex items-center justify-center gap-1.5 py-2 px-3 bg-gray-50 hover:bg-gray-100 text-gray-700 rounded-xl text-xs font-medium transition-colors border border-gray-200"
-                        to={`/clients/${client.id}`}
+                        to={`/clients/${clientId}`}
                       >
                         <Eye className="w-3.5 h-3.5 text-gray-500" /> Details
                       </Link>
@@ -200,7 +225,7 @@ const AllClientList = () => {
                           <Edit2 className="w-3.5 h-3.5" /> Edit
                         </button>
                         <button
-                          onClick={() => handleDelete(client.id)}
+                          onClick={() => handleDelete(clientId)}
                           className="flex-1 cursor-pointer flex items-center justify-center gap-1.5 py-2 px-3 bg-red-50/50 hover:bg-red-100 text-red-700 rounded-xl text-xs font-medium transition-colors border border-red-200/60"
                           title="Delete Client"
                         >

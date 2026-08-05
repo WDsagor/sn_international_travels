@@ -1,21 +1,6 @@
-import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
+import { apiSlice } from "../../api/apiSlice";
 
-export const ticketApi = createApi({
-  reducerPath: "ticketApi",
-  baseQuery: fetchBaseQuery({
-    baseUrl: import.meta.env.VITE_API_URL,
-    prepareHeaders: (headers, { getState }) => {
-      const token = getState().auth.token || localStorage.getItem("token");
-      if (token) {
-        headers.set("authorization", `Bearer ${token}`);
-      }
-      return headers;
-    },
-  }),
-
-  // 🟢 Client এবং User ট্যাগ যোগ করা হয়েছে
-  tagTypes: ["Ticket", "Client", "User"],
-
+export const ticketsApiSlice = apiSlice.injectEndpoints({
   endpoints: (builder) => ({
     getTickets: builder.query({
       query: (params = {}) => {
@@ -46,7 +31,7 @@ export const ticketApi = createApi({
         method: "POST",
         body: newTicket,
       }),
-      invalidatesTags: ["Ticket", "Client", "User"],
+      invalidatesTags: ["Ticket", "Client", "Clients", "User", "ClientLedger"],
     }),
 
     // 🟢 Ticket আপডেট হলে Client এবং User ডাটা অটো রিফ্রেশ হবে
@@ -56,7 +41,7 @@ export const ticketApi = createApi({
         method: "PUT",
         body: patch,
       }),
-      invalidatesTags: ["Ticket", "Client", "User"],
+      invalidatesTags: ["Ticket", "Client", "Clients", "User", "ClientLedger"],
     }),
 
     // 🟢 Ticket ডিলিট করার Mutation-ও যোগ করে দেওয়া ভালো
@@ -69,10 +54,9 @@ export const ticketApi = createApi({
     }),
   }),
 });
-
 export const {
   useGetTicketsQuery,
   useCreateTicketMutation,
   useUpdateTicketMutation,
-  useDeleteTicketMutation, // 👈 Delete Hook
-} = ticketApi;
+  useDeleteTicketMutation,
+} = ticketsApiSlice;

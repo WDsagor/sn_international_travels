@@ -1,34 +1,6 @@
-import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
+import { apiSlice } from "../../api/apiSlice";
 
-const baseQuery = fetchBaseQuery({
-  baseUrl: import.meta.env.VITE_API_URL,
-  prepareHeaders: (headers, { getState }) => {
-    const token = getState().auth.token || localStorage.getItem("token");
-    if (token) {
-      headers.set("authorization", `Bearer ${token}`);
-    }
-    return headers;
-  },
-});
-
-const baseQueryWithReauth = async (args, api, extraOptions) => {
-  let result = await baseQuery(args, api, extraOptions);
-
-  if (result.error && result.error.status === 401) {
-    localStorage.removeItem("token");
-    window.location.href = "/login";
-  }
-
-  return result;
-};
-
-export const paymentApi = createApi({
-  reducerPath: "paymentApi",
-  baseQuery: baseQueryWithReauth,
-
-  // 🟢 Client ট্যাগ নিশ্চিত করবে যে পেমেন্ট চেঞ্জ হলে ক্লায়েন্টের লেজার রিফ্রেশ হবে
-  tagTypes: ["Payment", "Client"],
-
+export const paymentApiSlice = apiSlice.injectEndpoints({
   endpoints: (builder) => ({
     // ১. সব পেমেন্ট লিস্ট নেওয়া
     getPayments: builder.query({
@@ -89,4 +61,4 @@ export const {
   useCreatePaymentMutation,
   useUpdatePaymentMutation,
   useDeletePaymentMutation,
-} = paymentApi;
+} = paymentApiSlice;

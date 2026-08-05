@@ -5,7 +5,7 @@ import Swal from "sweetalert2";
 import {
   useGetClientsQuery,
   useReceivePaymentMutation,
-} from "../../redux/api/clientApi";
+} from "../../redux/features/clients/clientApiSlice";
 
 // পেমেন্ট মেথড লিস্ট
 const PAYMENT_METHODS = [
@@ -36,7 +36,7 @@ const ReceivePaymentModal = ({ isOpen, onClose }) => {
   } = useForm({
     defaultValues: {
       clientId: "",
-      paymentDate: new Date().toISOString().split("T")[0],
+      paymentDate: new Date().toLocaleString().split("T")[0],
       amount: "",
       paymentMethod: "CASH",
       accountNo: "",
@@ -57,7 +57,7 @@ const ReceivePaymentModal = ({ isOpen, onClose }) => {
   const enteredAmount = watch("amount") || 0;
 
   // ৩. টাইপ ট্রিম করে কাস্টিং নিশ্চিত করা (String or Number Safe)
-  const selectedClient = clients.find(
+  const selectedClient = clients?.data?.find(
     (c) => String(c.id) === String(selectedClientId),
   );
 
@@ -158,7 +158,7 @@ const ReceivePaymentModal = ({ isOpen, onClose }) => {
                   ? "Loading clients..."
                   : "-- Select Client --"}
               </option>
-              {clients.map((c) => (
+              {clients?.data?.map((c) => (
                 <option key={c.id} value={c.id}>
                   {c.fullName || c.name} {c.company ? `(${c.company})` : ""}{" "}
                   {c.dueAmount !== undefined

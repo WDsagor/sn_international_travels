@@ -1,8 +1,9 @@
 import React, { useState } from "react";
 import { Plus, Search, PlaneTakeoff, Edit3, UserCheck } from "lucide-react";
 import TicketModal from "../components/modals/TicketModal";
-import { useGetTicketsQuery } from "../redux/api/ticketApi";
+
 import { formatDate } from "../utils/dateFormate";
+import { useGetTicketsQuery } from "../redux/features/tickets/ticketsApiSlice";
 
 const Tickets = () => {
   const [showModal, setShowModal] = useState(false);

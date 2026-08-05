@@ -1,23 +1,19 @@
 import { configureStore } from "@reduxjs/toolkit";
-import { apiSlice } from "./api/apiSlice";
+
 import authReducer from "./features/auth/authSlice";
-import { clientApi } from "./api/clientApi";
-import { ticketApi } from "./api/ticketApi";
-import { paymentApi } from "./api/paymentApi";
+import { ticketsApiSlice } from "./features/tickets/ticketsApiSlice";
+import { paymentApiSlice } from "./features/payments/paymentApiSlice";
+import { clientApiSlice } from "./features/clients/clientApiSlice";
+import { apiSlice } from "./api/apiSlice";
 
 export const store = configureStore({
   reducer: {
     [apiSlice.reducerPath]: apiSlice.reducer,
-    [clientApi.reducerPath]: clientApi.reducer,
-    [ticketApi.reducerPath]: ticketApi.reducer,
-    [paymentApi.reducerPath]: paymentApi.reducer,
+    [ticketsApiSlice.reducerPath]: ticketsApiSlice.reducer,
+    [paymentApiSlice.reducerPath]: paymentApiSlice.reducer,
+    [clientApiSlice.reducerPath]: clientApiSlice.reducer,
     auth: authReducer,
   },
   middleware: (getDefaultMiddleware) =>
-    getDefaultMiddleware().concat(
-      apiSlice.middleware,
-      clientApi.middleware,
-      ticketApi.middleware,
-      paymentApi.middleware,
-    ),
+    getDefaultMiddleware().concat(apiSlice.middleware),
 });

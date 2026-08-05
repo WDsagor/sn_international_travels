@@ -3,6 +3,13 @@ export const formatDateForInput = (dateString) => {
   return new Date(dateString).toISOString().split("T")[0];
 };
 
+export const getTodayDate = () => {
+  const today = new Date();
+  const year = today.getFullYear();
+  const month = String(today.getMonth() + 1).padStart(2, "0");
+  const day = String(today.getDate()).padStart(2, "0");
+  return `${year}-${month}-${day}`; // Output: "YYYY-MM-DD"
+};
 export const formatDate = (dateInput) => {
   if (!dateInput) return "N/A";
   const date = new Date(dateInput);

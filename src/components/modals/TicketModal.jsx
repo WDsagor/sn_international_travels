@@ -2,13 +2,14 @@ import React, { useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { X } from "lucide-react";
 import { useGetUsersQuery } from "../../redux/features/user/userApi";
-import { useGetClientsQuery } from "../../redux/api/clientApi";
+
+import { formatDateForInput } from "../../utils/dateFormate";
+import Swal from "sweetalert2";
 import {
   useCreateTicketMutation,
   useUpdateTicketMutation,
-} from "../../redux/api/ticketApi";
-import { formatDateForInput } from "../../utils/dateFormate";
-import Swal from "sweetalert2";
+} from "../../redux/features/tickets/ticketsApiSlice";
+import { useGetClientsQuery } from "../../redux/features/clients/clientApiSlice";
 
 export const VENDOR_LIST = [
   { id: "v1", name: "Mostofa Kamal" },
@@ -95,7 +96,7 @@ const TicketModal = ({
   const { data: clients = [], isLoading: clientsLoading } =
     useGetClientsQuery();
   const users = data?.users || data || [];
-
+  // console.log(clients);
   // Populate data in Edit Mode or reset in Create Mode when Modal Opens
   useEffect(() => {
     if (!isOpen) return;
@@ -203,6 +204,7 @@ const TicketModal = ({
 
     try {
       if (isEditMode) {
+        console.log(payload);
         await updateTicket({ id: initialData.id, ...payload }).unwrap();
 
         // Success alert for update
@@ -464,7 +466,7 @@ const TicketModal = ({
                   }`}
                 >
                   <option value="">Select client</option>
-                  {clients?.map((client) => (
+                  {clients?.data?.map((client) => (
                     <option key={client.id} value={client.id}>
                       {client.fullName}
                     </option>

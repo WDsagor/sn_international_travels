@@ -6,7 +6,7 @@ import { useEffect } from "react";
 import {
   useAddClientMutation,
   useUpdateClientMutation,
-} from "../../redux/api/clientApi";
+} from "../../redux/features/clients/clientApiSlice";
 
 const ClientModal = ({ isOpen, onClose, selectedClient = null }) => {
   const {
