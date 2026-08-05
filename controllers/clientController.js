@@ -70,56 +70,60 @@ export const createClient = async (req, res) => {
 // ----------------------------------------------------
 // 2. GET ALL CLIENTS (With Dynamic currentDue Calculation)
 // ----------------------------------------------------
+
 export const getAllClients = async (req, res) => {
   try {
     const clients = await prisma.client.findMany({
       include: {
-        tickets: {
-          select: {
-            clientPrice: true,
-            serviceCharge: true,
-            status: true,
-          },
-        },
         payments: {
           select: {
             amount: true,
+            type: true,
           },
         },
       },
       orderBy: { createdAt: "desc" },
     });
 
-    const clientsWithDue = clients.map((client) => {
-      const totalTickets = client.tickets.reduce((sum, t) => {
-        if (t.status === "Refunded" || t.status === "Voided") {
-          return sum + (t.serviceCharge || 0);
-        }
-        return sum + ((t.clientPrice || 0) + (t.serviceCharge || 0));
-      }, 0);
+    const clientsWithBalance = clients.map((client) => {
+      // payments অ্যারে থেকে টাইপ অনুযায়ী Debit ও Credit হিসাব
+      const { totalDebit, totalCredit } = client.payments.reduce(
+        (acc, p) => {
+          const amt = Number(p.amount || 0);
+          const pType = (p.type || "").toLowerCase();
 
-      const totalPayments = client.payments.reduce(
-        (sum, p) => sum + (p.amount || 0),
-        0,
+          if (pType === "debit") {
+            acc.totalDebit += amt;
+          } else if (pType === "credit") {
+            acc.totalCredit += amt;
+          }
+          return acc;
+        },
+        { totalDebit: 0, totalCredit: 0 },
       );
 
+      // Current Due = Opening Balance + Total Debit - Total Credit
       const currentDue =
-        (client.openingBalance || 0) + totalTickets - totalPayments;
+        Number(client.openingBalance || 0) + totalDebit - totalCredit;
 
-      const { tickets, payments, ...clientData } = client;
+      const { payments, ...clientData } = client;
 
       return {
         ...clientData,
-        currentDue,
+        totalDebit,
+        totalCredit,
+        currentDue, // এই মানটি আপনার সঠিক বকেয়া নির্দেশ করবে
       };
     });
 
-    res.status(200).json(clientsWithDue);
+    res.status(200).json({
+      success: true,
+      data: clientsWithBalance,
+    });
   } catch (error) {
-    res.status(500).json({ message: "Server error", error: error.message });
+    res.status(500).json({ success: false, error: error.message });
   }
 };
-
 // ----------------------------------------------------
 // 3. UPDATE CLIENT
 // ----------------------------------------------------
@@ -187,82 +191,61 @@ export const updateClient = async (req, res) => {
 // ----------------------------------------------------
 // 4. GET CLIENT BY ID & LEDGER
 // ----------------------------------------------------
+
 export const getClientById = async (req, res) => {
   try {
     const { id } = req.params;
 
-    if (
-      !id ||
-      id === "undefined" ||
-      id === "null" ||
-      typeof id !== "string" ||
-      id.trim() === ""
-    ) {
-      console.error("❌ Invalid ID received:", id);
-      return res.status(400).json({
-        success: false,
-        message: "Valid Client UUID is required.",
-      });
-    }
-
-    const cleanId = id.trim();
-
-    // ২. Prisma Query
     const client = await prisma.client.findUnique({
-      where: { id: cleanId },
+      where: { id },
       include: {
-        tickets: {
-          select: {
-            id: true,
-            pnrCode: true,
-            passengerName: true,
-            ticketType: true,
-            clientPrice: true,
-            serviceCharge: true,
-            netCost: true,
-            netProfit: true,
-            status: true,
-            issueDate: true,
-            createdAt: true,
-          },
-          orderBy: { createdAt: "desc" },
-        },
         payments: {
-          select: {
-            id: true,
-            amount: true,
-            paymentMethod: true,
-            trxId: true,
-            note: true,
-            paymentDate: true,
-            createdAt: true,
-          },
-          orderBy: { createdAt: "desc" },
+          orderBy: { paymentDate: "asc" },
         },
       },
     });
 
     if (!client) {
-      return res.status(404).json({
-        success: false,
-        message: "Client not found.",
-      });
+      return res.status(404).json({ message: "Client not found!" });
     }
 
-    return res.status(200).json({
+    let runningBalance = Number(client.openingBalance || 0);
+
+    const ledger = client.payments.map((p) => {
+      const amt = Number(p.amount || 0);
+      const pType = (p.type || "").toLowerCase();
+
+      const debit = pType === "debit" ? amt : 0;
+      const credit = pType === "credit" ? amt : 0;
+
+      // রানিং ব্যালেন্স এডজাস্টমেন্ট
+      runningBalance = runningBalance + debit - credit;
+
+      return {
+        id: p.id,
+        date: p.paymentDate || p.createdAt,
+        details: p.paymentMethod,
+        subDetails: p.note,
+        debit,
+        credit,
+        runningBalance,
+      };
+    });
+
+    const { payments, ...clientData } = client;
+
+    res.status(200).json({
       success: true,
-      data: client,
+      data: {
+        ...clientData,
+        totalOutstandingDue: runningBalance,
+        ledger,
+      },
     });
   } catch (error) {
-    console.error("Error fetching client ledger:", error);
-    return res.status(500).json({
-      success: false,
-      message: "Server error while fetching client ledger.",
-      error: error.message,
-    });
+    res.status(500).json({ success: false, error: error.message });
   }
 };
-
 // ----------------------------------------------------
 // 5. DELETE CLIENT
 // ----------------------------------------------------

@@ -120,7 +120,16 @@ export const createTicket = async (req, res) => {
             clientId,
           },
         });
-
+        await tx.payment.create({
+          data: {
+            clientId: clientId,
+            amount: price,
+            type: "debit",
+            paymentMethod: `Ticket ${status?.toUpperCase()} PNR - ${pnrCode}`,
+            paymentDate: new Date(),
+            note: ` PASSENGER: ${passengerName}. (${route})`,
+          },
+        });
         // স্টাফের প্রফিট আপডেট করা হচ্ছে
         await tx.user.update({
           where: { id: issuedById },
@@ -168,7 +177,7 @@ export const updateTicket = async (req, res) => {
       status,
       netCost,
       clientPrice,
-      serviceCharge = 0,
+      serviceCharge,
       issuedById,
       clientId,
     } = req.body;
@@ -181,31 +190,32 @@ export const updateTicket = async (req, res) => {
       return res.status(404).json({ message: "Ticket not found!" });
     }
 
-    const currentCost = Number(netCost) || 0;
-    const currentPrice = Number(clientPrice) || 0;
-    const currentCharge = Number(serviceCharge) || 0;
+    const charge = Number(serviceCharge) || 0;
+    const cost = Number(netCost) || 0;
+    const price = Number(clientPrice) || 0;
 
     let newNetProfit = 0;
 
-    if (status === "Refunded" || status === "Voided") {
-      newNetProfit = currentCharge;
+    if (status === "refund" || status === "void") {
+      newNetProfit = charge;
     } else {
-      newNetProfit = currentPrice - currentCost + currentCharge;
+      newNetProfit = price - cost + charge;
     }
 
-    const oldProfit = oldTicket.netProfit;
+    // const oldProfit = oldTicket.netProfit;
     const targetIssuedById = issuedById || oldTicket.issuedById;
     const targetClientId = clientId || oldTicket.clientId;
 
     const updatedTicket = await prisma.$transaction(
       async (tx) => {
-        // পুরোনো ইউজারের প্রফিট রিভার্ট করা
-        await tx.user.update({
-          where: { id: oldTicket.issuedById },
-          data: { totalProfit: { decrement: oldProfit } },
-        });
+        if (charge > 0) {
+          await tx.user.update({
+            where: { id: oldTicket.issuedById },
+            data: { totalProfit: { increment: charge } },
+          });
+        }
 
-        // টিকিট আপডেট
+        // ২. টিকিট আপডেট করা
         const ticket = await tx.ticket.update({
           where: { id },
           data: {
@@ -218,20 +228,43 @@ export const updateTicket = async (req, res) => {
             totalPax: String(totalPax || 1),
             airline,
             status,
-            netCost: currentCost,
-            clientPrice: currentPrice,
-            serviceCharge: currentCharge,
+            netCost: cost,
+            clientPrice: price,
+            serviceCharge: charge,
             netProfit: newNetProfit,
             issuedById: targetIssuedById,
             clientId: targetClientId,
           },
         });
 
-        // নতুন ইউজারের প্রফিট অ্যাড করা
-        await tx.user.update({
-          where: { id: targetIssuedById },
-          data: { totalProfit: { increment: newNetProfit } },
-        });
+        if (status === "refund" || status === "void") {
+          const netRefundAmount = oldTicket.clientPrice - charge;
+
+          if (netRefundAmount > 0) {
+            await tx.payment.create({
+              data: {
+                clientId: targetClientId,
+                amount: netRefundAmount,
+                type: "credit",
+                paymentMethod: `${status?.toUpperCase()} Return`,
+                paymentDate: new Date(),
+                note: `PNR - ${ticket.pnrCode}  (${status} after return amount. (${ticket.route})`,
+              },
+            });
+          }
+        } else if (status === "reissue" && charge > 0) {
+          // Reissue হলে যদি কোনো সার্ভিস চার্জ থাকে, তা নেগেটিভ অ্যামাউন্ট (ডিউ বৃদ্ধি) হিসেবে এন্ট্রি হবে
+          await tx.payment.create({
+            data: {
+              clientId: targetClientId,
+              amount: charge,
+              type: "debit",
+              paymentDate: new Date(),
+              paymentMethod: `${status?.toUpperCase()} Charge`,
+              note: `Reissue Charge: PNR - ${ticket.pnrCode} (${ticket.route})`,
+            },
+          });
+        }
 
         return ticket;
       },
