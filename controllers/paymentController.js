@@ -37,32 +37,13 @@ export const createPayment = async (req, res) => {
     let formattedNote = note ? note.trim() : "";
     const cleanTrxId = trxId ? trxId.trim() : null;
 
-    if (cleanTrxId) {
-      const matchedTicket = await prisma.ticket.findFirst({
-        where: {
-          pnrCode: {
-            equals: cleanTrxId,
-            mode: "insensitive",
-          },
-          clientId: clientId,
-        },
-      });
-
-      const pnrRefText = matchedTicket
-        ? `[Payment for PNR: ${matchedTicket.pnrCode}]`
-        : `[Ref/TrxID: ${cleanTrxId}]`;
-
-      formattedNote = formattedNote
-        ? `${pnrRefText} - ${formattedNote}`
-        : pnrRefText;
-    }
-
     const newPayment = await prisma.payment.create({
       data: {
         clientId,
         amount: Number(amount),
         paymentDate: paymentDate ? new Date(paymentDate) : new Date(),
         paymentMethod: paymentMethod || "Cash",
+        type: "credit",
         trxId: cleanTrxId,
         note: formattedNote || null,
       },
