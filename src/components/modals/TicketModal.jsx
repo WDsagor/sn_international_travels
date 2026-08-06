@@ -1,22 +1,16 @@
 import React, { useEffect } from "react";
-import { useForm } from "react-hook-form";
+import { Controller, useForm, useWatch } from "react-hook-form";
 import { X } from "lucide-react";
-import { useGetUsersQuery } from "../../redux/features/user/userApi";
-
-import { formatDateForInput } from "../../utils/dateFormate";
 import Swal from "sweetalert2";
+
+import { useGetUsersQuery } from "../../redux/features/user/userApi";
+import { useGetClientsQuery } from "../../redux/features/clients/clientApiSlice";
 import {
   useCreateTicketMutation,
   useUpdateTicketMutation,
 } from "../../redux/features/tickets/ticketsApiSlice";
-import { useGetClientsQuery } from "../../redux/features/clients/clientApiSlice";
-
-export const VENDOR_LIST = [
-  { id: "v1", name: "Mostofa Kamal" },
-  { id: "v2", name: "Fly Deals Travel" },
-  { id: "v3", name: "B2B Cargo & Ticketing" },
-  { id: "v4", name: "SkyLink Aviation" },
-];
+import { formatDateForInput } from "../../utils/dateFormate";
+import { CustomDatePicker } from "../share/CustomDatePicker";
 
 const AIRLINE_LIST = [
   { id: "bg", code: "BG", name: "Biman Bangladesh Airlines" },
@@ -49,22 +43,39 @@ const TicketModal = ({
 }) => {
   const isEditMode = Boolean(initialData);
 
-  // Redux RTK Mutations
+  // RTK Mutations
   const [createTicket, { isLoading: isCreating }] = useCreateTicketMutation();
   const [updateTicket, { isLoading: isUpdating }] = useUpdateTicketMutation();
+
+  // RTK Queries
+  const { data: usersData, isLoading: usersLoading } = useGetUsersQuery();
+  const { data: clientsData, isLoading: clientsLoading } = useGetClientsQuery();
+
+  // ইউজার ও ক্লায়েন্ট ডাটা সঠিকভাবে হ্যান্ডেল করার জন্য
+  const users = Array.isArray(usersData?.users)
+    ? usersData.users
+    : Array.isArray(usersData)
+      ? usersData
+      : [];
+
+  const clients = Array.isArray(clientsData?.data)
+    ? clientsData.data
+    : Array.isArray(clientsData)
+      ? clientsData
+      : [];
 
   const {
     register,
     handleSubmit,
-    watch,
     setValue,
     reset,
+    control,
     formState: { errors, isDirty },
   } = useForm({
     defaultValues: {
       pnrCode: "",
       ticketType: "one_way",
-      issueDate: new Date().toISOString().split("T")[0],
+      issueDate: new Date().toLocaleDateString("sv-SE"),
       passengerName: "",
       route: "",
       travelDate: "",
@@ -79,36 +90,50 @@ const TicketModal = ({
     },
   });
 
-  // Watch Form Values (Fixed neCost -> netCost typo)
-  const netCost = watch("netCost") || 0;
-  const clientPrice = watch("clientPrice") || 0;
-  const serviceCharge = watch("serviceCharge") || 0;
-  const currentTicketType = watch("ticketType");
-  const currentStatus = watch("status");
+  // useWatch ব্যবহার করে রেন্ডারিং অপটিমাইজ করা হয়েছে
+  const [
+    netCost,
+    clientPrice,
+    serviceCharge,
+    currentTicketType,
+    currentStatus,
+    issueDate,
+  ] = useWatch({
+    control,
+    name: [
+      "netCost",
+      "clientPrice",
+      "serviceCharge",
+      "ticketType",
+      "status",
+      "issueDate",
+    ],
+  });
 
-  // Dynamic status flag for extra Service Charge field
   const showServiceCharge = ["reissue", "refund", "void"].includes(
     currentStatus,
   );
 
-  // RTK Queries for Dropdowns
-  const { data, isLoading: usersLoading } = useGetUsersQuery();
-  const { data: clients = [], isLoading: clientsLoading } =
-    useGetClientsQuery();
-  const users = data?.users || data || [];
-  // console.log(clients);
-  // Populate data in Edit Mode or reset in Create Mode when Modal Opens
+  // Edit মোড এবং Create মোডের ডাটা হ্যান্ডলিং
   useEffect(() => {
     if (!isOpen) return;
 
     if (initialData) {
       reset({
-        ...initialData,
+        pnrCode: initialData.pnrCode || "",
+        ticketType: initialData.ticketType || "one_way",
         issueDate: formatDateForInput(initialData.issueDate),
+        passengerName: initialData.passengerName || "",
+        route: initialData.route || "",
         travelDate: formatDateForInput(initialData.travelDate),
-        serviceCharge: initialData?.serviceCharge || 0,
-        netCost: initialData?.netCost || 0,
-        clientPrice: initialData?.clientPrice || 0,
+        totalPax: initialData.totalPax || "",
+        issuedById: initialData.issuedById || initialData.issuedBy?.id || "",
+        clientId: initialData.clientId || initialData.client?.id || "",
+        airline: initialData.airline || "",
+        netCost: Number(initialData.netCost) || 0,
+        clientPrice: Number(initialData.clientPrice) || 0,
+        serviceCharge: Number(initialData.serviceCharge) || 0,
+        status: initialData.status || "issued",
       });
     } else {
       reset({
@@ -130,15 +155,10 @@ const TicketModal = ({
     }
   }, [initialData, reset, isOpen]);
 
-  // Handle Route auto-clear logic on type switch
-  useEffect(() => {
-    if (isOpen && !initialData) {
-      setValue("route", "", { shouldValidate: false });
-    }
-  }, [currentTicketType, setValue, initialData, isOpen]);
-
+  // রুট ইনপুট ফরম্যাটিং লজিক
   const handleRouteInput = (e) => {
-    const cleanText = e.target.value.toUpperCase().replace(/[^A-Z]/g, "");
+    const rawValue = e.target.value.toUpperCase();
+    const cleanText = rawValue.replace(/[^A-Z]/g, "");
     const isReturn =
       currentTicketType === "round_trip" || currentTicketType === "multi_city";
     const arrow = isReturn ? "⇋" : "⇒";
@@ -159,11 +179,7 @@ const TicketModal = ({
         if (from && to) {
           pairs.push(`${from}${arrow}${to}`);
         } else if (from) {
-          if (from.length === 3) {
-            pairs.push(`${from}${arrow}`);
-          } else {
-            pairs.push(from);
-          }
+          pairs.push(from.length === 3 ? `${from}${arrow}` : from);
         }
       }
       setValue("route", pairs.join(", "), { shouldValidate: true });
@@ -184,11 +200,10 @@ const TicketModal = ({
     }
   };
 
-  // Calculate profit including service charge when applicable (Safe against NaN)
+  // প্রফিট হিসাব
   const numClientPrice = Number(clientPrice) || 0;
   const numNetCost = Number(netCost) || 0;
   const numServiceCharge = showServiceCharge ? Number(serviceCharge) || 0 : 0;
-
   const calculatedProfit = numClientPrice - numNetCost + numServiceCharge;
 
   const onSubmit = async (formData) => {
@@ -199,15 +214,12 @@ const TicketModal = ({
       serviceCharge: showServiceCharge
         ? Number(formData.serviceCharge) || 0
         : 0,
-      profit: calculatedProfit,
+      netProfit: calculatedProfit, // ব্যাকএন্ড কী (Key) এর সাথে মেলানো হয়েছে
     };
 
     try {
       if (isEditMode) {
-        console.log(payload);
         await updateTicket({ id: initialData.id, ...payload }).unwrap();
-
-        // Success alert for update
         Swal.fire({
           icon: "success",
           title: "Updated Successfully!",
@@ -217,8 +229,6 @@ const TicketModal = ({
         });
       } else {
         await createTicket(payload).unwrap();
-
-        // Success alert for creation
         Swal.fire({
           icon: "success",
           title: "Created Successfully!",
@@ -233,11 +243,9 @@ const TicketModal = ({
       onClose(false);
     } catch (err) {
       console.error("Redux Mutation Error:", err);
-
-      // Error alert
       Swal.fire({
         icon: "error",
-        title: "Something went wrong!",
+        title: "Something Went Wrong!",
         text:
           err?.data?.message || err?.message || "Failed to save the ticket.",
         confirmButtonColor: "#2563eb",
@@ -252,7 +260,7 @@ const TicketModal = ({
   return (
     <div className="fixed inset-0 bg-gray-900/40 backdrop-blur-xs z-50 flex items-center justify-center p-4 transition-all">
       <div className="bg-white rounded-2xl w-full max-w-6xl shadow-xl border border-gray-100 flex flex-col max-h-[90vh] animate-in fade-in zoom-in-95 duration-200">
-        {/* Modal Header */}
+        {/* মোডাল হেডার */}
         <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100">
           <div>
             <h2 className="text-lg font-bold text-gray-900">
@@ -271,12 +279,12 @@ const TicketModal = ({
           </button>
         </div>
 
-        {/* Modal Form */}
+        {/* মোডাল ফরম */}
         <form
           onSubmit={handleSubmit(onSubmit)}
           className="overflow-y-auto p-6 space-y-5"
         >
-          {/* Row 1: PNR, Ticket Type, Issue Date */}
+          {/* সারি ১: PNR, Ticket Type, Issue Date */}
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
             <div>
               <label className="block text-xs font-semibold text-gray-600 uppercase mb-1.5">
@@ -284,7 +292,7 @@ const TicketModal = ({
               </label>
               <input
                 type="text"
-                placeholder="e.g. PNR98765"
+                placeholder="e.g. 123456"
                 {...register("pnrCode", { required: "PNR is required" })}
                 className={`w-full uppercase text-sm border px-3 py-2 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500/20 font-mono ${
                   errors.pnrCode
@@ -309,18 +317,33 @@ const TicketModal = ({
             </div>
 
             <div>
-              <label className="block text-xs font-semibold text-gray-600 uppercase mb-1.5">
-                Issue Date *
-              </label>
-              <input
-                type="date"
-                {...register("issueDate", { required: true })}
-                className="w-full text-sm border border-gray-200 px-3 py-2 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500/20"
+              <Controller
+                control={control}
+                name="issueDate"
+                rules={{ required: "Issue Date is required" }}
+                render={({ field, fieldState }) => (
+                  <CustomDatePicker
+                    label="Issue Date *"
+                    value={field.value}
+                    onChange={(date) => {
+                      field.onChange(date);
+                      // Issue Date পরিবর্তন করলে Travel Date যদি আগের হয়ে যায় তবে তা ক্লিয়ার করে দেওয়া
+                      const currentTravel = control._formValues.travelDate;
+                      if (
+                        currentTravel &&
+                        new Date(currentTravel) < new Date(date)
+                      ) {
+                        setValue("travelDate", "");
+                      }
+                    }}
+                    error={fieldState.error}
+                  />
+                )}
               />
             </div>
           </div>
 
-          {/* Row 2: Passenger Name, Route */}
+          {/* সারি ২: Passenger Name, Route */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
               <label className="block text-xs font-semibold text-gray-600 uppercase mb-1.5">
@@ -328,7 +351,7 @@ const TicketModal = ({
               </label>
               <input
                 type="text"
-                placeholder="Rahim Ali"
+                placeholder="MD Rahmat ali"
                 {...register("passengerName", {
                   required: "Passenger name is required",
                 })}
@@ -354,8 +377,8 @@ const TicketModal = ({
                 placeholder={
                   currentTicketType === "round_trip" ||
                   currentTicketType === "multi_city"
-                    ? "DAC⇋CXB"
-                    : "DAC⇒CXB"
+                    ? "GDG⇋FDG"
+                    : "GGG⇒DDD"
                 }
                 {...register("route", {
                   required: "Route is required",
@@ -383,22 +406,21 @@ const TicketModal = ({
             </div>
           </div>
 
-          {/* Row 3: Travel Date, Total Pax, Issued By */}
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
             <div>
-              <label className="block text-xs font-semibold text-gray-600 uppercase mb-1.5">
-                Travel Date *
-              </label>
-              <input
-                type="date"
-                {...register("travelDate", {
-                  required: "Travel date is required",
-                })}
-                className={`w-full text-sm border px-3 py-2 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500/20 ${
-                  errors.travelDate
-                    ? "border-red-500 bg-red-50/30"
-                    : "border-gray-200"
-                }`}
+              <Controller
+                control={control}
+                name="travelDate"
+                rules={{ required: "Travel Date is required" }}
+                render={({ field, fieldState }) => (
+                  <CustomDatePicker
+                    label="Travel Date *"
+                    value={field.value}
+                    onChange={field.onChange}
+                    error={fieldState.error}
+                    minDate={issueDate}
+                  />
+                )}
               />
             </div>
 
@@ -408,7 +430,7 @@ const TicketModal = ({
               </label>
               <input
                 type="text"
-                placeholder="3 Persons (2 Adult, 1 Child)"
+                placeholder="3 Adult, 1 Child, 1 Infant"
                 {...register("totalPax")}
                 className="w-full text-sm border border-gray-200 px-3 py-2 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500/20"
               />
@@ -425,7 +447,7 @@ const TicketModal = ({
               ) : (
                 <select
                   {...register("issuedById", {
-                    required: "Please select value",
+                    required: "Please select issuer",
                   })}
                   className={`w-full text-sm border px-3 py-2.5 rounded-xl bg-white focus:outline-none focus:ring-2 focus:ring-blue-500/20 ${
                     errors.issuedById
@@ -433,7 +455,7 @@ const TicketModal = ({
                       : "border-gray-200"
                   }`}
                 >
-                  <option value="">Select value</option>
+                  <option value="">Select issuer</option>
                   {users.map((user) => (
                     <option key={user?.id} value={user?.id}>
                       {user?.fullName} {user?.role ? `(${user?.role})` : ""}
@@ -444,7 +466,7 @@ const TicketModal = ({
             </div>
           </div>
 
-          {/* Row 4: Client, Airline, Status */}
+          {/* সারি ৪: Client, Airline, Status */}
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
             <div>
               <label className="block text-xs font-semibold text-gray-600 uppercase mb-1.5">
@@ -466,7 +488,7 @@ const TicketModal = ({
                   }`}
                 >
                   <option value="">Select client</option>
-                  {clients?.data?.map((client) => (
+                  {clients.map((client) => (
                     <option key={client.id} value={client.id}>
                       {client.fullName}
                     </option>
@@ -514,7 +536,7 @@ const TicketModal = ({
             </div>
           </div>
 
-          {/* Pricing Box */}
+          {/* প্রাইসিং বক্স */}
           <div
             className={`p-4 bg-gray-50 rounded-xl border border-gray-100 grid grid-cols-1 ${
               showServiceCharge ? "sm:grid-cols-4" : "sm:grid-cols-3"
@@ -548,7 +570,7 @@ const TicketModal = ({
               />
             </div>
 
-            {/* Service Charge: Conditionally renders for reissue, refund, or void */}
+            {/* সার্ভিস চার্জ ফিল্ড */}
             {showServiceCharge && (
               <div className="animate-in fade-in duration-200">
                 <label className="block text-xs font-bold text-amber-600 uppercase mb-1">
@@ -578,6 +600,8 @@ const TicketModal = ({
               </div>
             </div>
           </div>
+
+          {/* ফরম একশন বাটন */}
           <div className="flex items-center justify-end gap-3 pt-2 border-t border-gray-100">
             <button
               type="button"

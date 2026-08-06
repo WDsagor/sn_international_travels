@@ -9,9 +9,9 @@ import {
 
 // পেমেন্ট মেথড লিস্ট
 const PAYMENT_METHODS = [
-  { id: "CASH", label: "Cash" },
-  { id: "BANK", label: "Bank Transfer" },
-  { id: "BKASH", label: "bKash" },
+  { id: "CASH PAYMENT ", label: "Cash" },
+  { id: "BANK TRANSFER", label: "Bank Transfer" },
+  { id: "BKASH PAYMENT", label: "bKash" },
   { id: "NAGAD", label: "Nagad" },
   { id: "CHEQUE", label: "Cheque" },
 ];
@@ -36,7 +36,7 @@ const ReceivePaymentModal = ({ isOpen, onClose }) => {
   } = useForm({
     defaultValues: {
       clientId: "",
-      paymentDate: new Date().toLocaleString().split("T")[0],
+      paymentDate: new Date().toLocaleDateString("sv-SE"),
       amount: "",
       paymentMethod: "CASH",
       accountNo: "",

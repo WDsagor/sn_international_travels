@@ -1,9 +1,9 @@
 import React, { useState } from "react";
-import { Plus, Search, PlaneTakeoff, Edit3, UserCheck } from "lucide-react";
+import { Plus, Search } from "lucide-react";
 import TicketModal from "../components/modals/TicketModal";
 
-import { formatDate } from "../utils/dateFormate";
 import { useGetTicketsQuery } from "../redux/features/tickets/ticketsApiSlice";
+import TicketRow from "../components/tickets/TicketRow";
 
 const Tickets = () => {
   const [showModal, setShowModal] = useState(false);
@@ -11,7 +11,6 @@ const Tickets = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedStatus, setSelectedStatus] = useState("All Status");
 
-  // Redux Fetching with Search & Filter State
   const {
     data: ticketsData = [],
     isLoading,
@@ -35,23 +34,6 @@ const Tickets = () => {
   const handleCloseModal = () => {
     setShowModal(false);
     setSelectedTicket(null);
-  };
-
-  const getStatusBadge = (status) => {
-    switch (status?.toLowerCase()) {
-      case "issued":
-        return "bg-green-50 text-green-700 border-green-200";
-      case "reissue":
-        return "bg-amber-50 text-amber-700 border-amber-200";
-      case "refund":
-      case "refunded":
-        return "bg-purple-50 text-purple-700 border-purple-200";
-      case "void":
-      case "cancel":
-        return "bg-red-50 text-red-700 border-red-200";
-      default:
-        return "bg-gray-50 text-gray-700 border-gray-200";
-    }
   };
 
   return (
@@ -140,126 +122,13 @@ const Tickets = () => {
                   </td>
                 </tr>
               ) : (
-                ticketsData?.map((ticket) => {
-                  // Issuer Name Extraction (Handles Object or Direct Field)
-                  const issuerName =
-                    ticket?.issuedBy?.fullName ||
-                    ticket?.issuedBy ||
-                    ticket?.issuedUser?.fullName ||
-                    "N/A";
-
-                  return (
-                    <tr
-                      key={ticket.id}
-                      className="hover:bg-blue-50/50 transition-colors"
-                    >
-                      <td className="px-4 py-3">
-                        <div className="font-mono font-bold text-gray-900 uppercase">
-                          {ticket.pnrCode}
-                        </div>
-                        <div className="text-[11px] text-gray-400 mt-0.5">
-                          {formatDate(ticket.issueDate)}
-                        </div>
-                      </td>
-
-                      <td className="px-4 py-3">
-                        <div className="font-medium text-gray-900">
-                          {ticket.passengerName}
-                        </div>
-                        <div className="text-[11px] flex items-center gap-1 text-amber-600 font-medium py-0.5">
-                          <PlaneTakeoff size={14} strokeWidth={1.5} />
-                          <span>{formatDate(ticket.travelDate)}</span>
-                        </div>
-                        <div className="relative group w-max mt-0.5">
-                          <div className="text-xs text-blue-600 font-semibold flex items-center gap-1 cursor-pointer hover:text-blue-800 transition-colors">
-                            {ticket.route}
-                          </div>
-
-                          <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-3 hidden group-hover:flex group-hover:flex-col items-center gap-1.5 bg-gray-900 text-white text-xs  rounded-lg py-1.5 shadow-xl z-50 whitespace-nowrap animate-in fade-in zoom-in-95 pointer-events-none">
-                            <p className="font-bold text-blue-400  uppercase tracking-wide px-3">
-                              Passenger Details
-                            </p>
-                            <div className="border-b w-full border-gray-600" />
-                            <div className=" text-gray-300 px-3">
-                              <p>
-                                <span className="text-gray-400">Primary:</span>{" "}
-                                {ticket.passengerName}
-                              </p>
-                              <p>
-                                <span className="text-gray-400">
-                                  Pax Details:
-                                </span>{" "}
-                                {ticket.totalPax || "N/A"}
-                              </p>
-                            </div>
-                            <div className="absolute top-full left-1/2 -translate-x-1/2 border-4 border-transparent border-t-gray-900" />
-                          </div>
-                        </div>
-                      </td>
-
-                      <td className="px-4 py-3 font-medium">
-                        {ticket?.client?.fullName}
-                      </td>
-                      <td className="px-4 py-3 font-medium">
-                        {ticket.airline}
-                      </td>
-
-                      <td className="px-4 py-3 text-right font-mono text-gray-500">
-                        ৳{Number(ticket.netCost || 0).toLocaleString()}
-                      </td>
-                      <td className="px-4 py-3 text-right font-mono font-semibold text-gray-900">
-                        ৳{Number(ticket.clientPrice || 0).toLocaleString()}
-                      </td>
-                      <td className="px-4 py-3 text-right font-mono text-amber-600">
-                        ৳{Number(ticket.serviceCharge || 0).toLocaleString()}
-                      </td>
-                      <td className="px-4 py-3 text-right font-mono font-semibold text-green-600">
-                        ৳{Number(ticket.netProfit || 0).toLocaleString()}
-                      </td>
-
-                      {/* Status Column with Issuer Hover Tooltip */}
-                      <td className="px-4 py-3 relative group">
-                        <span
-                          className={`inline-flex px-2.5 py-0.5 rounded-full text-xs font-semibold border capitalize cursor-pointer ${getStatusBadge(
-                            ticket.status,
-                          )}`}
-                        >
-                          {ticket.status}
-                        </span>
-
-                        {/* Issuer Hover Tooltip */}
-                        <div className="absolute bottom-full left-1/2 -translate-x-1/2 -mb-6 hidden group-hover:flex group-hover:flex-col items-center gap-0.5 bg-gray-900 text-white text-xs  py-1.5 rounded-lg shadow-xl z-50 whitespace-nowrap animate-in fade-in zoom-in-95 pointer-events-none">
-                          <p className="flex px-3 gap-1 uppercase  text-blue-400 font-bold">
-                            <UserCheck className="w-3.5 h-3.5" />
-                            Issued By
-                          </p>
-                          <div className="border-b w-full border-gray-600" />
-                          <strong className="text-gray-100 px-3 font-semibold">
-                            {issuerName}
-                          </strong>
-                          <p className="px-3">
-                            <span className="text-gray-400  mr-2 ">
-                              Last Update:
-                            </span>
-                            {formatDate(ticket.updatedAt)}
-                          </p>
-
-                          <div className="absolute top-full left-1/2 -translate-x-1/2 border-4 border-transparent border-t-gray-900" />
-                        </div>
-                      </td>
-
-                      <td className="px-4 py-3 text-center">
-                        <button
-                          onClick={() => handleOpenEditModal(ticket)}
-                          className="inline-flex items-center gap-1 text-blue-600 hover:text-blue-800 text-xs font-semibold px-2.5 py-1 bg-blue-50 hover:bg-blue-100 rounded-lg transition-colors cursor-pointer"
-                        >
-                          <Edit3 className="w-3.5 h-3.5" />
-                          Edit
-                        </button>
-                      </td>
-                    </tr>
-                  );
-                })
+                ticketsData?.map((ticket) => (
+                  <TicketRow
+                    key={ticket.id}
+                    ticket={ticket}
+                    onEdit={handleOpenEditModal}
+                  />
+                ))
               )}
             </tbody>
           </table>
