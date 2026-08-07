@@ -159,12 +159,20 @@ const TicketModal = ({
 
     if (initialData) {
       reset({
-        ...initialData,
+        pnrCode: initialData?.pnrCode,
+        ticketType: initialData?.ticketType,
         issueDate: formatDateForInput(initialData.issueDate),
+        passengerName: initialData?.passengerName,
+        route: initialData?.route,
         travelDate: formatDateForInput(initialData.travelDate),
-        serviceCharge: initialData?.serviceCharge || 0,
-        netCost: initialData?.netCost || 0,
-        clientPrice: initialData?.clientPrice || 0,
+        totalPax: initialData?.totalPax,
+        issuedById: initialData?.issuedById,
+        clientId: initialData?.clientId,
+        airline: initialData?.airline,
+        netCost: Number(initialData.netCost),
+        clientPrice: Number(initialData?.clientPrice),
+        serviceCharge: Number(initialData?.serviceCharge),
+        status: initialData?.status,
       });
     } else {
       reset({
