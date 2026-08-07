@@ -159,21 +159,20 @@ const TicketModal = ({
 
     if (initialData) {
       reset({
-        pnrCode: initialData?.pnrCode || "",
-        ticketType: initialData?.ticketType || "one_way",
-        issueDate:
-          formatDateForInput(initialData?.issueDate) || getTodayDateString(),
-        passengerName: initialData?.passengerName || "",
-        route: initialData?.route || "",
-        travelDate: formatDateForInput(initialData?.travelDate) || "",
-        totalPax: initialData?.totalPax || "",
-        issuedById: initialData?.issuedById || initialData?.issuedBy?.id || "",
-        clientId: initialData?.clientId || initialData?.client?.id || "",
-        airline: initialData?.airline || "",
-        netCost: Number(initialData?.netCost) || 0,
-        clientPrice: Number(initialData?.clientPrice) || 0,
-        serviceCharge: Number(initialData?.serviceCharge) || 0,
-        status: initialData?.status || "issued",
+        pnrCode: initialData?.pnrCode,
+        ticketType: initialData?.ticketType,
+        issueDate: formatDateForInput(initialData?.issueDate),
+        passengerName: initialData?.passengerName,
+        route: initialData?.route,
+        travelDate: formatDateForInput(initialData?.travelDate),
+        totalPax: initialData?.totalPax,
+        issuedById: initialData?.issuedById,
+        clientId: initialData?.clientId,
+        airline: initialData?.airline,
+        netCost: Number(initialData?.netCost),
+        clientPrice: Number(initialData?.clientPrice),
+        serviceCharge: Number(initialData?.serviceCharge),
+        status: initialData?.status,
       });
     } else {
       reset({
@@ -286,7 +285,7 @@ const TicketModal = ({
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
             <div>
               <label className="block text-xs font-semibold text-gray-600 uppercase mb-1.5">
-                PNR Code *
+                PNR Number *
               </label>
               <input
                 type="text"
