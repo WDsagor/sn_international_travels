@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useCallback } from "react";
 import { Controller, useForm, useWatch } from "react-hook-form";
 import { X } from "lucide-react";
 import Swal from "sweetalert2";
@@ -43,15 +43,22 @@ const TicketModal = ({
 }) => {
   const isEditMode = Boolean(initialData);
 
-  // RTK Mutations
   const [createTicket, { isLoading: isCreating }] = useCreateTicketMutation();
   const [updateTicket, { isLoading: isUpdating }] = useUpdateTicketMutation();
 
-  // RTK Queries
-  const { data: usersData, isLoading: usersLoading } = useGetUsersQuery();
-  const { data: clientsData, isLoading: clientsLoading } = useGetClientsQuery();
+  const { data: usersData, isLoading: usersLoading } = useGetUsersQuery(
+    undefined,
+    {
+      skip: !isOpen,
+    },
+  );
+  const { data: clientsData, isLoading: clientsLoading } = useGetClientsQuery(
+    undefined,
+    {
+      skip: !isOpen,
+    },
+  );
 
-  // ইউজার ও ক্লায়েন্ট ডাটা সঠিকভাবে হ্যান্ডেল করার জন্য
   const users = Array.isArray(usersData?.users)
     ? usersData.users
     : Array.isArray(usersData)
@@ -64,10 +71,19 @@ const TicketModal = ({
       ? clientsData
       : [];
 
+  const getTodayDateString = () => {
+    const today = new Date();
+    const year = today.getFullYear();
+    const month = String(today.getMonth() + 1).padStart(2, "0");
+    const day = String(today.getDate()).padStart(2, "0");
+    return `${year}-${month}-${day}`;
+  };
+
   const {
     register,
     handleSubmit,
     setValue,
+    getValues,
     reset,
     control,
     formState: { errors, isDirty },
@@ -75,7 +91,7 @@ const TicketModal = ({
     defaultValues: {
       pnrCode: "",
       ticketType: "one_way",
-      issueDate: new Date().toLocaleDateString("sv-SE"),
+      issueDate: getTodayDateString(),
       passengerName: "",
       route: "",
       travelDate: "",
@@ -90,7 +106,6 @@ const TicketModal = ({
     },
   });
 
-  // useWatch ব্যবহার করে রেন্ডারিং অপটিমাইজ করা হয়েছে
   const [
     netCost,
     clientPrice,
@@ -114,7 +129,7 @@ const TicketModal = ({
     currentStatus,
   );
 
-  // Edit মোড এবং Create মোডের ডাটা হ্যান্ডলিং
+  // modal open/close এ শুধুমাত্র প্রয়োজনীয় ফিল্ড সেট করা
   useEffect(() => {
     if (!isOpen) return;
 
@@ -122,10 +137,11 @@ const TicketModal = ({
       reset({
         pnrCode: initialData.pnrCode || "",
         ticketType: initialData.ticketType || "one_way",
-        issueDate: formatDateForInput(initialData.issueDate),
+        issueDate:
+          formatDateForInput(initialData.issueDate) || getTodayDateString(),
         passengerName: initialData.passengerName || "",
         route: initialData.route || "",
-        travelDate: formatDateForInput(initialData.travelDate),
+        travelDate: formatDateForInput(initialData.travelDate) || "",
         totalPax: initialData.totalPax || "",
         issuedById: initialData.issuedById || initialData.issuedBy?.id || "",
         clientId: initialData.clientId || initialData.client?.id || "",
@@ -139,7 +155,7 @@ const TicketModal = ({
       reset({
         pnrCode: "",
         ticketType: "one_way",
-        issueDate: new Date().toISOString().split("T")[0],
+        issueDate: getTodayDateString(),
         passengerName: "",
         route: "",
         travelDate: "",
@@ -153,9 +169,25 @@ const TicketModal = ({
         status: "issued",
       });
     }
-  }, [initialData, reset, isOpen]);
+  }, [isOpen, initialData?.id, reset]);
 
-  // রুট ইনপুট ফরম্যাটিং লজিক
+  // Keyboard Escape Key Event Listener
+  const handleKeyDown = useCallback(
+    (e) => {
+      if (e.key === "Escape") {
+        onClose(false);
+      }
+    },
+    [onClose],
+  );
+
+  useEffect(() => {
+    if (isOpen) {
+      window.addEventListener("keydown", handleKeyDown);
+    }
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [isOpen, handleKeyDown]);
+
   const handleRouteInput = (e) => {
     const rawValue = e.target.value.toUpperCase();
     const cleanText = rawValue.replace(/[^A-Z]/g, "");
@@ -164,7 +196,7 @@ const TicketModal = ({
     const arrow = isReturn ? "⇋" : "⇒";
 
     if (!cleanText) {
-      setValue("route", "", { shouldValidate: true });
+      setValue("route", "", { shouldValidate: true, shouldDirty: true });
       return;
     }
 
@@ -182,7 +214,10 @@ const TicketModal = ({
           pairs.push(from.length === 3 ? `${from}${arrow}` : from);
         }
       }
-      setValue("route", pairs.join(", "), { shouldValidate: true });
+      setValue("route", pairs.join(", "), {
+        shouldValidate: true,
+        shouldDirty: true,
+      });
       return;
     }
 
@@ -190,17 +225,20 @@ const TicketModal = ({
     const to = codes[1] || "";
 
     if (from.length === 3 && !to) {
-      setValue("route", `${from}${arrow}`, { shouldValidate: true });
+      setValue("route", `${from}${arrow}`, {
+        shouldValidate: true,
+        shouldDirty: true,
+      });
     } else if (to) {
       setValue("route", `${from}${arrow}${to.slice(0, 3)}`, {
         shouldValidate: true,
+        shouldDirty: true,
       });
     } else {
-      setValue("route", from, { shouldValidate: true });
+      setValue("route", from, { shouldValidate: true, shouldDirty: true });
     }
   };
 
-  // প্রফিট হিসাব
   const numClientPrice = Number(clientPrice) || 0;
   const numNetCost = Number(netCost) || 0;
   const numServiceCharge = showServiceCharge ? Number(serviceCharge) || 0 : 0;
@@ -214,7 +252,7 @@ const TicketModal = ({
       serviceCharge: showServiceCharge
         ? Number(formData.serviceCharge) || 0
         : 0,
-      netProfit: calculatedProfit, // ব্যাকএন্ড কী (Key) এর সাথে মেলানো হয়েছে
+      netProfit: calculatedProfit,
     };
 
     try {
@@ -258,9 +296,15 @@ const TicketModal = ({
   const isSubmitting = isCreating || isUpdating;
 
   return (
-    <div className="fixed inset-0 bg-gray-900/40 backdrop-blur-xs z-50 flex items-center justify-center p-4 transition-all">
+    <div
+      aria-modal="true"
+      role="dialog"
+      className="fixed inset-0 bg-gray-900/40 backdrop-blur-xs z-50 flex items-center justify-center p-4 transition-all"
+      onClick={(e) => {
+        if (e.target === e.currentTarget) onClose(false);
+      }}
+    >
       <div className="bg-white rounded-2xl w-full max-w-6xl shadow-xl border border-gray-100 flex flex-col max-h-[90vh] animate-in fade-in zoom-in-95 duration-200">
-        {/* মোডাল হেডার */}
         <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100">
           <div>
             <h2 className="text-lg font-bold text-gray-900">
@@ -279,12 +323,10 @@ const TicketModal = ({
           </button>
         </div>
 
-        {/* মোডাল ফরম */}
         <form
           onSubmit={handleSubmit(onSubmit)}
           className="overflow-y-auto p-6 space-y-5"
         >
-          {/* সারি ১: PNR, Ticket Type, Issue Date */}
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
             <div>
               <label className="block text-xs font-semibold text-gray-600 uppercase mb-1.5">
@@ -327,13 +369,12 @@ const TicketModal = ({
                     value={field.value}
                     onChange={(date) => {
                       field.onChange(date);
-                      // Issue Date পরিবর্তন করলে Travel Date যদি আগের হয়ে যায় তবে তা ক্লিয়ার করে দেওয়া
-                      const currentTravel = control._formValues.travelDate;
+                      const currentTravel = getValues("travelDate");
                       if (
                         currentTravel &&
                         new Date(currentTravel) < new Date(date)
                       ) {
-                        setValue("travelDate", "");
+                        setValue("travelDate", "", { shouldDirty: true });
                       }
                     }}
                     error={fieldState.error}
@@ -343,7 +384,6 @@ const TicketModal = ({
             </div>
           </div>
 
-          {/* সারি ২: Passenger Name, Route */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
               <label className="block text-xs font-semibold text-gray-600 uppercase mb-1.5">
@@ -372,15 +412,10 @@ const TicketModal = ({
                   : "⇒"}{" "}
                 CXB) *
               </label>
-              <input
-                type="text"
-                placeholder={
-                  currentTicketType === "round_trip" ||
-                  currentTicketType === "multi_city"
-                    ? "GDG⇋FDG"
-                    : "GGG⇒DDD"
-                }
-                {...register("route", {
+              <Controller
+                control={control}
+                name="route"
+                rules={{
                   required: "Route is required",
                   validate: (value) => {
                     if (currentTicketType === "multi_city") {
@@ -395,13 +430,28 @@ const TicketModal = ({
                     }
                     return true;
                   },
-                })}
-                onChange={handleRouteInput}
-                className={`w-full uppercase text-sm border px-3 py-2 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500/20 font-mono ${
-                  errors.route
-                    ? "border-red-500 bg-red-50/30"
-                    : "border-gray-200"
-                }`}
+                }}
+                render={({ field, fieldState }) => (
+                  <input
+                    {...field}
+                    type="text"
+                    placeholder={
+                      currentTicketType === "round_trip" ||
+                      currentTicketType === "multi_city"
+                        ? "GDG⇋FDG"
+                        : "GGG⇒DDD"
+                    }
+                    onChange={(e) => {
+                      field.onChange(e);
+                      handleRouteInput(e);
+                    }}
+                    className={`w-full uppercase text-sm border px-3 py-2 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500/20 font-mono ${
+                      fieldState.error
+                        ? "border-red-500 bg-red-50/30"
+                        : "border-gray-200"
+                    }`}
+                  />
+                )}
               />
             </div>
           </div>
@@ -457,7 +507,10 @@ const TicketModal = ({
                 >
                   <option value="">Select issuer</option>
                   {users.map((user) => (
-                    <option key={user?.id} value={user?.id}>
+                    <option
+                      key={user?.id || user?._id}
+                      value={user?.id || user?._id}
+                    >
                       {user?.fullName} {user?.role ? `(${user?.role})` : ""}
                     </option>
                   ))}
@@ -466,7 +519,6 @@ const TicketModal = ({
             </div>
           </div>
 
-          {/* সারি ৪: Client, Airline, Status */}
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
             <div>
               <label className="block text-xs font-semibold text-gray-600 uppercase mb-1.5">
@@ -489,7 +541,10 @@ const TicketModal = ({
                 >
                   <option value="">Select client</option>
                   {clients.map((client) => (
-                    <option key={client.id} value={client.id}>
+                    <option
+                      key={client?.id || client?._id}
+                      value={client?.id || client?._id}
+                    >
                       {client.fullName}
                     </option>
                   ))}
@@ -536,7 +591,6 @@ const TicketModal = ({
             </div>
           </div>
 
-          {/* প্রাইসিং বক্স */}
           <div
             className={`p-4 bg-gray-50 rounded-xl border border-gray-100 grid grid-cols-1 ${
               showServiceCharge ? "sm:grid-cols-4" : "sm:grid-cols-3"
@@ -570,7 +624,6 @@ const TicketModal = ({
               />
             </div>
 
-            {/* সার্ভিস চার্জ ফিল্ড */}
             {showServiceCharge && (
               <div className="animate-in fade-in duration-200">
                 <label className="block text-xs font-bold text-amber-600 uppercase mb-1">
@@ -601,7 +654,6 @@ const TicketModal = ({
             </div>
           </div>
 
-          {/* ফরম একশন বাটন */}
           <div className="flex items-center justify-end gap-3 pt-2 border-t border-gray-100">
             <button
               type="button"
