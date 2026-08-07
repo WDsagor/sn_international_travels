@@ -10,7 +10,10 @@ import {
   useUpdateTicketMutation,
 } from "../../redux/features/tickets/ticketsApiSlice";
 
-import { formatDateForInput } from "../../utils/dateFormate";
+import {
+  formatDateForInput,
+  getTodayDateString,
+} from "../../utils/dateFormate";
 import { CustomDatePicker } from "../share/CustomDatePicker";
 
 const AIRLINE_LIST = [
@@ -73,7 +76,7 @@ const TicketModal = ({
     defaultValues: {
       pnrCode: "",
       ticketType: "one_way",
-      issueDate: new Date().toLocaleDateString("sv-SE"),
+      issueDate: getTodayDateString(),
       passengerName: "",
       route: "",
       travelDate: "",
@@ -178,7 +181,7 @@ const TicketModal = ({
       reset({
         pnrCode: "",
         ticketType: "one_way",
-        issueDate: new Date().toISOString().split("T")[0],
+        issueDate: getTodayDateString(),
         passengerName: "",
         route: "",
         travelDate: "",

@@ -7,7 +7,7 @@ import {
   useReceivePaymentMutation,
 } from "../../redux/features/clients/clientApiSlice";
 import { CustomDatePicker } from "../share/CustomDatePicker";
-import { formatCurrency } from "../../utils/dateFormate";
+import { formatCurrency, getTodayDateString } from "../../utils/dateFormate";
 
 // পেমেন্ট মেথড লিস্ট (অতিরিক্ত স্পেস সরিয়ে সঠিক আইডি দেওয়া হয়েছে)
 const PAYMENT_METHODS = [
@@ -35,7 +35,7 @@ const ReceivePaymentModal = ({ isOpen, onClose }) => {
   } = useForm({
     defaultValues: {
       clientId: "",
-      paymentDate: new Date().toLocaleDateString("sv-SE"),
+      paymentDate: getTodayDateString(),
       amount: "",
       paymentMethod: "CASH PAYMENT",
       accountNo: "",
