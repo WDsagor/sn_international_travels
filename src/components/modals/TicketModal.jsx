@@ -79,6 +79,7 @@ const TicketModal = ({
   onSubmitSuccess,
 }) => {
   const isEditMode = Boolean(initialData);
+  console.log(initialData);
 
   const [createTicket, { isLoading: isCreating }] = useCreateTicketMutation();
   const [updateTicket, { isLoading: isUpdating }] = useUpdateTicketMutation();
@@ -158,21 +159,21 @@ const TicketModal = ({
 
     if (initialData) {
       reset({
-        pnrCode: initialData.pnrCode || "",
-        ticketType: initialData.ticketType || "one_way",
+        pnrCode: initialData?.pnrCode || "",
+        ticketType: initialData?.ticketType || "one_way",
         issueDate:
-          formatDateForInput(initialData.issueDate) || getTodayDateString(),
-        passengerName: initialData.passengerName || "",
-        route: initialData.route || "",
-        travelDate: formatDateForInput(initialData.travelDate) || "",
-        totalPax: initialData.totalPax || "",
-        issuedById: initialData.issuedById || initialData.issuedBy?.id || "",
-        clientId: initialData.clientId || initialData.client?.id || "",
-        airline: initialData.airline || "",
-        netCost: Number(initialData.netCost) || 0,
-        clientPrice: Number(initialData.clientPrice) || 0,
-        serviceCharge: Number(initialData.serviceCharge) || 0,
-        status: initialData.status || "issued",
+          formatDateForInput(initialData?.issueDate) || getTodayDateString(),
+        passengerName: initialData?.passengerName || "",
+        route: initialData?.route || "",
+        travelDate: formatDateForInput(initialData?.travelDate) || "",
+        totalPax: initialData?.totalPax || "",
+        issuedById: initialData?.issuedById || initialData?.issuedBy?.id || "",
+        clientId: initialData?.clientId || initialData?.client?.id || "",
+        airline: initialData?.airline || "",
+        netCost: Number(initialData?.netCost) || 0,
+        clientPrice: Number(initialData?.clientPrice) || 0,
+        serviceCharge: Number(initialData?.serviceCharge) || 0,
+        status: initialData?.status || "issued",
       });
     } else {
       reset({
@@ -192,7 +193,7 @@ const TicketModal = ({
         status: "issued",
       });
     }
-  }, [isOpen, initialData, reset]);
+  }, [isOpen, initialData?.id, reset]);
 
   const numClientPrice = Number(clientPrice) || 0;
   const numNetCost = Number(netCost) || 0;
