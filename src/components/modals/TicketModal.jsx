@@ -155,7 +155,7 @@ const TicketModal = ({
 
   useEffect(() => {
     if (!isOpen) return;
-
+    if (usersLoading || clientsLoading) return;
     if (initialData) {
       reset({
         pnrCode: initialData.pnrCode || "",
