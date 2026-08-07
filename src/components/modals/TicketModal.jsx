@@ -1,5 +1,4 @@
 import React, { useEffect } from "react";
-
 import { Controller, useForm, useWatch } from "react-hook-form";
 import { X } from "lucide-react";
 import Swal from "sweetalert2";
@@ -45,15 +44,12 @@ const TicketModal = ({
 }) => {
   const isEditMode = Boolean(initialData);
 
-  // RTK Mutations
   const [createTicket, { isLoading: isCreating }] = useCreateTicketMutation();
   const [updateTicket, { isLoading: isUpdating }] = useUpdateTicketMutation();
 
-  // RTK Queries
   const { data: usersData, isLoading: usersLoading } = useGetUsersQuery();
   const { data: clientsData, isLoading: clientsLoading } = useGetClientsQuery();
 
-  // ইউজার ও ক্লায়েন্ট ডাটা সঠিকভাবে হ্যান্ডেল করার জন্য
   const users = Array.isArray(usersData?.users)
     ? usersData.users
     : Array.isArray(usersData)
@@ -69,7 +65,6 @@ const TicketModal = ({
   const {
     register,
     handleSubmit,
-
     setValue,
     reset,
     control,
@@ -93,7 +88,6 @@ const TicketModal = ({
     },
   });
 
-  // useWatch ব্যবহার করে রেন্ডারিং অপটিমাইজ করা হয়েছে
   const [
     netCost,
     clientPrice,
@@ -117,26 +111,68 @@ const TicketModal = ({
     currentStatus,
   );
 
+  // 1. Data Reset Effect with Fallbacks & Airline Matcher
   useEffect(() => {
     if (!isOpen) return;
 
     if (initialData) {
-      reset({
-        pnrCode: initialData.pnrCode || "",
-        ticketType: initialData.ticketType || "one_way",
-        issueDate: formatDateForInput(initialData.issueDate),
-        passengerName: initialData.passengerName || "",
-        route: initialData.route || "",
-        travelDate: formatDateForInput(initialData.travelDate),
+      // Airline Matching Logic
+      let matchedAirline = initialData.airline || "";
+      if (matchedAirline) {
+        const found = AIRLINE_LIST.find(
+          (a) =>
+            `${a.code} - ${a.name}`.toLowerCase() ===
+              matchedAirline.toLowerCase() ||
+            a.code.toLowerCase() === matchedAirline.toLowerCase() ||
+            a.name.toLowerCase() === matchedAirline.toLowerCase(),
+        );
+        if (found) {
+          matchedAirline = `${found.code} - ${found.name}`;
+        }
+      }
 
-        totalPax: initialData.totalPax || "",
-        issuedById: initialData.issuedById || initialData.issuedBy?.id || "",
-        clientId: initialData.clientId || initialData.client?.id || "",
-        airline: initialData.airline || "",
-        netCost: Number(initialData.netCost) || 0,
-        clientPrice: Number(initialData.clientPrice) || 0,
-        serviceCharge: Number(initialData.serviceCharge) || 0,
-        status: initialData.status || "issued",
+      reset({
+        pnrCode:
+          initialData.pnrCode ?? initialData.pnr_code ?? initialData.pnr ?? "",
+        ticketType:
+          initialData.ticketType ?? initialData.ticket_type ?? "one_way",
+        issueDate: formatDateForInput(
+          initialData.issueDate || initialData.issue_date,
+        ),
+        passengerName:
+          initialData.passengerName ?? initialData.passenger_name ?? "",
+        route: initialData.route ?? "",
+        travelDate: formatDateForInput(
+          initialData.travelDate || initialData.travel_date,
+        ),
+        totalPax: initialData.totalPax ?? initialData.total_pax ?? "",
+
+        // Mongo _id and Nested Object Handlers
+        issuedById:
+          initialData.issuedById ??
+          initialData.issued_by_id ??
+          initialData.issuedBy?._id ??
+          initialData.issuedBy?.id ??
+          (typeof initialData.issuedBy === "string"
+            ? initialData.issuedBy
+            : ""),
+
+        clientId:
+          initialData.clientId ??
+          initialData.client_id ??
+          initialData.client?._id ??
+          initialData.client?.id ??
+          (typeof initialData.client === "string" ? initialData.client : ""),
+
+        airline: matchedAirline,
+        netCost: Number(initialData.netCost ?? initialData.net_cost ?? 0),
+        clientPrice: Number(
+          initialData.clientPrice ?? initialData.client_price ?? 0,
+        ),
+        serviceCharge: Number(
+          initialData.serviceCharge ?? initialData.service_charge ?? 0,
+        ),
+        status: (initialData.status || "issued").toLowerCase(),
       });
     } else {
       reset({
@@ -156,16 +192,14 @@ const TicketModal = ({
         status: "issued",
       });
     }
-  }, [initialData, reset, isOpen]);
+  }, [initialData, reset, isOpen, usersLoading, clientsLoading]); // Included loading states to re-sync form when dropdown options arrive
 
-  // Handle Route auto-clear logic on type switch
   useEffect(() => {
     if (isOpen && !initialData) {
       setValue("route", "", { shouldValidate: false });
     }
   }, [currentTicketType, setValue, initialData, isOpen]);
 
-  // রুট ইনপুট ফরম্যাটিং লজিক
   const handleRouteInput = (e) => {
     const rawValue = e.target.value.toUpperCase();
     const cleanText = rawValue.replace(/[^A-Z]/g, "");
@@ -223,13 +257,15 @@ const TicketModal = ({
       serviceCharge: showServiceCharge
         ? Number(formData.serviceCharge) || 0
         : 0,
-
-      netProfit: calculatedProfit, // ব্যাকএন্ড কী (Key) এর সাথে মেলানো হয়েছে
+      netProfit: calculatedProfit,
     };
 
     try {
       if (isEditMode) {
-        await updateTicket({ id: initialData.id, ...payload }).unwrap();
+        await updateTicket({
+          id: initialData.id || initialData._id,
+          ...payload,
+        }).unwrap();
         Swal.fire({
           icon: "success",
           title: "Updated Successfully!",
@@ -253,7 +289,6 @@ const TicketModal = ({
       onClose(false);
     } catch (err) {
       console.error("Redux Mutation Error:", err);
-
       Swal.fire({
         icon: "error",
         title: "Something Went Wrong!",
@@ -335,7 +370,6 @@ const TicketModal = ({
                     value={field.value}
                     onChange={(date) => {
                       field.onChange(date);
-                      // Issue Date পরিবর্তন করলে Travel Date যদি আগের হয়ে যায় তবে তা ক্লিয়ার করে দেওয়া
                       const currentTravel = control._formValues.travelDate;
                       if (
                         currentTravel &&
@@ -447,30 +481,31 @@ const TicketModal = ({
               <label className="block text-xs font-semibold text-gray-600 uppercase mb-1.5">
                 Issued By *
               </label>
-              {usersLoading ? (
-                <div className="text-xs text-gray-400 py-2">
-                  Loading users...
-                </div>
-              ) : (
-                <select
-                  {...register("issuedById", {
-                    required: "Please select value",
-                  })}
-                  className={`w-full text-sm border px-3 py-2.5 rounded-xl bg-white focus:outline-none focus:ring-2 focus:ring-blue-500/20 ${
-                    errors.issuedById
-                      ? "border-red-500 bg-red-50/30"
-                      : "border-gray-200"
-                  }`}
-                >
-                  <option value="">Select value</option>
+              <select
+                disabled={usersLoading}
+                {...register("issuedById", {
+                  required: "Please select value",
+                })}
+                className={`w-full text-sm border px-3 py-2.5 rounded-xl bg-white focus:outline-none focus:ring-2 focus:ring-blue-500/20 ${
+                  errors.issuedById
+                    ? "border-red-500 bg-red-50/30"
+                    : "border-gray-200"
+                }`}
+              >
+                <option value="">
+                  {usersLoading ? "Loading users..." : "Select value"}
+                </option>
 
-                  {users.map((user) => (
-                    <option key={user?.id} value={user?.id}>
-                      {user?.fullName} {user?.role ? `(${user?.role})` : ""}
-                    </option>
-                  ))}
-                </select>
-              )}
+                {users.map((user) => (
+                  <option
+                    key={user?.id || user?._id}
+                    value={user?.id || user?._id}
+                  >
+                    {user?.fullName || user?.name}{" "}
+                    {user?.role ? `(${user?.role})` : ""}
+                  </option>
+                ))}
+              </select>
             </div>
           </div>
 
@@ -479,30 +514,30 @@ const TicketModal = ({
               <label className="block text-xs font-semibold text-gray-600 uppercase mb-1.5">
                 Client *
               </label>
-              {clientsLoading ? (
-                <div className="text-xs text-gray-400 py-2">
-                  Loading clients...
-                </div>
-              ) : (
-                <select
-                  {...register("clientId", {
-                    required: "Please select a client",
-                  })}
-                  className={`w-full text-sm border px-3 py-2.5 rounded-xl bg-white focus:outline-none focus:ring-2 focus:ring-blue-500/20 ${
-                    errors.clientId
-                      ? "border-red-500 bg-red-50/30"
-                      : "border-gray-200"
-                  }`}
-                >
-                  <option value="">Select client</option>
+              <select
+                disabled={clientsLoading}
+                {...register("clientId", {
+                  required: "Please select a client",
+                })}
+                className={`w-full text-sm border px-3 py-2.5 rounded-xl bg-white focus:outline-none focus:ring-2 focus:ring-blue-500/20 ${
+                  errors.clientId
+                    ? "border-red-500 bg-red-50/30"
+                    : "border-gray-200"
+                }`}
+              >
+                <option value="">
+                  {clientsLoading ? "Loading clients..." : "Select client"}
+                </option>
 
-                  {clients.map((client) => (
-                    <option key={client.id} value={client.id}>
-                      {client.fullName}
-                    </option>
-                  ))}
-                </select>
-              )}
+                {clients.map((client) => (
+                  <option
+                    key={client?.id || client?._id}
+                    value={client?.id || client?._id}
+                  >
+                    {client?.fullName || client?.name}
+                  </option>
+                ))}
+              </select>
             </div>
 
             <div>
