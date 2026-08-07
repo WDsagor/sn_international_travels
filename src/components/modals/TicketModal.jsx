@@ -657,9 +657,9 @@ const TicketModal = ({
             <button
               type="submit"
               disabled={isSubmitting || (isEditMode && !isDirty)}
-              className={`px-4 py-2 rounded-lg font-medium transition-colors ${
+              className={`px-4 py-2 rounded-lg font-medium transition-colors  ${
                 isSubmitting || (isEditMode && !isDirty)
-                  ? "bg-gray-300 text-gray-500 cursor-not-allowed"
+                  ? "bg-gray-300 text-gray-500 cursor-not-allowed flex items-center gap-2"
                   : "bg-blue-600 hover:bg-blue-700 text-white cursor-pointer"
               }`}
             >

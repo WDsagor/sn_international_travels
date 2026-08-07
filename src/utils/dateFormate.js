@@ -1,25 +1,13 @@
+import { format, parseISO } from "date-fns";
 export const formatDateForInput = (dateString) => {
   if (!dateString) return "";
-  return new Date(dateString).toISOString().split("T")[0];
+  return format(parseISO(dateString), "yyyy-MM-dd");
 };
 
-export const getTodayDate = () => {
-  const today = new Date();
-  const year = today.getFullYear();
-  const month = String(today.getMonth() + 1).padStart(2, "0");
-  const day = String(today.getDate()).padStart(2, "0");
-  return `${year}-${month}-${day}`; // Output: "YYYY-MM-DD"
-};
-export const formatDate = (dateInput) => {
-  if (!dateInput) return "N/A";
-  const date = new Date(dateInput);
-  if (isNaN(date.getTime())) return "N/A";
-
-  return date.toLocaleDateString("en-GB", {
-    day: "2-digit",
-    month: "short",
-    year: "numeric",
-  });
+export const formatDate = (dateString) => {
+  const parsedDate = parseISO(dateString);
+  const formatted = format(parsedDate, "dd MMM, yyyy");
+  return formatted;
 };
 
 export const formatCurrency = (amount) => {
