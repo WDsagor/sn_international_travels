@@ -1,15 +1,17 @@
 import React, { useEffect } from "react";
-import { useForm } from "react-hook-form";
+import { useForm, Controller } from "react-hook-form";
 import { X, Wallet, Loader2 } from "lucide-react";
 import Swal from "sweetalert2";
 import {
   useGetClientsQuery,
   useReceivePaymentMutation,
 } from "../../redux/features/clients/clientApiSlice";
+import { CustomDatePicker } from "../share/CustomDatePicker";
+import { formatCurrency } from "../../utils/dateFormate";
 
-// পেমেন্ট মেথড লিস্ট
+// পেমেন্ট মেথড লিস্ট (অতিরিক্ত স্পেস সরিয়ে সঠিক আইডি দেওয়া হয়েছে)
 const PAYMENT_METHODS = [
-  { id: "CASH PAYMENT ", label: "Cash" },
+  { id: "CASH PAYMENT", label: "Cash" },
   { id: "BANK TRANSFER", label: "Bank Transfer" },
   { id: "BKASH PAYMENT", label: "bKash" },
   { id: "NAGAD", label: "Nagad" },
@@ -17,13 +19,9 @@ const PAYMENT_METHODS = [
 ];
 
 const ReceivePaymentModal = ({ isOpen, onClose }) => {
-  // ১. API থেকে রিয়েল ক্লায়েন্ট ডাটা ফেচ করা
   const { data: clients = [], isLoading: isClientsLoading } =
-    useGetClientsQuery(undefined, {
-      skip: !isOpen,
-    });
+    useGetClientsQuery(undefined, { skip: !isOpen });
 
-  // ২. পেমেন্ট মিউটেশন হুক
   const [receivePayment, { isLoading: isSubmitting }] =
     useReceivePaymentMutation();
 
@@ -32,31 +30,30 @@ const ReceivePaymentModal = ({ isOpen, onClose }) => {
     handleSubmit,
     watch,
     reset,
+    control,
     formState: { errors },
   } = useForm({
     defaultValues: {
       clientId: "",
       paymentDate: new Date().toLocaleDateString("sv-SE"),
       amount: "",
-      paymentMethod: "CASH",
+      paymentMethod: "CASH PAYMENT",
       accountNo: "",
       referenceNo: "",
       note: "",
     },
   });
 
-  // মোডাল বন্ধ বা ওপেন হলে ফর্ম রিসেট করা
   useEffect(() => {
     if (!isOpen) {
       reset();
     }
   }, [isOpen, reset]);
 
-  // ওয়াচ ভ্যালুসমূহ
   const selectedClientId = watch("clientId");
   const enteredAmount = watch("amount") || 0;
+  const selectedPaymentMethod = watch("paymentMethod");
 
-  // ৩. টাইপ ট্রিম করে কাস্টিং নিশ্চিত করা (String or Number Safe)
   const selectedClient = clients?.data?.find(
     (c) => String(c.id) === String(selectedClientId),
   );
@@ -65,7 +62,14 @@ const ReceivePaymentModal = ({ isOpen, onClose }) => {
     selectedClient?.dueAmount ?? selectedClient?.currentDue ?? 0;
   const remainingDue = currentDue - Number(enteredAmount);
 
-  // 🟢 ৪. ফর্ম সাবমিট হ্যান্ডলার (SweetAlert2 সহ)
+  // ব্যাংক বা মোবাইল ব্যাংকিং সিলেক্ট করলে অ্যাকাউন্ট ইনপুট দেখাবে
+  const showAccountField = [
+    "BANK TRANSFER",
+    "BKASH PAYMENT",
+    "NAGAD",
+    "CHEQUE",
+  ].includes(selectedPaymentMethod);
+
   const onSubmit = async (data) => {
     try {
       const formattedData = {
@@ -73,10 +77,8 @@ const ReceivePaymentModal = ({ isOpen, onClose }) => {
         amount: Number(data.amount),
       };
 
-      // API কল করা
       await receivePayment(formattedData).unwrap();
 
-      // 🎉 Success Alert
       Swal.fire({
         icon: "success",
         title: "Payment Received!",
@@ -92,7 +94,6 @@ const ReceivePaymentModal = ({ isOpen, onClose }) => {
     } catch (error) {
       console.error("Failed to receive payment:", error);
 
-      // ❌ Error Alert
       Swal.fire({
         icon: "error",
         title: "Payment Failed",
@@ -162,7 +163,7 @@ const ReceivePaymentModal = ({ isOpen, onClose }) => {
                 <option key={c.id} value={c.id}>
                   {c.fullName || c.name} {c.company ? `(${c.company})` : ""}{" "}
                   {c.dueAmount !== undefined
-                    ? `- Due: ৳${c.dueAmount.toLocaleString()}`
+                    ? `- Due: ${formatAmount(c.dueAmount)}`
                     : ""}
                 </option>
               ))}
@@ -174,18 +175,24 @@ const ReceivePaymentModal = ({ isOpen, onClose }) => {
             )}
           </div>
 
-          {/* Date & Amount */}
+          {/* Date & Amount Section */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
-              <label className="block text-xs font-semibold text-gray-600 uppercase mb-1.5">
-                Payment Date *
-              </label>
-              <input
-                type="date"
-                {...register("paymentDate", { required: "Date is required" })}
-                className="w-full text-sm border border-gray-200 px-3 py-2 rounded-xl focus:outline-hidden focus:ring-2 focus:ring-blue-500/20"
+              <Controller
+                control={control}
+                name="paymentDate"
+                rules={{ required: "Payment Date is required" }}
+                render={({ field, fieldState }) => (
+                  <CustomDatePicker
+                    label="Payment Date *"
+                    value={field.value}
+                    onChange={field.onChange}
+                    error={fieldState.error}
+                  />
+                )}
               />
             </div>
+
             <div>
               <label className="block text-xs font-semibold text-gray-600 uppercase mb-1.5">
                 Amount (৳) *
@@ -216,26 +223,38 @@ const ReceivePaymentModal = ({ isOpen, onClose }) => {
           {selectedClient && (
             <div className="p-3 bg-gray-50 rounded-xl border border-gray-100 flex items-center justify-between text-xs animate-in fade-in duration-150">
               <div>
-                <span className="text-gray-500 block">Current Due:</span>
-                <span className="font-mono font-bold text-gray-800">
-                  ৳{currentDue.toLocaleString()}
+                <span className="text-gray-500 block">
+                  {currentDue < 0 ? "Current Advance:" : "Current Due:"}
+                </span>
+                <span
+                  className={`font-mono font-bold ${
+                    currentDue < 0 ? "text-blue-600" : "text-gray-800"
+                  }`}
+                >
+                  {formatCurrency(Math.abs(currentDue))}
                 </span>
               </div>
               <div className="text-right">
-                <span className="text-gray-500 block">Remaining Due:</span>
+                <span className="text-gray-500 block">
+                  {remainingDue < 0 ? "New Advance Balance:" : "Remaining Due:"}
+                </span>
                 <span
                   className={`font-mono font-bold ${
                     remainingDue <= 0 ? "text-green-600" : "text-amber-600"
                   }`}
                 >
-                  ৳{remainingDue.toLocaleString()}
+                  {formatCurrency(Math.abs(remainingDue))}
                 </span>
               </div>
             </div>
           )}
 
-          {/* Payment Method & Transaction Ref */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          {/* Payment Method, Account & Transaction Ref */}
+          <div
+            className={`grid grid-cols-1 ${
+              showAccountField ? "sm:grid-cols-3" : "sm:grid-cols-2"
+            } gap-4`}
+          >
             <div>
               <label className="block text-xs font-semibold text-gray-600 uppercase mb-1.5">
                 Payment Method *
@@ -251,6 +270,22 @@ const ReceivePaymentModal = ({ isOpen, onClose }) => {
                 ))}
               </select>
             </div>
+
+            {/* Account No Field (Conditional) */}
+            {showAccountField && (
+              <div>
+                <label className="block text-xs font-semibold text-gray-600 uppercase mb-1.5">
+                  Account / Phone No
+                </label>
+                <input
+                  type="text"
+                  placeholder="e.g. 017XXXXXXX or Bank A/C"
+                  {...register("accountNo")}
+                  className="w-full text-sm border border-gray-200 px-3 py-2 rounded-xl focus:outline-hidden focus:ring-2 focus:ring-blue-500/20 font-mono"
+                />
+              </div>
+            )}
+
             <div>
               <label className="block text-xs font-semibold text-gray-600 uppercase mb-1.5">
                 Transaction ID / Ref

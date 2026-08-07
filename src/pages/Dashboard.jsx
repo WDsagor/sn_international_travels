@@ -19,10 +19,11 @@ const Dashboard = () => {
   const handlePaymentSubmit = (data) => {
     console.log("Payment Received Data:", data);
   };
+
   const handleTicketSubmit = (formData) => {
     console.log("New Ticket Created Data:", formData);
-    // এখানে আপনার API কল বা টেবিলে নতুন ডেটা পুশ করার লজিক লিখতে পারেন
   };
+
   // Mock Data
   const [metrics] = useState({
     totalInvoiced: 1250000,
@@ -59,7 +60,7 @@ const Dashboard = () => {
   ]);
 
   return (
-    <div className="w-full min-h-screen bg-gray-50 p-4  font-sans">
+    <div className="w-full min-h-screen bg-gray-50 p-4 font-sans">
       {/* Top Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-8 gap-4">
         <div>
@@ -70,30 +71,22 @@ const Dashboard = () => {
             Real-time financial status and ticketing hub
           </p>
         </div>
+
+        {/* Action Buttons */}
         <div className="flex items-center gap-3 w-full sm:w-auto">
           <button
-            className="flex-1 sm:flex-initial flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2.5 rounded-xl text-sm font-medium transition-colors shadow-sm cursor-pointer"
+            className="flex-1 sm:flex-initial flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2.5 rounded-xl text-sm font-medium transition-colors shadow-xs cursor-pointer"
             onClick={() => setShowModal(true)}
           >
             <Plus className="w-4 h-4" /> Issue Ticket
           </button>
           <button
-            className="flex-1 sm:flex-initial flex items-center justify-center gap-2 bg-green-600 border border-gray-200 hover:bg-green-700 text-white px-4 py-2.5 rounded-xl text-sm font-medium transition-colors shadow-sm cursor-pointer"
+            className="flex-1 sm:flex-initial flex items-center justify-center gap-2 bg-green-600 hover:bg-green-700 text-white px-4 py-2.5 rounded-xl text-sm font-medium transition-colors shadow-xs cursor-pointer"
             onClick={() => setIsPaymentOpen(true)}
           >
             <Plus className="w-4 h-4" /> Receive Payment
           </button>
-          <ReceivePaymentModal
-            isOpen={isPaymentOpen}
-            onClose={setIsPaymentOpen}
-            onSubmitSuccess={handlePaymentSubmit}
-          />
         </div>
-        <TicketModal
-          isOpen={showModal}
-          onClose={setShowModal}
-          onSubmitSuccess={handleTicketSubmit}
-        />
       </div>
 
       {/* Financial Metrics Grid */}
@@ -211,11 +204,19 @@ const Dashboard = () => {
                     </td>
                     <td className="py-3.5">
                       <span
-                        className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium capitalize border
-                        ${ticket.status === "issued" ? "bg-green-50/60 text-green-700 border-green-200" : ""}
-                        ${ticket.status === "reissue" ? "bg-blue-50/60 text-blue-700 border-blue-200" : ""}
-                        ${ticket.status === "cancel" ? "bg-red-50/60 text-red-700 border-red-200" : ""}
-                      `}
+                        className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium capitalize border ${
+                          ticket.status === "issued"
+                            ? "bg-green-50/60 text-green-700 border-green-200"
+                            : ""
+                        } ${
+                          ticket.status === "reissue"
+                            ? "bg-blue-50/60 text-blue-700 border-blue-200"
+                            : ""
+                        } ${
+                          ticket.status === "cancel"
+                            ? "bg-red-50/60 text-red-700 border-red-200"
+                            : ""
+                        }`}
                       >
                         {ticket.status}
                       </span>
@@ -267,6 +268,18 @@ const Dashboard = () => {
           </div>
         </div>
       </div>
+
+      {/* Modals */}
+      <TicketModal
+        isOpen={showModal}
+        onClose={() => setShowModal(false)}
+        onSubmitSuccess={handleTicketSubmit}
+      />
+      <ReceivePaymentModal
+        isOpen={isPaymentOpen}
+        onClose={() => setIsPaymentOpen(false)}
+        onSubmitSuccess={handlePaymentSubmit}
+      />
     </div>
   );
 };

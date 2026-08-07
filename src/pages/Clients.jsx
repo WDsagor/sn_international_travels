@@ -205,7 +205,9 @@ const Clients = () => {
                 <div className="flex items-center gap-4">
                   <div className="text-right">
                     <span className="text-xs text-gray-400 block font-medium">
-                      Total Outstanding Due
+                      {currentDue > 0
+                        ? " Total Outstanding Due"
+                        : "Total Credit Balance"}
                     </span>
                     <span
                       className={`text-xl font-bold font-mono ${
