@@ -1,4 +1,5 @@
 import React, { useEffect } from "react";
+
 import { Controller, useForm, useWatch } from "react-hook-form";
 import { X } from "lucide-react";
 import Swal from "sweetalert2";
@@ -9,6 +10,7 @@ import {
   useCreateTicketMutation,
   useUpdateTicketMutation,
 } from "../../redux/features/tickets/ticketsApiSlice";
+
 import { formatDateForInput } from "../../utils/dateFormate";
 import { CustomDatePicker } from "../share/CustomDatePicker";
 
@@ -35,43 +37,6 @@ const AIRLINE_LIST = [
   { id: "6e", code: "6E", name: "IndiGo" },
 ];
 
-const getTodayDateString = () => {
-  const today = new Date();
-  const year = today.getFullYear();
-  const month = String(today.getMonth() + 1).padStart(2, "0");
-  const day = String(today.getDate()).padStart(2, "0");
-  return `${year}-${month}-${day}`;
-};
-
-const formatRouteString = (inputValue, ticketType) => {
-  const rawValue = inputValue.toUpperCase();
-  const cleanText = rawValue.replace(/[^A-Z]/g, "");
-  const isReturn = ticketType === "round_trip" || ticketType === "multi_city";
-  const arrow = isReturn ? "⇋" : "⇒";
-
-  if (!cleanText) return "";
-
-  const codes = cleanText.match(/.{1,3}/g) || [];
-
-  if (ticketType === "multi_city") {
-    const pairs = [];
-    for (let i = 0; i < codes.length; i += 2) {
-      const from = codes[i];
-      const to = codes[i + 1];
-      if (from && to) pairs.push(`${from}${arrow}${to}`);
-      else if (from) pairs.push(from.length === 3 ? `${from}${arrow}` : from);
-    }
-    return pairs.join(", ");
-  }
-
-  const from = codes[0] || "";
-  const to = codes[1] || "";
-
-  if (from.length === 3 && !to) return `${from}${arrow}`;
-  if (to) return `${from}${arrow}${to.slice(0, 3)}`;
-  return from;
-};
-
 const TicketModal = ({
   isOpen,
   onClose,
@@ -79,20 +44,16 @@ const TicketModal = ({
   onSubmitSuccess,
 }) => {
   const isEditMode = Boolean(initialData);
-  console.log(initialData);
 
+  // RTK Mutations
   const [createTicket, { isLoading: isCreating }] = useCreateTicketMutation();
   const [updateTicket, { isLoading: isUpdating }] = useUpdateTicketMutation();
 
-  const { data: usersData, isLoading: usersLoading } = useGetUsersQuery(
-    undefined,
-    { skip: !isOpen },
-  );
-  const { data: clientsData, isLoading: clientsLoading } = useGetClientsQuery(
-    undefined,
-    { skip: !isOpen },
-  );
+  // RTK Queries
+  const { data: usersData, isLoading: usersLoading } = useGetUsersQuery();
+  const { data: clientsData, isLoading: clientsLoading } = useGetClientsQuery();
 
+  // ইউজার ও ক্লায়েন্ট ডাটা সঠিকভাবে হ্যান্ডেল করার জন্য
   const users = Array.isArray(usersData?.users)
     ? usersData.users
     : Array.isArray(usersData)
@@ -108,8 +69,8 @@ const TicketModal = ({
   const {
     register,
     handleSubmit,
+
     setValue,
-    getValues,
     reset,
     control,
     formState: { errors, isDirty },
@@ -117,7 +78,7 @@ const TicketModal = ({
     defaultValues: {
       pnrCode: "",
       ticketType: "one_way",
-      issueDate: getTodayDateString(),
+      issueDate: new Date().toLocaleDateString("sv-SE"),
       passengerName: "",
       route: "",
       travelDate: "",
@@ -132,12 +93,14 @@ const TicketModal = ({
     },
   });
 
+  // useWatch ব্যবহার করে রেন্ডারিং অপটিমাইজ করা হয়েছে
   const [
     netCost,
     clientPrice,
     serviceCharge,
     currentTicketType,
     currentStatus,
+    issueDate,
   ] = useWatch({
     control,
     name: [
@@ -159,26 +122,27 @@ const TicketModal = ({
 
     if (initialData) {
       reset({
-        pnrCode: initialData?.pnrCode,
-        ticketType: initialData?.ticketType,
+        pnrCode: initialData.pnrCode || "",
+        ticketType: initialData.ticketType || "one_way",
         issueDate: formatDateForInput(initialData.issueDate),
-        passengerName: initialData?.passengerName,
-        route: initialData?.route,
+        passengerName: initialData.passengerName || "",
+        route: initialData.route || "",
         travelDate: formatDateForInput(initialData.travelDate),
-        totalPax: initialData?.totalPax,
-        issuedById: initialData?.issuedById,
-        clientId: initialData?.clientId,
-        airline: initialData?.airline,
-        netCost: Number(initialData.netCost),
-        clientPrice: Number(initialData?.clientPrice),
-        serviceCharge: Number(initialData?.serviceCharge),
-        status: initialData?.status,
+
+        totalPax: initialData.totalPax || "",
+        issuedById: initialData.issuedById || initialData.issuedBy?.id || "",
+        clientId: initialData.clientId || initialData.client?.id || "",
+        airline: initialData.airline || "",
+        netCost: Number(initialData.netCost) || 0,
+        clientPrice: Number(initialData.clientPrice) || 0,
+        serviceCharge: Number(initialData.serviceCharge) || 0,
+        status: initialData.status || "issued",
       });
     } else {
       reset({
         pnrCode: "",
         ticketType: "one_way",
-        issueDate: getTodayDateString(),
+        issueDate: new Date().toISOString().split("T")[0],
         passengerName: "",
         route: "",
         travelDate: "",
@@ -192,7 +156,59 @@ const TicketModal = ({
         status: "issued",
       });
     }
-  }, [isOpen, initialData?.id, reset]);
+  }, [initialData, reset, isOpen]);
+
+  // Handle Route auto-clear logic on type switch
+  useEffect(() => {
+    if (isOpen && !initialData) {
+      setValue("route", "", { shouldValidate: false });
+    }
+  }, [currentTicketType, setValue, initialData, isOpen]);
+
+  // রুট ইনপুট ফরম্যাটিং লজিক
+  const handleRouteInput = (e) => {
+    const rawValue = e.target.value.toUpperCase();
+    const cleanText = rawValue.replace(/[^A-Z]/g, "");
+    const isReturn =
+      currentTicketType === "round_trip" || currentTicketType === "multi_city";
+    const arrow = isReturn ? "⇋" : "⇒";
+
+    if (!cleanText) {
+      setValue("route", "", { shouldValidate: true });
+      return;
+    }
+
+    const codes = cleanText.match(/.{1,3}/g) || [];
+
+    if (currentTicketType === "multi_city") {
+      const pairs = [];
+      for (let i = 0; i < codes.length; i += 2) {
+        const from = codes[i];
+        const to = codes[i + 1];
+
+        if (from && to) {
+          pairs.push(`${from}${arrow}${to}`);
+        } else if (from) {
+          pairs.push(from.length === 3 ? `${from}${arrow}` : from);
+        }
+      }
+      setValue("route", pairs.join(", "), { shouldValidate: true });
+      return;
+    }
+
+    const from = codes[0] || "";
+    const to = codes[1] || "";
+
+    if (from.length === 3 && !to) {
+      setValue("route", `${from}${arrow}`, { shouldValidate: true });
+    } else if (to) {
+      setValue("route", `${from}${arrow}${to.slice(0, 3)}`, {
+        shouldValidate: true,
+      });
+    } else {
+      setValue("route", from, { shouldValidate: true });
+    }
+  };
 
   const numClientPrice = Number(clientPrice) || 0;
   const numNetCost = Number(netCost) || 0;
@@ -207,7 +223,8 @@ const TicketModal = ({
       serviceCharge: showServiceCharge
         ? Number(formData.serviceCharge) || 0
         : 0,
-      netProfit: calculatedProfit,
+
+      netProfit: calculatedProfit, // ব্যাকএন্ড কী (Key) এর সাথে মেলানো হয়েছে
     };
 
     try {
@@ -236,6 +253,7 @@ const TicketModal = ({
       onClose(false);
     } catch (err) {
       console.error("Redux Mutation Error:", err);
+
       Swal.fire({
         icon: "error",
         title: "Something Went Wrong!",
@@ -251,14 +269,7 @@ const TicketModal = ({
   const isSubmitting = isCreating || isUpdating;
 
   return (
-    <div
-      aria-modal="true"
-      role="dialog"
-      className="fixed inset-0 bg-gray-900/40 backdrop-blur-xs z-50 flex items-center justify-center p-4 transition-all"
-      onClick={(e) => {
-        if (e.target === e.currentTarget) onClose(false);
-      }}
-    >
+    <div className="fixed inset-0 bg-gray-900/40 backdrop-blur-xs z-50 flex items-center justify-center p-4 transition-all">
       <div className="bg-white rounded-2xl w-full max-w-6xl shadow-xl border border-gray-100 flex flex-col max-h-[90vh] animate-in fade-in zoom-in-95 duration-200">
         <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100">
           <div>
@@ -285,7 +296,7 @@ const TicketModal = ({
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
             <div>
               <label className="block text-xs font-semibold text-gray-600 uppercase mb-1.5">
-                PNR Number *
+                PNR Code *
               </label>
               <input
                 type="text"
@@ -324,9 +335,13 @@ const TicketModal = ({
                     value={field.value}
                     onChange={(date) => {
                       field.onChange(date);
-                      const currentTravel = getValues("travelDate");
-                      if (currentTravel && currentTravel < date) {
-                        setValue("travelDate", "", { shouldDirty: true });
+                      // Issue Date পরিবর্তন করলে Travel Date যদি আগের হয়ে যায় তবে তা ক্লিয়ার করে দেওয়া
+                      const currentTravel = control._formValues.travelDate;
+                      if (
+                        currentTravel &&
+                        new Date(currentTravel) < new Date(date)
+                      ) {
+                        setValue("travelDate", "");
                       }
                     }}
                     error={fieldState.error}
@@ -343,7 +358,7 @@ const TicketModal = ({
               </label>
               <input
                 type="text"
-                placeholder="MD Rahmat ali"
+                placeholder="MD Rahamat ali"
                 {...register("passengerName", {
                   required: "Passenger name is required",
                 })}
@@ -364,10 +379,15 @@ const TicketModal = ({
                   : "⇒"}{" "}
                 CXB) *
               </label>
-              <Controller
-                control={control}
-                name="route"
-                rules={{
+              <input
+                type="text"
+                placeholder={
+                  currentTicketType === "round_trip" ||
+                  currentTicketType === "multi_city"
+                    ? "GDG⇋FDG"
+                    : "GGG⇒DDD"
+                }
+                {...register("route", {
                   required: "Route is required",
                   validate: (value) => {
                     if (currentTicketType === "multi_city") {
@@ -382,31 +402,13 @@ const TicketModal = ({
                     }
                     return true;
                   },
-                }}
-                render={({ field, fieldState }) => (
-                  <input
-                    {...field}
-                    type="text"
-                    placeholder={
-                      currentTicketType === "round_trip" ||
-                      currentTicketType === "multi_city"
-                        ? "GDG⇋FDG"
-                        : "GGG⇒DDD"
-                    }
-                    onChange={(e) => {
-                      const formatted = formatRouteString(
-                        e.target.value,
-                        currentTicketType,
-                      );
-                      field.onChange(formatted);
-                    }}
-                    className={`w-full uppercase text-sm border px-3 py-2 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500/20 font-mono ${
-                      fieldState.error
-                        ? "border-red-500 bg-red-50/30"
-                        : "border-gray-200"
-                    }`}
-                  />
-                )}
+                })}
+                onChange={handleRouteInput}
+                className={`w-full uppercase text-sm border px-3 py-2 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500/20 font-mono ${
+                  errors.route
+                    ? "border-red-500 bg-red-50/30"
+                    : "border-gray-200"
+                }`}
               />
             </div>
           </div>
@@ -423,7 +425,7 @@ const TicketModal = ({
                     value={field.value}
                     onChange={field.onChange}
                     error={fieldState.error}
-                    minDate={getValues("issueDate")}
+                    minDate={issueDate}
                   />
                 )}
               />
@@ -452,7 +454,7 @@ const TicketModal = ({
               ) : (
                 <select
                   {...register("issuedById", {
-                    required: "Please select issuer",
+                    required: "Please select value",
                   })}
                   className={`w-full text-sm border px-3 py-2.5 rounded-xl bg-white focus:outline-none focus:ring-2 focus:ring-blue-500/20 ${
                     errors.issuedById
@@ -460,12 +462,10 @@ const TicketModal = ({
                       : "border-gray-200"
                   }`}
                 >
-                  <option value="">Select issuer</option>
+                  <option value="">Select value</option>
+
                   {users.map((user) => (
-                    <option
-                      key={user?.id || user?._id}
-                      value={user?.id || user?._id}
-                    >
+                    <option key={user?.id} value={user?.id}>
                       {user?.fullName} {user?.role ? `(${user?.role})` : ""}
                     </option>
                   ))}
@@ -495,11 +495,9 @@ const TicketModal = ({
                   }`}
                 >
                   <option value="">Select client</option>
+
                   {clients.map((client) => (
-                    <option
-                      key={client?.id || client?._id}
-                      value={client?.id || client?._id}
-                    >
+                    <option key={client.id} value={client.id}>
                       {client.fullName}
                     </option>
                   ))}
