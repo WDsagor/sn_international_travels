@@ -15,6 +15,7 @@ import {
   getTodayDateString,
 } from "../../utils/dateFormate";
 import { CustomDatePicker } from "../share/CustomDatePicker";
+import { Loader2 } from "lucide-react";
 
 const AIRLINE_LIST = [
   { id: "bg", code: "BG", name: "Biman Bangladesh Airlines" },
@@ -662,6 +663,7 @@ const TicketModal = ({
                   : "bg-blue-600 hover:bg-blue-700 text-white cursor-pointer"
               }`}
             >
+              {isSubmitting && <Loader2 className="w-4 h-4 animate-spin" />}
               {isSubmitting
                 ? "Processing..."
                 : isEditMode

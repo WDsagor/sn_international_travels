@@ -271,21 +271,6 @@ const ReceivePaymentModal = ({ isOpen, onClose }) => {
               </select>
             </div>
 
-            {/* Account No Field (Conditional) */}
-            {showAccountField && (
-              <div>
-                <label className="block text-xs font-semibold text-gray-600 uppercase mb-1.5">
-                  Account / Phone No
-                </label>
-                <input
-                  type="text"
-                  placeholder="e.g. 017XXXXXXX or Bank A/C"
-                  {...register("accountNo")}
-                  className="w-full text-sm border border-gray-200 px-3 py-2 rounded-xl focus:outline-hidden focus:ring-2 focus:ring-blue-500/20 font-mono"
-                />
-              </div>
-            )}
-
             <div>
               <label className="block text-xs font-semibold text-gray-600 uppercase mb-1.5">
                 Transaction ID / Ref
