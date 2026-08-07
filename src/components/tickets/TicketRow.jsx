@@ -4,7 +4,6 @@ import { formatDate } from "../../utils/dateFormate";
 import StatusBadgeWithTooltip from "../share/StatusBadgeWithTooltip";
 import CustomTooltip from "../share/CustomTooltip";
 
-// ১. প্রপ্সে onDelete যুক্ত করা হয়েছে
 const TicketRow = ({ ticket, onEdit, onDelete }) => {
   const issuerName =
     ticket?.issuedBy?.fullName ||
@@ -104,13 +103,13 @@ const TicketRow = ({ ticket, onEdit, onDelete }) => {
             <button
               type="button"
               onClick={() => !isDisableEdit && onDelete && onDelete(ticket)}
+              disabled={isDisableEdit}
               className={`p-1.5 rounded-lg transition-colors ${
                 isDisableEdit
                   ? "text-gray-400 bg-gray-100 cursor-not-allowed opacity-60"
-                  : "text-blue-600 hover:text-blue-800 bg-blue-50 hover:bg-blue-100 cursor-pointer"
+                  : "text-red-600 hover:text-red-800 bg-red-50 hover:bg-red-100 cursor-pointer"
               }`}
               aria-label="Delete"
-              disabled={isDisableEdit}
             >
               <Trash2 className="w-4 h-4" />
             </button>

@@ -1,7 +1,6 @@
 import React, { useState } from "react";
 import { Plus, Search } from "lucide-react";
 import TicketModal from "../components/modals/TicketModal";
-
 import { useGetTicketsQuery } from "../redux/features/tickets/ticketsApiSlice";
 import TicketRow from "../components/tickets/TicketRow";
 
@@ -34,6 +33,15 @@ const Tickets = () => {
   const handleCloseModal = () => {
     setShowModal(false);
     setSelectedTicket(null);
+  };
+
+  const handleDeleteTicket = (ticket) => {
+    // Add your confirmation dialog and delete RTK mutation here
+    if (
+      window.confirm(`Are you sure you want to delete PNR: ${ticket.pnrCode}?`)
+    ) {
+      console.log("Deleting ticket:", ticket.id);
+    }
   };
 
   return (
@@ -127,6 +135,7 @@ const Tickets = () => {
                     key={ticket.id}
                     ticket={ticket}
                     onEdit={handleOpenEditModal}
+                    onDelete={handleDeleteTicket}
                   />
                 ))
               )}

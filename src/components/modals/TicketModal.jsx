@@ -1,4 +1,4 @@
-import React, { useEffect, useCallback } from "react";
+import React, { useEffect } from "react";
 import { Controller, useForm, useWatch } from "react-hook-form";
 import { X } from "lucide-react";
 import Swal from "sweetalert2";
@@ -35,6 +35,43 @@ const AIRLINE_LIST = [
   { id: "6e", code: "6E", name: "IndiGo" },
 ];
 
+const getTodayDateString = () => {
+  const today = new Date();
+  const year = today.getFullYear();
+  const month = String(today.getMonth() + 1).padStart(2, "0");
+  const day = String(today.getDate()).padStart(2, "0");
+  return `${year}-${month}-${day}`;
+};
+
+const formatRouteString = (inputValue, ticketType) => {
+  const rawValue = inputValue.toUpperCase();
+  const cleanText = rawValue.replace(/[^A-Z]/g, "");
+  const isReturn = ticketType === "round_trip" || ticketType === "multi_city";
+  const arrow = isReturn ? "⇋" : "⇒";
+
+  if (!cleanText) return "";
+
+  const codes = cleanText.match(/.{1,3}/g) || [];
+
+  if (ticketType === "multi_city") {
+    const pairs = [];
+    for (let i = 0; i < codes.length; i += 2) {
+      const from = codes[i];
+      const to = codes[i + 1];
+      if (from && to) pairs.push(`${from}${arrow}${to}`);
+      else if (from) pairs.push(from.length === 3 ? `${from}${arrow}` : from);
+    }
+    return pairs.join(", ");
+  }
+
+  const from = codes[0] || "";
+  const to = codes[1] || "";
+
+  if (from.length === 3 && !to) return `${from}${arrow}`;
+  if (to) return `${from}${arrow}${to.slice(0, 3)}`;
+  return from;
+};
+
 const TicketModal = ({
   isOpen,
   onClose,
@@ -48,15 +85,11 @@ const TicketModal = ({
 
   const { data: usersData, isLoading: usersLoading } = useGetUsersQuery(
     undefined,
-    {
-      skip: !isOpen,
-    },
+    { skip: !isOpen },
   );
   const { data: clientsData, isLoading: clientsLoading } = useGetClientsQuery(
     undefined,
-    {
-      skip: !isOpen,
-    },
+    { skip: !isOpen },
   );
 
   const users = Array.isArray(usersData?.users)
@@ -70,14 +103,6 @@ const TicketModal = ({
     : Array.isArray(clientsData)
       ? clientsData
       : [];
-
-  const getTodayDateString = () => {
-    const today = new Date();
-    const year = today.getFullYear();
-    const month = String(today.getMonth() + 1).padStart(2, "0");
-    const day = String(today.getDate()).padStart(2, "0");
-    return `${year}-${month}-${day}`;
-  };
 
   const {
     register,
@@ -112,7 +137,6 @@ const TicketModal = ({
     serviceCharge,
     currentTicketType,
     currentStatus,
-    issueDate,
   ] = useWatch({
     control,
     name: [
@@ -129,7 +153,6 @@ const TicketModal = ({
     currentStatus,
   );
 
-  // modal open/close এ শুধুমাত্র প্রয়োজনীয় ফিল্ড সেট করা
   useEffect(() => {
     if (!isOpen) return;
 
@@ -170,74 +193,6 @@ const TicketModal = ({
       });
     }
   }, [isOpen, initialData, reset]);
-
-  // Keyboard Escape Key Event Listener
-  const handleKeyDown = useCallback(
-    (e) => {
-      if (e.key === "Escape") {
-        onClose(false);
-      }
-    },
-    [onClose],
-  );
-
-  useEffect(() => {
-    if (isOpen) {
-      window.addEventListener("keydown", handleKeyDown);
-    }
-    return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [isOpen, handleKeyDown]);
-
-  const handleRouteInput = (e) => {
-    const rawValue = e.target.value.toUpperCase();
-    const cleanText = rawValue.replace(/[^A-Z]/g, "");
-    const isReturn =
-      currentTicketType === "round_trip" || currentTicketType === "multi_city";
-    const arrow = isReturn ? "⇋" : "⇒";
-
-    if (!cleanText) {
-      setValue("route", "", { shouldValidate: true, shouldDirty: true });
-      return;
-    }
-
-    const codes = cleanText.match(/.{1,3}/g) || [];
-
-    if (currentTicketType === "multi_city") {
-      const pairs = [];
-      for (let i = 0; i < codes.length; i += 2) {
-        const from = codes[i];
-        const to = codes[i + 1];
-
-        if (from && to) {
-          pairs.push(`${from}${arrow}${to}`);
-        } else if (from) {
-          pairs.push(from.length === 3 ? `${from}${arrow}` : from);
-        }
-      }
-      setValue("route", pairs.join(", "), {
-        shouldValidate: true,
-        shouldDirty: true,
-      });
-      return;
-    }
-
-    const from = codes[0] || "";
-    const to = codes[1] || "";
-
-    if (from.length === 3 && !to) {
-      setValue("route", `${from}${arrow}`, {
-        shouldValidate: true,
-        shouldDirty: true,
-      });
-    } else if (to) {
-      setValue("route", `${from}${arrow}${to.slice(0, 3)}`, {
-        shouldValidate: true,
-        shouldDirty: true,
-      });
-    } else {
-      setValue("route", from, { shouldValidate: true, shouldDirty: true });
-    }
-  };
 
   const numClientPrice = Number(clientPrice) || 0;
   const numNetCost = Number(netCost) || 0;
@@ -370,10 +325,7 @@ const TicketModal = ({
                     onChange={(date) => {
                       field.onChange(date);
                       const currentTravel = getValues("travelDate");
-                      if (
-                        currentTravel &&
-                        new Date(currentTravel) < new Date(date)
-                      ) {
+                      if (currentTravel && currentTravel < date) {
                         setValue("travelDate", "", { shouldDirty: true });
                       }
                     }}
@@ -442,8 +394,11 @@ const TicketModal = ({
                         : "GGG⇒DDD"
                     }
                     onChange={(e) => {
-                      field.onChange(e);
-                      handleRouteInput(e);
+                      const formatted = formatRouteString(
+                        e.target.value,
+                        currentTicketType,
+                      );
+                      field.onChange(formatted);
                     }}
                     className={`w-full uppercase text-sm border px-3 py-2 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500/20 font-mono ${
                       fieldState.error
@@ -468,7 +423,7 @@ const TicketModal = ({
                     value={field.value}
                     onChange={field.onChange}
                     error={fieldState.error}
-                    minDate={issueDate}
+                    minDate={getValues("issueDate")}
                   />
                 )}
               />
