@@ -144,12 +144,14 @@ const Tickets = () => {
         </div>
       </div>
 
-      <TicketModal
-        key={selectedTicket?.id || "new-ticket-modal"}
-        isOpen={showModal}
-        onClose={handleCloseModal}
-        initialData={selectedTicket}
-      />
+      {showModal && (
+        <TicketModal
+          key={selectedTicket?.id}
+          isOpen={showModal}
+          onClose={handleCloseModal}
+          initialData={selectedTicket}
+        />
+      )}
     </div>
   );
 };
