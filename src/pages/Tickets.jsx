@@ -145,6 +145,7 @@ const Tickets = () => {
       </div>
 
       <TicketModal
+        key={selectedTicket?.id || "new-ticket-modal"}
         isOpen={showModal}
         onClose={handleCloseModal}
         initialData={selectedTicket}

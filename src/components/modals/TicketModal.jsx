@@ -192,7 +192,7 @@ const TicketModal = ({
         status: "issued",
       });
     }
-  }, [isOpen, initialData, reset]);
+  }, [isOpen, initialData?.id, reset]);
 
   const numClientPrice = Number(clientPrice) || 0;
   const numNetCost = Number(netCost) || 0;
