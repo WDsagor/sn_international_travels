@@ -200,7 +200,7 @@ export const getClientById = async (req, res) => {
       where: { id },
       include: {
         payments: {
-          orderBy: { paymentDate: "asc" },
+          orderBy: [{ paymentDate: "asc" }, { createdAt: "asc" }],
         },
       },
     });

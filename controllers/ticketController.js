@@ -125,7 +125,7 @@ export const createTicket = async (req, res) => {
             clientId: clientId,
             amount: price,
             type: "debit",
-            paymentMethod: `Ticket ${status?.toUpperCase()} PNR - ${pnrCode}`,
+            paymentMethod: `Ticket ${status?.toUpperCase()} PNR - ${pnrCode?.toUpperCase()}`,
             paymentDate: new Date(),
             note: ` PASSENGER: ${passengerName}. (${route})`,
           },
@@ -248,7 +248,7 @@ export const updateTicket = async (req, res) => {
                 type: "credit",
                 paymentMethod: `${status?.toUpperCase()} Return`,
                 paymentDate: new Date(),
-                note: `PNR - ${ticket.pnrCode}  (${status} after return amount. (${ticket.route})`,
+                note: `PNR - ${ticket?.pnrCode?.toUpperCase()}  (${status} after return amount. (${ticket.route})`,
               },
             });
           }
@@ -261,7 +261,7 @@ export const updateTicket = async (req, res) => {
               type: "debit",
               paymentDate: new Date(),
               paymentMethod: `${status?.toUpperCase()} Charge`,
-              note: `Reissue Charge: PNR - ${ticket.pnrCode} (${ticket.route})`,
+              note: `Reissue Charge: PNR - ${ticket?.pnrCode.toUpperCase()} (${ticket.route})`,
             },
           });
         }
