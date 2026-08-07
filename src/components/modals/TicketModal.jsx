@@ -169,7 +169,7 @@ const TicketModal = ({
         status: "issued",
       });
     }
-  }, [isOpen, initialData?.id, reset]);
+  }, [isOpen, initialData, reset]);
 
   // Keyboard Escape Key Event Listener
   const handleKeyDown = useCallback(
