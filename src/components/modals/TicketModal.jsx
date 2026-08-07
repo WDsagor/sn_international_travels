@@ -155,7 +155,7 @@ const TicketModal = ({
 
   useEffect(() => {
     if (!isOpen) return;
-    if (usersLoading || clientsLoading) return;
+
     if (initialData) {
       reset({
         pnrCode: initialData.pnrCode || "",
@@ -192,7 +192,7 @@ const TicketModal = ({
         status: "issued",
       });
     }
-  }, [isOpen, initialData?.id, reset]);
+  }, [isOpen, initialData, reset]);
 
   const numClientPrice = Number(clientPrice) || 0;
   const numNetCost = Number(netCost) || 0;
