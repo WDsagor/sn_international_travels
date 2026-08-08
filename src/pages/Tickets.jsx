@@ -1,5 +1,5 @@
-import React, { useState } from "react";
-import { Plus, Search } from "lucide-react";
+import React, { useState, useMemo, useEffect } from "react";
+import { Plus, Search, ChevronLeft, ChevronRight } from "lucide-react";
 import TicketModal from "../components/modals/TicketModal";
 import { useGetTicketsQuery } from "../redux/features/tickets/ticketsApiSlice";
 import TicketRow from "../components/tickets/TicketRow";
@@ -10,6 +10,10 @@ const Tickets = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedStatus, setSelectedStatus] = useState("All Status");
 
+  // 🟢 পেজিনেশন স্টেটস (Pagination States)
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 10; // প্রতি পেজে যতগুলো টিকিট দেখতে চান
+
   const {
     data: ticketsData = [],
     isLoading,
@@ -19,6 +23,20 @@ const Tickets = () => {
     search: searchTerm,
     status: selectedStatus,
   });
+
+  // 🟢 সার্চ বা ফিল্টার পরিবর্তন হলে পেজ নম্বর ১-এ রিসেট হবে
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchTerm, selectedStatus]);
+
+  // 🟢 পেজিনেশন হিসাব-নিকাশ
+  const totalPages = Math.ceil((ticketsData?.length || 0) / itemsPerPage);
+
+  const paginatedTickets = useMemo(() => {
+    if (!Array.isArray(ticketsData)) return [];
+    const startIndex = (currentPage - 1) * itemsPerPage;
+    return ticketsData.slice(startIndex, startIndex + itemsPerPage);
+  }, [ticketsData, currentPage, itemsPerPage]);
 
   const handleOpenCreateModal = () => {
     setSelectedTicket(null);
@@ -36,7 +54,6 @@ const Tickets = () => {
   };
 
   const handleDeleteTicket = (ticket) => {
-    // Add your confirmation dialog and delete RTK mutation here
     if (
       window.confirm(`Are you sure you want to delete PNR: ${ticket.pnrCode}?`)
     ) {
@@ -130,7 +147,7 @@ const Tickets = () => {
                   </td>
                 </tr>
               ) : (
-                ticketsData?.map((ticket) => (
+                paginatedTickets?.map((ticket) => (
                   <TicketRow
                     key={ticket.id}
                     ticket={ticket}
@@ -142,6 +159,46 @@ const Tickets = () => {
             </tbody>
           </table>
         </div>
+
+        {/* 🟢 Pagination UI */}
+        {ticketsData?.length > 0 && (
+          <div className="flex flex-col sm:flex-row items-center justify-between gap-4 p-4 border-t border-gray-200">
+            <p className="text-xs text-gray-500">
+              Showing{" "}
+              <span className="font-medium text-gray-700">
+                {(currentPage - 1) * itemsPerPage + 1}
+              </span>{" "}
+              to{" "}
+              <span className="font-medium text-gray-700">
+                {Math.min(currentPage * itemsPerPage, ticketsData.length)}
+              </span>{" "}
+              of{" "}
+              <span className="font-medium text-gray-700">
+                {ticketsData.length}
+              </span>{" "}
+              entries
+            </p>
+            <div className="flex items-center gap-2">
+              <button
+                disabled={currentPage === 1}
+                onClick={() => setCurrentPage((prev) => prev - 1)}
+                className="px-3 py-1.5 text-xs font-medium rounded-lg border border-gray-200 text-gray-700 hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed flex items-center gap-1 transition-colors cursor-pointer"
+              >
+                <ChevronLeft size={14} /> Previous
+              </button>
+              <span className="text-xs text-gray-600 font-medium px-2">
+                Page {currentPage} of {totalPages || 1}
+              </span>
+              <button
+                disabled={currentPage === totalPages || totalPages === 0}
+                onClick={() => setCurrentPage((prev) => prev + 1)}
+                className="px-3 py-1.5 text-xs font-medium rounded-lg border border-gray-200 text-gray-700 hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed flex items-center gap-1 transition-colors cursor-pointer"
+              >
+                Next <ChevronRight size={14} />
+              </button>
+            </div>
+          </div>
+        )}
       </div>
 
       {showModal && (

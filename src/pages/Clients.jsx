@@ -7,6 +7,8 @@ import {
   Wallet,
   AlertCircle,
   User,
+  ChevronLeft,
+  ChevronRight,
 } from "lucide-react";
 
 import ClientModal from "../components/modals/ClientModal";
@@ -16,6 +18,7 @@ import {
   useGetClientByIdQuery,
   useGetClientsQuery,
 } from "../redux/features/clients/clientApiSlice";
+import ReportCalender from "../components/share/ReportCalender";
 
 const Clients = () => {
   // ১. URL Path থেকে id গ্রহণ
@@ -41,7 +44,11 @@ const Clients = () => {
   const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false);
   const [selectedClientModal, setSelectedClientModal] = useState(null);
 
-  // ৪. URL Path থেকে ID পেয়ে State-এ সেট
+  // 🟢 পেজিনেশন স্টেটস (Pagination States)
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 10; // প্রতি পেজে যতগুলো রো দেখাতে চান
+
+  // ৪. URL Path থেকে ID পেয়ে State-এ সেট
   useEffect(() => {
     if (urlClientId) {
       setSelectedClientId(urlClientId);
@@ -49,6 +56,11 @@ const Clients = () => {
       setSelectedClientId("");
     }
   }, [urlClientId]);
+
+  // 🟢 ক্লায়েন্ট চেঞ্জ হলে পেজ ১-এ রিসেট হবে
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [selectedClientId]);
 
   // ৫. ড্রপডাউন পরিবর্তন হ্যান্ডলার
   const handleClientSelect = (e) => {
@@ -81,6 +93,18 @@ const Clients = () => {
   const clientInfo = clientDetailsResponse?.data || clientDetailsResponse || {};
   const ledgerList = clientInfo?.ledger || [];
   const currentDue = clientInfo?.totalOutstandingDue ?? 0;
+
+  // 🟢 রিভার্সড লেজার এবং পেজিনেশন হিসাব (সর্বশেষ ট্রানজেকশন প্রথমে দেখানোর জন্য)
+  const sortedLedger = useMemo(() => {
+    return [...ledgerList].reverse();
+  }, [ledgerList]);
+
+  const totalPages = Math.ceil(sortedLedger.length / itemsPerPage);
+
+  const paginatedLedger = useMemo(() => {
+    const startIndex = (currentPage - 1) * itemsPerPage;
+    return sortedLedger.slice(startIndex, startIndex + itemsPerPage);
+  }, [sortedLedger, currentPage, itemsPerPage]);
 
   const handleAddNew = () => {
     setSelectedClientModal(null);
@@ -116,8 +140,8 @@ const Clients = () => {
       </div>
 
       {/* Select Client Dropdown Section */}
-      <div className="bg-white flex flex-col sm:flex-row justify-between items-stretch sm:items-center gap-4 p-4 rounded-xl border border-gray-200 shadow-sm mb-6">
-        <div className="w-full max-w-md">
+      <div className="bg-white flex flex-col xl:flex-row justify-center xl:justify-between items-stretch sm:items-center gap-4 p-4 rounded-xl border border-gray-200 shadow-sm mb-6">
+        <div className="w-full md:max-w-md">
           {isClientsLoading ? (
             <div className="h-10 bg-gray-200 animate-pulse rounded-xl w-full" />
           ) : isClientsError ? (
@@ -150,13 +174,7 @@ const Clients = () => {
             </select>
           )}
         </div>
-        <button
-          disabled={!isValidClientId}
-          className="text-sm flex items-center justify-center gap-2 border border-blue-200 bg-blue-50 py-2.5 px-5 rounded-xl font-medium cursor-pointer hover:bg-blue-100 disabled:opacity-50 disabled:cursor-not-allowed transition-all text-blue-700"
-        >
-          <Download size={18} />
-          Report
-        </button>
+        <ReportCalender />
       </div>
 
       {/* Ledger Table Section */}
@@ -217,9 +235,6 @@ const Clients = () => {
                       {formatCurrency(Math.abs(currentDue))}
                     </span>
                   </div>
-                  <button className="flex items-center gap-1.5 bg-gray-100 hover:bg-gray-200 text-gray-700 text-xs font-semibold px-3.5 py-2.5 rounded-lg transition-colors cursor-pointer">
-                    <FileText className="w-4 h-4" /> Export PDF
-                  </button>
                 </div>
               </div>
 
@@ -238,7 +253,7 @@ const Clients = () => {
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-gray-100 text-sm text-gray-600">
-                    {ledgerList.length === 0 ? (
+                    {sortedLedger.length === 0 ? (
                       <tr>
                         <td
                           colSpan="5"
@@ -248,7 +263,7 @@ const Clients = () => {
                         </td>
                       </tr>
                     ) : (
-                      ledgerList.map((item) => (
+                      paginatedLedger.map((item) => (
                         <tr
                           key={item.id}
                           className="hover:bg-gray-50/60 transition-colors"
@@ -276,7 +291,6 @@ const Clients = () => {
                           </td>
                           <td className="px-4 py-3.5 text-right font-mono font-bold text-gray-900 whitespace-nowrap">
                             {formatCurrency(Math.abs(item.runningBalance))}
-                            {/* {formatCurrency(item.runningBalance)} */}
                           </td>
                         </tr>
                       ))
@@ -284,6 +298,49 @@ const Clients = () => {
                   </tbody>
                 </table>
               </div>
+
+              {/* 🟢 Pagination Control UI */}
+              {sortedLedger.length > 0 && (
+                <div className="flex flex-col sm:flex-row items-center justify-between gap-4 mt-4 px-2 py-3 border-t border-gray-100">
+                  <p className="text-xs text-gray-500">
+                    Showing{" "}
+                    <span className="font-medium text-gray-700">
+                      {(currentPage - 1) * itemsPerPage + 1}
+                    </span>{" "}
+                    to{" "}
+                    <span className="font-medium text-gray-700">
+                      {Math.min(
+                        currentPage * itemsPerPage,
+                        sortedLedger.length,
+                      )}
+                    </span>{" "}
+                    of{" "}
+                    <span className="font-medium text-gray-700">
+                      {sortedLedger.length}
+                    </span>{" "}
+                    entries
+                  </p>
+                  <div className="flex items-center gap-2">
+                    <button
+                      disabled={currentPage === 1}
+                      onClick={() => setCurrentPage((prev) => prev - 1)}
+                      className="px-3 py-1.5 text-xs font-medium rounded-lg border border-gray-200 text-gray-700 hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed flex items-center gap-1 transition-colors cursor-pointer"
+                    >
+                      <ChevronLeft size={14} /> Previous
+                    </button>
+                    <span className="text-xs text-gray-600 font-medium px-2">
+                      Page {currentPage} of {totalPages || 1}
+                    </span>
+                    <button
+                      disabled={currentPage === totalPages || totalPages === 0}
+                      onClick={() => setCurrentPage((prev) => prev + 1)}
+                      className="px-3 py-1.5 text-xs font-medium rounded-lg border border-gray-200 text-gray-700 hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed flex items-center gap-1 transition-colors cursor-pointer"
+                    >
+                      Next <ChevronRight size={14} />
+                    </button>
+                  </div>
+                </div>
+              )}
             </>
           )}
         </div>
