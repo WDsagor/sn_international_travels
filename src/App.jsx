@@ -13,6 +13,7 @@ import Layout from "./components/Layouts";
 import LoginPage from "./pages/Login";
 import ProtectedRoute from "./components/share/ProtectedRoute";
 import AllClientList from "./pages/AllClientsList";
+import Passports from "./pages/Passports";
 
 function App() {
   const [count, setCount] = useState(0);
@@ -28,6 +29,7 @@ function App() {
             <Route path="/tickets" element={<Tickets />} />
             <Route path="/clients" element={<AllClientList />} />
             <Route path="/clients/:id?" element={<Clients />} />
+            <Route path="/passports&visa" element={<Passports />} />
             <Route path="/users" element={<Users />} />
           </Route>
         </Route>

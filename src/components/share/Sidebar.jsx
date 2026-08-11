@@ -1,6 +1,7 @@
 import React from "react";
 import { LayoutDashboard, Ticket, Users, Settings, LogOut } from "lucide-react";
 import { useLocation, Link, useNavigate } from "react-router-dom";
+import { Dock } from "lucide-react";
 
 const Sidebar = ({ isOpen, setIsOpen }) => {
   const location = useLocation();
@@ -10,10 +11,11 @@ const Sidebar = ({ isOpen, setIsOpen }) => {
     { path: "/", label: "Dashboard", icon: LayoutDashboard },
     { path: "/tickets", label: "Tickets", icon: Ticket },
     { path: "/clients", label: "Clients & Ledger", icon: Users },
+    { path: "/passports&visa", label: "Passport & Visa", icon: Dock },
     { path: "/users", label: "Staff Portal", icon: Settings },
   ];
   const handleLogout = () => {
-    localStorage.removeItem("token", "your_auth_token_here");
+    localStorage.removeItem("token");
     navigate("/login");
   };
   return (

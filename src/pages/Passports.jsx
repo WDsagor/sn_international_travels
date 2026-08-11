@@ -1,22 +1,21 @@
-import React, { useState, useMemo, useEffect } from "react";
-import { Plus, Search, ChevronLeft, ChevronRight } from "lucide-react";
-import TicketModal from "../components/modals/TicketModal";
+import { Plus } from "lucide-react";
+import { Search } from "lucide-react";
+import { useState } from "react";
 import { useGetTicketsQuery } from "../redux/features/tickets/ticketsApiSlice";
-import TicketRow from "../components/tickets/TicketRow";
-import Swal from "sweetalert2";
+import { useEffect } from "react";
+import { ChevronLeft } from "lucide-react";
+import { ChevronRight } from "lucide-react";
+import PassportRow from "../components/passport/PassportRow";
+import PassportModal from "../components/modals/PassportModal";
 
-const Tickets = () => {
+const Passports = () => {
   const [showModal, setShowModal] = useState(false);
-  const [selectedTicket, setSelectedTicket] = useState(null);
+  const [selectedPassport, setSelectedPassport] = useState(null);
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedStatus, setSelectedStatus] = useState("All Status");
 
-  // 🟢 পেজিনেশন স্টেটস (Pagination States)
-  const [currentPage, setCurrentPage] = useState(1);
-  const itemsPerPage = 10; // প্রতি পেজে যতগুলো টিকিট দেখতে চান
-
   const {
-    data: ticketsData = [],
+    data: passportsData = [],
     isLoading,
     isError,
     error,
@@ -24,79 +23,53 @@ const Tickets = () => {
     search: searchTerm,
     status: selectedStatus,
   });
-
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 10;
   // 🟢 সার্চ বা ফিল্টার পরিবর্তন হলে পেজ নম্বর ১-এ রিসেট হবে
   useEffect(() => {
     setCurrentPage(1);
   }, [searchTerm, selectedStatus]);
 
   // 🟢 পেজিনেশন হিসাব-নিকাশ
-  const totalPages = Math.ceil((ticketsData?.length || 0) / itemsPerPage);
+  const totalPages = Math.ceil((passportsData?.length || 0) / itemsPerPage);
 
-  const paginatedTickets = useMemo(() => {
-    if (!Array.isArray(ticketsData)) return [];
+  const paginatedPassports = useMemo(() => {
+    if (!Array.isArray(passportsData)) return [];
     const startIndex = (currentPage - 1) * itemsPerPage;
-    return ticketsData.slice(startIndex, startIndex + itemsPerPage);
-  }, [ticketsData, currentPage, itemsPerPage]);
+    return passportsData.slice(startIndex, startIndex + itemsPerPage);
+  }, [passportsData, currentPage, itemsPerPage]);
 
   const handleOpenCreateModal = () => {
-    setSelectedTicket(null);
+    setSelectedPassport(null);
     setShowModal(true);
   };
 
-  const handleOpenEditModal = (ticket) => {
-    setSelectedTicket(ticket);
+  const handleOpenEditModal = (passport) => {
+    setSelectedPassport(passport);
     setShowModal(true);
   };
 
   const handleCloseModal = () => {
     setShowModal(false);
-    setSelectedTicket(null);
+    setSelectedPassport(null);
   };
-
-  const handleDeleteTicket = (ticket) => {
-    Swal.fire({
-      title: "Are you sure?",
-      text: `You are about to delete PNR: ${ticket.pnrCode?.toUpperCase()}`,
-      icon: "warning",
-      showCancelButton: true,
-      confirmButtonColor: "#dc2626", // Red button
-      cancelButtonColor: "#6b7280", // Gray button
-      confirmButtonText: "Yes, delete it!",
-      cancelButtonText: "Cancel",
-      customClass: {
-        popup: "rounded-2xl",
-      },
-    }).then((result) => {
-      if (result.isConfirmed) {
-        Swal.fire({
-          title: "Deleted!",
-          text: "Ticket has been deleted successfully.",
-          icon: "success",
-          timer: 1500,
-          showConfirmButton: false,
-        });
-      }
-    });
-  };
-
   return (
     <div className="min-h-screen p-4 bg-gray-50 font-sans">
       {/* Header */}
       <div className="flex items-center justify-between mb-8">
         <div>
           <h1 className="text-2xl font-bold text-gray-900">
-            Ticket Management
+            Passport & Visa Information
           </h1>
           <p className="text-sm text-gray-500">
-            Issue, track, and manage all passenger flights
+            Manage all passport and visa information status
           </p>
         </div>
         <button
           onClick={handleOpenCreateModal}
           className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors cursor-pointer"
         >
-          <Plus className="w-4 h-4" /> New Ticket Issue
+          <Plus className="w-4 h-4" /> Passport & Visa
         </button>
       </div>
 
@@ -106,7 +79,7 @@ const Tickets = () => {
           <Search className="absolute left-3 top-2.5 h-4 w-4 text-gray-400" />
           <input
             type="text"
-            placeholder="Search PNR, Airline, Client or Passenger..."
+            placeholder="Search by Passport no, Visa or Client..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             className="w-full pl-9 pr-4 py-2 bg-gray-50 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20"
@@ -119,29 +92,28 @@ const Tickets = () => {
             className="bg-gray-50 border border-gray-200 px-3 py-2 rounded-lg text-sm focus:outline-none w-full md:w-auto cursor-pointer uppercase"
           >
             <option value="All Status">All Status</option>
-            <option value="issued">Issued</option>
-            <option value="reissue">Reissue</option>
-            <option value="refund">Refund</option>
-            <option value="void">Void</option>
+            <option value="Processing">Processing</option>
+            <option value="Submitted">Submitted</option>
+            <option value="Document check">Document check</option>
+            <option value="Pending Approval">Pending Approval</option>
+            <option value="Completed">Completed</option>
           </select>
         </div>
       </div>
-
-      {/* Tickets Table */}
       <div className="bg-white rounded-xl border border-gray-200 shadow-xs overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full text-left border-collapse">
             <thead className="bg-gray-100 text-xs font-semibold text-gray-700 uppercase tracking-wider border-b border-gray-200">
               <tr>
-                <th className="p-4">PNR & Date</th>
-                <th className="p-4">Travel Details</th>
-                <th className="p-4">Client</th>
-                <th className="p-4">Airline</th>
+                <th className="p-4">Date</th>
+                <th className="p-4">Passport Details</th>
+                <th className="p-4">Client </th>
+                <th className="p-4">Visa Type</th>
+                <th className="p-4">Visa</th>
                 <th className="p-4 text-right">Net Cost</th>
                 <th className="p-4 text-right">Client Price</th>
-                <th className="p-4 text-right">Ser. Charge</th>
                 <th className="p-4 text-right">Profit</th>
-                <th className="p-4">Status</th>
+                <th className="p-4 px-6 "> Visa Status</th>
                 <th className="p-4 text-center">Actions</th>
               </tr>
             </thead>
@@ -149,29 +121,29 @@ const Tickets = () => {
               {isLoading ? (
                 <tr>
                   <td colSpan="10" className="text-center py-8 text-gray-500">
-                    Loading tickets...
+                    Loading visas...
                   </td>
                 </tr>
               ) : isError ? (
                 <tr>
                   <td colSpan="10" className="text-center py-8 text-red-500">
-                    Failed to load tickets:{" "}
+                    Failed to load Visa:{" "}
                     {error?.message || "Something went wrong"}
                   </td>
                 </tr>
-              ) : ticketsData?.length === 0 ? (
+              ) : passportsData?.length === 0 ? (
                 <tr>
                   <td colSpan="10" className="text-center py-8 text-gray-400">
                     No tickets found.
                   </td>
                 </tr>
               ) : (
-                paginatedTickets?.map((ticket) => (
-                  <TicketRow
-                    key={ticket.id}
-                    ticket={ticket}
+                [1, 2]?.map((passport) => (
+                  <PassportRow
+                    key={passport.id}
+                    passport={passport}
                     onEdit={handleOpenEditModal}
-                    onDelete={handleDeleteTicket}
+                    // onDelete={handleDeleteTicket}
                   />
                 ))
               )}
@@ -180,7 +152,7 @@ const Tickets = () => {
         </div>
 
         {/* 🟢 Pagination UI */}
-        {ticketsData?.length > 0 && (
+        {passportsData?.length > 0 && (
           <div className="flex flex-col sm:flex-row items-center justify-between gap-4 p-4 border-t border-gray-200">
             <p className="text-xs text-gray-500">
               Showing{" "}
@@ -189,11 +161,11 @@ const Tickets = () => {
               </span>{" "}
               to{" "}
               <span className="font-medium text-gray-700">
-                {Math.min(currentPage * itemsPerPage, ticketsData.length)}
+                {Math.min(currentPage * itemsPerPage, passportsData.length)}
               </span>{" "}
               of{" "}
               <span className="font-medium text-gray-700">
-                {ticketsData.length}
+                {passportsData.length}
               </span>{" "}
               entries
             </p>
@@ -221,15 +193,15 @@ const Tickets = () => {
       </div>
 
       {showModal && (
-        <TicketModal
-          key={selectedTicket?.id}
+        <PassportModal
+          // key={selectedPassport?.id}
           isOpen={showModal}
           onClose={handleCloseModal}
-          initialData={selectedTicket}
+          initialData={selectedPassport}
         />
       )}
     </div>
   );
 };
 
-export default Tickets;
+export default Passports;
