@@ -6,6 +6,7 @@ import userRoutes from "./routes/user.routes.js";
 import clientRoutes from "./routes/client.routes.js";
 import ticketRoutes from "./routes/ticket.routes.js";
 import paymentRoutes from "./routes/payment.routes.js";
+import visaInfoRoutes from "./routes/visaInfo.route.js";
 
 dotenv.config();
 
@@ -25,6 +26,7 @@ app.use("/api/users", userRoutes);
 app.use("/api/clients", clientRoutes);
 app.use("/api/tickets", ticketRoutes);
 app.use("/api/payments", paymentRoutes);
+app.use("/api/visaInfo", visaInfoRoutes);
 // Database Connection Check
 async function main() {
   try {

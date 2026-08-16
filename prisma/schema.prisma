@@ -21,6 +21,7 @@ model User {
   totalProfit   Float     @default(0)
 
   tickets       Ticket[]
+  visa          VisaInfo[]
 
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
@@ -39,6 +40,7 @@ model Client {
 
 payments       Payment[]
   tickets        Ticket[]
+  visa          VisaInfo[]
 
   createdAt      DateTime @default(now())
   updatedAt      DateTime @updatedAt
@@ -70,6 +72,35 @@ model Ticket {
   createdAt    DateTime  @default(now())
   updatedAt    DateTime  @updatedAt
 }
+model VisaInfo {
+  id                String @id @default(uuid())
+  issueDate              DateTime
+  clientId          String
+  issuedById        String
+  passportName      String
+  passportNumber    String
+  numberOfPassport  Float?
+  passportImage     String?
+  visaCategory      String
+  visaType          String
+  agencyName        String?
+  submissionDate    DateTime
+  visaCountry       String
+  visaDetails       String?
+  status            String    @default("Submitted")
+  netCost           Float
+  clientPrice       Float
+  netProfit         Float 
+
+  issuedBy          User @relation(fields: [issuedById], references: [id])
+
+  client            Client    @relation(fields: [clientId], references: [id])
+
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+
+
+}
 model Payment {
   id            String   @id @default(uuid())
   amount        Float    
@@ -85,7 +116,6 @@ model Payment {
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
 }
-
 enum Role {
   Accounts
   Manager
@@ -97,3 +127,4 @@ enum Status {
   active
   Inactive
 }
+
