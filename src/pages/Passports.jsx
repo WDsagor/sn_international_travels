@@ -92,11 +92,11 @@ const Passports = () => {
             className="bg-gray-50 border border-gray-200 px-3 py-2 rounded-lg text-sm focus:outline-none w-full md:w-auto cursor-pointer uppercase"
           >
             <option value="All Status">All Status</option>
-            <option value="Processing">Processing</option>
             <option value="Submitted">Submitted</option>
-            <option value="Document check">Document check</option>
+            <option value="Processing">Processing</option>
             <option value="Pending Approval">Pending Approval</option>
-            <option value="Completed">Completed</option>
+            <option value="Approved">Approved</option>
+            <option value="Rejected">Rejected</option>
           </select>
         </div>
       </div>

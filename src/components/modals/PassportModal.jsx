@@ -174,7 +174,7 @@ const PassportModal = ({
     <div className="fixed inset-0 bg-gray-900/40 backdrop-blur-xs z-50 flex items-center justify-center p-4 transition-all">
       <div className="bg-white rounded-2xl w-full max-w-5xl shadow-xl border border-gray-100 flex flex-col max-h-[90vh] animate-in fade-in zoom-in-95 duration-200">
         {/* Header */}
-        <div className="flex items-center rounded-t-2xl justify-between px-6 py-4 border-b bg-blue-100/60 border-gray-100">
+        <div className="flex items-center rounded-t-2xl justify-between px-6 py-4 border-b bg-gray-100/60 border-gray-100">
           <div>
             <h2 className="text-lg font-bold text-gray-900">
               {isEditMode ? "Update Passport Details" : "Add New Passport"}
@@ -214,7 +214,7 @@ const PassportModal = ({
                           setIsCalendarOpen(!isCalendarOpen);
                           setIsSubCalOpen(false);
                         }}
-                        className="w-full flex items-center justify-between px-3.5 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm text-gray-800 hover:bg-gray-100 transition-colors cursor-pointer"
+                        className="w-full flex items-center justify-between px-3.5 py-2.5 bg-white border border-gray-200 rounded-xl text-sm text-gray-800 hover:bg-gray-100 transition-colors cursor-pointer"
                       >
                         <span>{safeFormatDate(field.value)}</span>
                         <CalendarIcon className="w-4 h-4 text-gray-500" />
@@ -320,7 +320,7 @@ const PassportModal = ({
                     </label>
                     <input
                       type="text"
-                      placeholder="e.g. Mohammad Ashikur Rahman"
+                      placeholder="Passport holder name"
                       {...register("passportName", {
                         required: "Name is required",
                       })}
@@ -449,14 +449,14 @@ const PassportModal = ({
                     </label>
                     <input
                       type="text"
-                      placeholder="e.g. Telon Corporation"
+                      placeholder="Agency name"
                       {...register("agencyName", {
                         required:
                           selectedVisaCategory === "agency"
                             ? "Agency name is required"
                             : false,
                       })}
-                      className="w-full text-sm border border-gray-200 px-3.5 py-2 rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-blue-500/20"
+                      className="w-full text-sm border border-gray-200 px-3.5 py-2 rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-blue-500/20 "
                     />
                     {errors.agencyName && (
                       <span className="text-xs text-red-500 mt-1 block">
@@ -524,7 +524,7 @@ const PassportModal = ({
                     {...register("visaCountry", {
                       required: "Country is required",
                     })}
-                    className="w-full text-sm border border-gray-200 px-3.5 py-2.5 rounded-xl bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
+                    className="w-full text-sm border border-gray-200 px-3.5 py-2 rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-blue-500/20 "
                   />
                   {errors.visaCountry && (
                     <span className="text-xs text-red-500 mt-1 block">
@@ -542,7 +542,7 @@ const PassportModal = ({
                     type="text"
                     placeholder="e.g. 2 Years, Multiple"
                     {...register("visaDetails")}
-                    className="w-full text-sm border border-gray-200 px-3.5 py-2.5 rounded-xl bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
+                    className="w-full text-sm border border-gray-200 px-3.5 py-2 rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-blue-500/20 "
                   />
                 </div>
 
@@ -553,11 +553,12 @@ const PassportModal = ({
                   </label>
                   <select
                     {...register("status")}
-                    className="w-full text-sm border border-gray-200 px-3.5 py-2.5 rounded-xl bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500/20 cursor-pointer"
+                    className="w-full text-sm border border-gray-200 px-3.5 py-2.5 rounded-xl bg-white focus:outline-none focus:ring-2 focus:ring-blue-500/20 cursor-pointer"
                   >
+                    <option value="Submitted">Submitted</option>
+                    <option value="Processing">Processing</option>
                     <option value="Pending Approval">Pending Approval</option>
                     <option value="Approved">Approved</option>
-                    <option value="Processing">Processing</option>
                     <option value="Rejected">Rejected</option>
                   </select>
                 </div>
@@ -574,7 +575,7 @@ const PassportModal = ({
                   type="number"
                   placeholder="0"
                   {...register("netCost")}
-                  className="w-full text-sm border border-gray-200 px-3.5 py-2.5 rounded-xl bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500/20 font-mono"
+                  className="w-full text-sm border border-gray-200 px-3.5 py-2 rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-blue-500/20 "
                 />
               </div>
 
@@ -586,7 +587,7 @@ const PassportModal = ({
                   type="number"
                   placeholder="0"
                   {...register("clientPrice")}
-                  className="w-full text-sm border border-gray-200 px-3.5 py-2.5 rounded-xl bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500/20 font-mono font-semibold"
+                  className="w-full text-sm border border-gray-200 px-3.5 py-2 rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-blue-500/20 "
                 />
               </div>
 

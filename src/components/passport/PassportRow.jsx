@@ -4,8 +4,24 @@ import { PlaneTakeoff, Trash2, SquarePen } from "lucide-react";
 import StatusBadgeWithTooltip from "../share/StatusBadgeWithTooltip";
 import CustomTooltip from "../share/CustomTooltip";
 import { formatDate } from "../../utils/dateFormate";
+import { Image } from "lucide-react";
+import { useState } from "react";
+import ImageModal from "../modals/ImageModal";
 
 const PassportRow = ({ passport, onEdit, onDelete }) => {
+  const [isImageModalOpen, setIsImageModalOpen] = useState(false);
+  const [selectedImage, setSelectedImage] = useState("");
+
+  // বাটনে ক্লিক করলে Prop হিসেবে পাঠানোর জন্য ইমেজ লিঙ্ক সেট হবে
+  const handleOpenImageModal = (imageLink) => {
+    setSelectedImage(imageLink);
+    setIsImageModalOpen(true);
+  };
+
+  const handleImageCloseModal = () => {
+    setIsImageModalOpen(false);
+    setSelectedImage("");
+  };
   const issuerName =
     passport?.issuedBy?.fullName ||
     passport?.issuedBy ||
@@ -35,30 +51,23 @@ const PassportRow = ({ passport, onEdit, onDelete }) => {
           <div className="w-5 h-5 bg-black rounded-full text-white text-center font-bold p-0.5">
             2
           </div>
-        </div>
-        {/* <div className="relative group w-max mt-0.5">
-          <div className="text-xs text-blue-600 font-semibold flex items-center gap-1 cursor-pointer hover:text-blue-800 transition-colors">
-            {passport?.route}
-          </div>
 
-          <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-3 hidden group-hover:flex group-hover:flex-col items-center gap-1.5 bg-gray-900 text-white text-xs rounded-lg py-1.5 shadow-xl z-50 whitespace-nowrap animate-in fade-in zoom-in-95 pointer-events-none">
-            <p className="font-bold text-blue-400 uppercase tracking-wide px-3">
-              Passenger Details
-            </p>
-            <div className="border-b w-full border-gray-600" />
-            <div className="text-gray-300 px-3">
-              <p>
-                <span className="text-gray-400">Primary:</span>{" "}
-                {passport?.passengerName}
-              </p>
-              <p>
-                <span className="text-gray-400">Pax Details:</span>{" "}
-                {passport?.totalPax || "N/A"}
-              </p>
-            </div>
-            <div className="absolute top-full left-1/2 -translate-x-1/2 border-4 border-transparent border-t-gray-900" />
-          </div>
-        </div> */}
+          <button
+            onClick={() =>
+              handleOpenImageModal(
+                "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRvJHWRgj3lcwhksxKkDDsHrQ_UatU1Gzzksjjhp30Lhg&s=10",
+              )
+            }
+            className="text-green-600 cursor-pointer"
+          >
+            <Image />
+          </button>
+          <ImageModal
+            isOpen={isImageModalOpen}
+            onClose={handleImageCloseModal}
+            imgSrc={selectedImage}
+          />
+        </div>
       </td>
 
       <td className="px-4 py-3 font-medium">
