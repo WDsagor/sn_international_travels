@@ -191,7 +191,7 @@ const Clients = () => {
                 statement.
               </p>
             </div>
-          ) : isLedgerLoading ? (
+          ) : isLedgerLoading | isClientsLoading ? (
             <div className="space-y-4 animate-pulse">
               <div className="h-12 bg-gray-100 rounded-lg w-full" />
               <div className="h-8 bg-gray-100 rounded-lg w-3/4" />

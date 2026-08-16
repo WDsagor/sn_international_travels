@@ -4,6 +4,7 @@ import TicketModal from "../components/modals/TicketModal";
 import { useGetTicketsQuery } from "../redux/features/tickets/ticketsApiSlice";
 import TicketRow from "../components/tickets/TicketRow";
 import Swal from "sweetalert2";
+import ReportCalender from "../components/share/ReportCalender";
 
 const Tickets = () => {
   const [showModal, setShowModal] = useState(false);
@@ -112,6 +113,7 @@ const Tickets = () => {
             className="w-full pl-9 pr-4 py-2 bg-gray-50 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20"
           />
         </div>
+        <ReportCalender />
         <div className="flex gap-2 w-full md:w-auto">
           <select
             value={selectedStatus}
@@ -149,7 +151,11 @@ const Tickets = () => {
               {isLoading ? (
                 <tr>
                   <td colSpan="10" className="text-center py-8 text-gray-500">
-                    Loading tickets...
+                    <div className="space-y-4 animate-pulse">
+                      <div className="h-12 bg-gray-100 rounded-lg w-full" />
+                      <div className="h-8 bg-gray-100 rounded-lg w-3/4" />
+                      <div className="h-32 bg-gray-100 rounded-lg w-full" />
+                    </div>
                   </td>
                 </tr>
               ) : isError ? (

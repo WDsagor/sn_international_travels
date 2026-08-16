@@ -89,6 +89,7 @@ const ReportCalender = ({ onGenerateReport }) => {
               numberOfMonths={1}
               required
               resetOnSelect
+              disabled={{ after: new Date() }}
             />
           </div>
         )}

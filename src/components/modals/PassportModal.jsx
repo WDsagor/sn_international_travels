@@ -5,18 +5,16 @@ import { format, isValid } from "date-fns";
 import { Calendar as CalendarIcon, Upload, X, Loader2 } from "lucide-react";
 import { useGetClientsQuery } from "../../redux/features/clients/clientApiSlice";
 import { useGetUsersQuery } from "../../redux/features/user/userApi";
+import { useAddVisaInfoMutation } from "../../redux/features/passports/passportApiSlice";
+import Swal from "sweetalert2";
 
-const PassportModal = ({
-  isOpen,
-  onClose,
-  initialData = null,
-  onSubmitSuccess,
-}) => {
+const PassportModal = ({ isOpen, onClose, initialData = null }) => {
   const [isCalendarOpen, setIsCalendarOpen] = useState(false);
   const [isSubCalOpen, setIsSubCalOpen] = useState(false);
   const [imagePreview, setImagePreview] = useState(null);
 
   const isEditMode = Boolean(initialData);
+  const [createVisaInfo, { isLoading: isCreating }] = useAddVisaInfoMutation();
   const { data: usersData, isLoading: usersLoading } = useGetUsersQuery();
   const { data: clientsData, isLoading: clientsLoading } = useGetClientsQuery();
 
@@ -41,7 +39,7 @@ const PassportModal = ({
     formState: { errors, isSubmitting }, // 🟢 1. Double Click Preventer
   } = useForm({
     defaultValues: {
-      date: new Date(),
+      issueDate: new Date(),
       submissionDate: new Date(),
       passportName: "",
       passportNumber: "",
@@ -55,7 +53,7 @@ const PassportModal = ({
       visaDetails: "",
       netCost: "",
       clientPrice: "",
-      status: "Pending Approval",
+      status: "Submitted",
     },
   });
 
@@ -83,7 +81,9 @@ const PassportModal = ({
       if (initialData) {
         reset({
           ...initialData,
-          date: initialData.date ? new Date(initialData.date) : new Date(),
+          issueDate: initialData.issueDate
+            ? new Date(initialData.issueDate)
+            : new Date(),
           submissionDate: initialData.submissionDate
             ? new Date(initialData.submissionDate)
             : new Date(),
@@ -97,11 +97,11 @@ const PassportModal = ({
         }
       } else {
         reset({
-          date: new Date(),
+          issueDate: new Date(),
           submissionDate: new Date(),
           passportName: "",
           passportNumber: "",
-          paxCount: 1,
+          numberOfPassport: 1,
           passportImage: null,
           clientId: "",
           issuedById: "",
@@ -111,7 +111,7 @@ const PassportModal = ({
           visaDetails: "",
           netCost: "",
           clientPrice: "",
-          status: "Pending Approval",
+          status: "Submitted",
         });
         setImagePreview(null);
       }
@@ -154,14 +154,31 @@ const PassportModal = ({
 
       const formattedData = {
         ...data,
-        date: safeFormatDate(data.date),
-        submissionDate: safeFormatDate(data.submissionDate),
+        issueDate: data?.issueDate,
+        submissionDate: data?.submissionDate,
+        passportImage: "",
         visaType: finalVisaType,
-        netProfit: liveProfit,
+        passportNumber: data?.passportNumber?.toUpperCase(),
       };
-
-      if (onSubmitSuccess) {
-        await onSubmitSuccess(formattedData);
+      // console.log(formattedData);
+      if (isEditMode) {
+        // await onSubmitSuccess(formattedData);
+        Swal.fire({
+          icon: "success",
+          title: "Update Successfully!",
+          text: "Visa has been updated.",
+          timer: 2000,
+          showConfirmButton: false,
+        });
+      } else {
+        await createVisaInfo(formattedData).unwrap();
+        Swal.fire({
+          icon: "success",
+          title: "Created Successfully!",
+          text: "New Visa has been submitted.",
+          timer: 2000,
+          showConfirmButton: false,
+        });
       }
     } catch (error) {
       console.error("Form Submission Error:", error);
@@ -204,7 +221,7 @@ const PassportModal = ({
                 </label>
                 <Controller
                   control={control}
-                  name="date"
+                  name="issueDate"
                   rules={{ required: "Date is required" }}
                   render={({ field }) => (
                     <div className="relative">
@@ -360,7 +377,9 @@ const PassportModal = ({
                       <input
                         type="number"
                         min="1"
-                        {...register("paxCount", { valueAsNumber: true })}
+                        {...register("numberOfPassport", {
+                          valueAsNumber: true,
+                        })}
                         className="w-full text-sm border border-gray-200 px-3.5 py-2 rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-blue-500/20"
                       />
                     </div>
@@ -625,8 +644,9 @@ const PassportModal = ({
                 disabled={isSubmitting}
                 className="flex items-center gap-2 px-6 py-2.5 text-xs font-semibold rounded-xl bg-blue-600 hover:bg-blue-700 text-white shadow-sm transition-all active:scale-95 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                {isSubmitting && <Loader2 className="w-4 h-4 animate-spin" />}
-                {isSubmitting
+                {isSubmitting ||
+                  (isCreating && <Loader2 className="w-4 h-4 animate-spin" />)}
+                {isSubmitting || isCreating
                   ? "Saving..."
                   : isEditMode
                     ? "Update Visa Record"
