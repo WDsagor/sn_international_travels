@@ -72,7 +72,11 @@ const TicketRow = ({ ticket, onEdit, onDelete }) => {
         ৳{Number(ticket?.netProfit || 0).toLocaleString()}
       </td>
 
-      <StatusBadgeWithTooltip ticket={ticket} issuerName={issuerName} />
+      <StatusBadgeWithTooltip
+        status={ticket?.status}
+        issuerName={issuerName}
+        updatedAt={ticket?.updatedAt}
+      />
 
       <td className="px-4 py-3 text-center">
         <div className="flex items-center justify-center gap-2">

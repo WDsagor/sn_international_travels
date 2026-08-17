@@ -8,10 +8,10 @@ import { Image } from "lucide-react";
 import { useState } from "react";
 import ImageModal from "../modals/ImageModal";
 
-const PassportRow = ({ passport, onEdit, onDelete }) => {
+const PassportRow = ({ passport, onEdit }) => {
   const [isImageModalOpen, setIsImageModalOpen] = useState(false);
   const [selectedImage, setSelectedImage] = useState("");
-
+  console.log(passport);
   // বাটনে ক্লিক করলে Prop হিসেবে পাঠানোর জন্য ইমেজ লিঙ্ক সেট হবে
   const handleOpenImageModal = (imageLink) => {
     setSelectedImage(imageLink);
@@ -35,7 +35,7 @@ const PassportRow = ({ passport, onEdit, onDelete }) => {
     <tr className="hover:bg-blue-50/50 transition-colors">
       <td className="px-4 py-3">
         <div className="font-mono font-semibold text-gray-900 ">
-          {passport?.issue || "10/08/2026"}
+          {formatDate(passport?.issueDate)}
         </div>
         {/* <div className="text-[11px] text-gray-400 mt-0.5">
           Submit 12/10/2026
@@ -44,18 +44,19 @@ const PassportRow = ({ passport, onEdit, onDelete }) => {
 
       <td className="px-4 py-3">
         <div className="font-medium text-gray-900">
-          {passport?.passportName || " Mohammad Ashikur Rahman"}
+          {passport?.passportName}
         </div>
         <div className="text-xs flex items-center gap-1 text-blue-600 font-bold py-0.5">
-          <span>A00151750</span>
+          <span>{passport?.passportNumber}</span>
           <div className="w-5 h-5 bg-black rounded-full text-white text-center font-bold p-0.5">
-            2
+            {passport?.numberOfPassport}
           </div>
 
           <button
             onClick={() =>
               handleOpenImageModal(
-                "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRvJHWRgj3lcwhksxKkDDsHrQ_UatU1Gzzksjjhp30Lhg&s=10",
+                passport?.passportImage ||
+                  "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRvJHWRgj3lcwhksxKkDDsHrQ_UatU1Gzzksjjhp30Lhg&s=10",
               )
             }
             className="text-green-600 cursor-pointer"
@@ -70,43 +71,44 @@ const PassportRow = ({ passport, onEdit, onDelete }) => {
         </div>
       </td>
 
-      <td className="px-4 py-3 font-medium">
-        {passport?.client?.fullName || "Nil Ratan Dhali"}
-      </td>
+      <td className="px-4 py-3 font-medium">{passport?.client?.fullName}</td>
       <td className="px-4 py-3 font-medium">
         <div className=" font-semibold text-gray-900 ">
-          {passport?.agencyName || "Telon Corporation"}
+          {passport.visaCategory === "agency"
+            ? passport?.agencyName
+            : passport?.visaType}
         </div>
         <div className="text-[11px] text-gray-400 mt-0.5">
-          Submit 12/10/2026
+          Submit {formatDate(passport?.submissionDate)}
         </div>
       </td>
       <td className="px-4 py-3 font-medium">
         <div className="font-mono font-semibold text-gray-900 ">
-          {passport?.visa || "Singapore"}
+          {passport?.visaCountry}
         </div>
         <div className="text-[11px] text-gray-400 mt-0.5">
-          2 Years, Multiple
+          {passport?.visaDetails}
         </div>
       </td>
 
       <td className="px-4 py-3 text-right font-mono text-gray-500">
-        ৳{Number(passport?.netCost || 4900).toLocaleString()}
+        ৳{Number(passport?.netCost).toLocaleString()}
       </td>
       <td className="px-4 py-3 text-right font-mono font-semibold text-gray-900">
-        ৳{Number(passport?.clientPrice || 6000).toLocaleString()}
+        ৳{Number(passport?.clientPrice).toLocaleString()}
       </td>
 
       <td className="px-4 py-3 text-right font-mono font-semibold text-green-600">
-        ৳{Number(passport?.netProfit || 1100).toLocaleString()}
+        ৳{Number(passport?.netProfit).toLocaleString()}
       </td>
       {/* <td className="px-4 py-3 text-right font-mono font-semibold text-green-600">
         {passport.status || "Pending Approval"}
       </td> */}
 
       <StatusBadgeWithTooltip
-        passport={passport || "status"}
-        issuerName={"Uttam halder"}
+        status={passport?.status}
+        issuerName={passport?.issuedBy?.fullName}
+        updatedAt={passport?.updatedAt}
       />
 
       <td className="px-4 py-3 text-center">
@@ -137,7 +139,7 @@ const PassportRow = ({ passport, onEdit, onDelete }) => {
           <div className="relative group">
             <button
               type="button"
-              onClick={() => !isDisableEdit && onDelete && onDelete(passport)}
+              // onClick={() => !isDisableEdit && onDelete && onDelete(passport)}
               disabled={isDisableEdit}
               className={`p-1.5 rounded-lg transition-colors ${
                 isDisableEdit

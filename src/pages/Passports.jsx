@@ -1,44 +1,43 @@
 import { Plus } from "lucide-react";
 import { Search } from "lucide-react";
-import { useState } from "react";
-import { useGetTicketsQuery } from "../redux/features/tickets/ticketsApiSlice";
-import { useEffect } from "react";
+
 import { ChevronLeft } from "lucide-react";
 import { ChevronRight } from "lucide-react";
 import PassportRow from "../components/passport/PassportRow";
 import PassportModal from "../components/modals/PassportModal";
+import { useGetAllVisaInfoQuery } from "../redux/features/passports/passportApiSlice";
+import { useMemo, useEffect, useState } from "react";
 
 const Passports = () => {
   const [showModal, setShowModal] = useState(false);
   const [selectedPassport, setSelectedPassport] = useState(null);
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedStatus, setSelectedStatus] = useState("All Status");
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 10;
 
   const {
     data: passportsData = [],
     isLoading,
     isError,
     error,
-  } = useGetTicketsQuery({
+  } = useGetAllVisaInfoQuery({
     search: searchTerm,
     status: selectedStatus,
   });
-  const [currentPage, setCurrentPage] = useState(1);
-  const itemsPerPage = 10;
   // 🟢 সার্চ বা ফিল্টার পরিবর্তন হলে পেজ নম্বর ১-এ রিসেট হবে
   useEffect(() => {
     setCurrentPage(1);
   }, [searchTerm, selectedStatus]);
 
-  // 🟢 পেজিনেশন হিসাব-নিকাশ
   const totalPages = Math.ceil((passportsData?.length || 0) / itemsPerPage);
-
+  console.log(passportsData);
   const paginatedPassports = useMemo(() => {
     if (!Array.isArray(passportsData)) return [];
     const startIndex = (currentPage - 1) * itemsPerPage;
     return passportsData.slice(startIndex, startIndex + itemsPerPage);
   }, [passportsData, currentPage, itemsPerPage]);
-
+  console.log(paginatedPassports);
   const handleOpenCreateModal = () => {
     setSelectedPassport(null);
     setShowModal(true);
@@ -113,7 +112,7 @@ const Passports = () => {
                 <th className="p-4 text-right">Net Cost</th>
                 <th className="p-4 text-right">Client Price</th>
                 <th className="p-4 text-right">Profit</th>
-                <th className="p-4 px-6 "> Visa Status</th>
+                <th className="p-4 px-6 text-right "> Visa Status</th>
                 <th className="p-4 text-center">Actions</th>
               </tr>
             </thead>
@@ -121,7 +120,11 @@ const Passports = () => {
               {isLoading ? (
                 <tr>
                   <td colSpan="10" className="text-center py-8 text-gray-500">
-                    Loading visas...
+                    <div className="space-y-4 p-5  animate-pulse">
+                      <div className="h-12 bg-gray-100 rounded-lg w-full" />
+                      <div className="h-8 bg-gray-100 rounded-lg w-3/4" />
+                      <div className="h-32 bg-gray-100 rounded-lg w-full" />
+                    </div>
                   </td>
                 </tr>
               ) : isError ? (
@@ -134,11 +137,11 @@ const Passports = () => {
               ) : passportsData?.length === 0 ? (
                 <tr>
                   <td colSpan="10" className="text-center py-8 text-gray-400">
-                    No tickets found.
+                    No visa found.
                   </td>
                 </tr>
               ) : (
-                [1, 2]?.map((passport) => (
+                paginatedPassports?.map((passport) => (
                   <PassportRow
                     key={passport.id}
                     passport={passport}
@@ -194,7 +197,7 @@ const Passports = () => {
 
       {showModal && (
         <PassportModal
-          // key={selectedPassport?.id}
+          key={selectedPassport?.id}
           isOpen={showModal}
           onClose={handleCloseModal}
           initialData={selectedPassport}

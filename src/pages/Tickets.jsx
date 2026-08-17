@@ -151,7 +151,7 @@ const Tickets = () => {
               {isLoading ? (
                 <tr>
                   <td colSpan="10" className="text-center py-8 text-gray-500">
-                    <div className="space-y-4 animate-pulse">
+                    <div className="space-y-4 p-5 animate-pulse">
                       <div className="h-12 bg-gray-100 rounded-lg w-full" />
                       <div className="h-8 bg-gray-100 rounded-lg w-3/4" />
                       <div className="h-32 bg-gray-100 rounded-lg w-full" />

@@ -58,9 +58,9 @@ const PassportModal = ({ isOpen, onClose, initialData = null }) => {
   });
 
   // Watchers
-  const [netCost, clientPrice, selectedVisaCategory] = useWatch({
+  const [netCost, clientPrice, selectedVisaCategory, issueDate] = useWatch({
     control,
-    name: ["netCost", "clientPrice", "visaCategory"],
+    name: ["netCost", "clientPrice", "visaCategory", "issueDate"],
   });
 
   // Profit Calculation
@@ -87,6 +87,17 @@ const PassportModal = ({ isOpen, onClose, initialData = null }) => {
           submissionDate: initialData.submissionDate
             ? new Date(initialData.submissionDate)
             : new Date(),
+          issuedById:
+            initialData.issuedById ??
+            initialData.issuedBy?.id ??
+            (typeof initialData.issuedBy === "string"
+              ? initialData.issuedBy
+              : ""),
+
+          clientId:
+            initialData.clientId ??
+            initialData.client?.id ??
+            (typeof initialData.client === "string" ? initialData.client : ""),
         });
         if (initialData.passportImage) {
           setImagePreview(
@@ -116,7 +127,7 @@ const PassportModal = ({ isOpen, onClose, initialData = null }) => {
         setImagePreview(null);
       }
     }
-  }, [initialData, isOpen, reset]);
+  }, [initialData, isOpen, reset, usersLoading, clientsLoading]);
 
   // Safe Date Formatter
   const safeFormatDate = (dateVal) => {
@@ -179,6 +190,8 @@ const PassportModal = ({ isOpen, onClose, initialData = null }) => {
           timer: 2000,
           showConfirmButton: false,
         });
+        reset();
+        onClose(false);
       }
     } catch (error) {
       console.error("Form Submission Error:", error);
@@ -245,6 +258,7 @@ const PassportModal = ({ isOpen, onClose, initialData = null }) => {
                             onSelect={(date) => {
                               if (date) field.onChange(date);
                               setIsCalendarOpen(false);
+                              setValue("submissionDate", date);
                             }}
                           />
                         </div>
@@ -519,6 +533,7 @@ const PassportModal = ({ isOpen, onClose, initialData = null }) => {
                                 if (date) field.onChange(date);
                                 setIsSubCalOpen(false);
                               }}
+                              disabled={[{ before: issueDate }]}
                             />
                           </div>
                         )}

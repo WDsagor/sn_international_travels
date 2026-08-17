@@ -2,7 +2,7 @@ import React from "react";
 import { UserCheck } from "lucide-react";
 import { formatDate } from "../../utils/dateFormate";
 
-const StatusBadgeWithTooltip = ({ ticket, issuerName, ...props }) => {
+const StatusBadgeWithTooltip = ({ status, issuerName, updatedAt }) => {
   const getStatusBadge = (status) => {
     switch (status?.toLowerCase()) {
       case "issued":
@@ -19,13 +19,13 @@ const StatusBadgeWithTooltip = ({ ticket, issuerName, ...props }) => {
   };
 
   return (
-    <td className="px-3 py-3 relative group">
+    <td className="px-3 py-3 relative group text-right">
       <span
         className={`inline-flex px-2.5 py-0.5 rounded-full text-xs font-semibold border capitalize cursor-pointer ${getStatusBadge(
-          ticket?.status,
+          status,
         )}`}
       >
-        {ticket?.status || "Pending Approval"}
+        {status}
       </span>
 
       {/* Issuer Hover Tooltip */}
@@ -36,11 +36,11 @@ const StatusBadgeWithTooltip = ({ ticket, issuerName, ...props }) => {
         </p>
         <div className="border-b w-full border-gray-600" />
         <strong className="text-gray-100 px-3 font-semibold">
-          {issuerName || "Uttam Halder"}
+          {issuerName}
         </strong>
         <p className="px-3">
           <span className="text-gray-400 mr-2">Last Update:</span>
-          {ticket ? formatDate(ticket?.updatedAt) : "10/08/2026"}
+          {formatDate(updatedAt)}
         </p>
         <div className="absolute top-full left-1/2 -translate-x-1/2 border-4 border-transparent border-t-gray-900" />
       </div>
