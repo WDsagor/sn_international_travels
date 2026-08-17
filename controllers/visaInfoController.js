@@ -73,13 +73,41 @@ export const createVisaInfo = async (req, res) => {
 // ২. সব VisaInfo-এর তালিকা পাওয়া (Get All)
 export const getAllVisaInfo = async (req, res) => {
   try {
-    const visaInfos = await prisma.visaInfo.findMany({
-      include: {
-        client: {
-          select: { id: true, name: true, email: true, phone: true }, // প্রয়োজনীয় Field সমূহ
+    const { search, status } = req.query;
+    const whereClause = {};
+    if (search) {
+      whereClause.OR = [
+        { passportNumber: { contains: search, mode: "insensitive" } },
+        { passportName: { contains: search, mode: "insensitive" } },
+        { visaCountry: { contains: search, mode: "insensitive" } },
+        {
+          client: {
+            fullName: { contains: search, mode: "insensitive" },
+          },
         },
+      ];
+    }
+    if (status && status !== "All Status") {
+      whereClause.status = { equals: status, mode: "insensitive" };
+    }
+    const visaInfos = await prisma.visaInfo.findMany({
+      where: whereClause,
+      include: {
         issuedBy: {
-          select: { id: true, name: true, email: true },
+          select: {
+            id: true,
+            fullName: true,
+            email: true,
+            role: true,
+          },
+        },
+        client: {
+          select: {
+            id: true,
+            fullName: true,
+            company: true,
+            phone: true,
+          },
         },
       },
       orderBy: {
