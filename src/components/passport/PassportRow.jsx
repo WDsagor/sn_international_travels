@@ -53,12 +53,7 @@ const PassportRow = ({ passport, onEdit }) => {
           </div>
 
           <button
-            onClick={() =>
-              handleOpenImageModal(
-                passport?.passportImage ||
-                  "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRvJHWRgj3lcwhksxKkDDsHrQ_UatU1Gzzksjjhp30Lhg&s=10",
-              )
-            }
+            onClick={() => handleOpenImageModal(passport?.passportImage)}
             className="text-green-600 cursor-pointer"
           >
             <Image />

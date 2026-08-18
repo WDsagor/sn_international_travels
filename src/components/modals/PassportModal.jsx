@@ -162,12 +162,27 @@ const PassportModal = ({ isOpen, onClose, initialData = null }) => {
     try {
       const finalVisaType =
         data.visaCategory === "e-visa" ? "e-Visa" : data.agencyName;
-
+      // console.log(data);
+      // console.log(file);
+      if (data?.passportImage?.length) {
+        const file = data?.passportImage[0];
+        const formData = new FormData();
+        formData.append("image", file);
+        const response = await fetch(
+          `https://api.imgbb.com/1/upload?key=${import.meta.env.VITE_IMGBB_API_KEY}`,
+          {
+            method: "POST",
+            body: formData,
+          },
+        );
+        const data = await response.json();
+        // console.log(data?.data?.display_url);
+        await setValue("passportImage", data?.data?.display_url);
+      }
       const formattedData = {
         ...data,
         issueDate: data?.issueDate,
         submissionDate: data?.submissionDate,
-        passportImage: "",
         visaType: finalVisaType,
         passportNumber: data?.passportNumber?.toUpperCase(),
       };
