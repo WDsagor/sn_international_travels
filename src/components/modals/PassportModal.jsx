@@ -164,8 +164,8 @@ const PassportModal = ({ isOpen, onClose, initialData = null }) => {
         data.visaCategory === "e-visa" ? "e-Visa" : data.agencyName;
       // console.log(data);
       // console.log(file);
+      const file = data?.passportImage?.[0];
       if (data?.passportImage?.length) {
-        const file = data?.passportImage[0];
         const formData = new FormData();
         formData.append("image", file);
         const response = await fetch(
@@ -175,9 +175,9 @@ const PassportModal = ({ isOpen, onClose, initialData = null }) => {
             body: formData,
           },
         );
-        const data = await response.json();
+        const imgData = await response.json();
         // console.log(data?.data?.display_url);
-        await setValue("passportImage", data?.data?.display_url);
+        await setValue("passportImage", imgData?.data?.display_url);
       }
       const formattedData = {
         ...data,
