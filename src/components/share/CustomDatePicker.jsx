@@ -32,7 +32,7 @@ export const CustomDatePicker = ({
   return (
     <div className="relative" ref={containerRef}>
       {label && (
-        <label className="block text-xs font-semibold text-gray-600 uppercase mb-1">
+        <label className="block text-xx font-semibold text-gray-600 uppercase mb-1">
           {label}
         </label>
       )}
@@ -48,8 +48,8 @@ export const CustomDatePicker = ({
         <span
           className={
             selectedDate
-              ? "text-gray-900 font-mono text-sm"
-              : "text-gray-400 text-sm"
+              ? "text-gray-900 font-mono text-xs"
+              : "text-gray-400 text-xs"
           }
         >
           {selectedDate ? format(selectedDate, "dd/MM/yyyy") : "DD/MM/YYYY"}

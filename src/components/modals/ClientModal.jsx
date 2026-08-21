@@ -81,7 +81,7 @@ const ClientModal = ({ isOpen, onClose, selectedClient = null }) => {
               <h2 className="text-lg font-bold text-gray-900">
                 {selectedClient ? "Edit Client Profile" : "Add New Client"}
               </h2>
-              <p className="text-xs text-gray-500">
+              <p className="text-xx text-gray-500">
                 Create a new customer or B2B agent profile
               </p>
             </div>
@@ -101,12 +101,12 @@ const ClientModal = ({ isOpen, onClose, selectedClient = null }) => {
         >
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
             <div>
-              <label className="block text-xs font-semibold text-gray-600 uppercase mb-1.5">
+              <label className="block text-xx font-semibold text-gray-600 uppercase mb-1.5">
                 Client Type *
               </label>
               <select
                 {...register("clientType")}
-                className="w-full text-sm border border-gray-200 px-3 py-2.5 rounded-xl bg-white focus:outline-hidden focus:ring-2 focus:ring-blue-500/20"
+                className="w-full text-xs border border-gray-200 px-3 py-2.5 rounded-xl bg-white focus:outline-hidden focus:ring-2 focus:ring-blue-500/20"
               >
                 <option value="Individual">Individual</option>
                 <option value="Agent">Corporate / Agent</option>
@@ -114,7 +114,7 @@ const ClientModal = ({ isOpen, onClose, selectedClient = null }) => {
             </div>
 
             <div className="sm:col-span-2">
-              <label className="block text-xs font-semibold text-gray-600 uppercase mb-1.5">
+              <label className="block text-xx font-semibold text-gray-600 uppercase mb-1.5">
                 Full Name *
               </label>
               <input
@@ -123,7 +123,7 @@ const ClientModal = ({ isOpen, onClose, selectedClient = null }) => {
                 {...register("fullName", {
                   required: "Client name is required",
                 })}
-                className={`w-full text-sm border px-3 py-2 rounded-xl focus:outline-hidden focus:ring-2 focus:ring-blue-500/20 ${
+                className={`w-full text-xs border px-3 py-2 rounded-xl focus:outline-hidden focus:ring-2 focus:ring-blue-500/20 ${
                   errors.fullName
                     ? "border-red-500 bg-red-50/30"
                     : "border-gray-200"
@@ -139,7 +139,7 @@ const ClientModal = ({ isOpen, onClose, selectedClient = null }) => {
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
-              <label className="block text-xs font-semibold text-gray-600 uppercase mb-1.5">
+              <label className="block text-xx font-semibold text-gray-600 uppercase mb-1.5">
                 Phone Number *
               </label>
               <input
@@ -148,7 +148,7 @@ const ClientModal = ({ isOpen, onClose, selectedClient = null }) => {
                 {...register("phone", {
                   required: "Phone number is required",
                 })}
-                className={`w-full text-sm border px-3 py-2 rounded-xl focus:outline-hidden focus:ring-2 focus:ring-blue-500/20 font-mono ${
+                className={`w-full text-xs border px-3 py-2 rounded-xl focus:outline-hidden focus:ring-2 focus:ring-blue-500/20 font-mono ${
                   errors.phone
                     ? "border-red-500 bg-red-50/30"
                     : "border-gray-200"
@@ -162,33 +162,33 @@ const ClientModal = ({ isOpen, onClose, selectedClient = null }) => {
             </div>
 
             <div>
-              <label className="block text-xs font-semibold text-gray-600 uppercase mb-1.5">
+              <label className="block text-xx font-semibold text-gray-600 uppercase mb-1.5">
                 Email Address
               </label>
               <input
                 type="email"
                 placeholder="rahim@example.com"
                 {...register("email")}
-                className="w-full text-sm border border-gray-200 px-3 py-2 rounded-xl focus:outline-hidden focus:ring-2 focus:ring-blue-500/20"
+                className="w-full text-xs border border-gray-200 px-3 py-2 rounded-xl focus:outline-hidden focus:ring-2 focus:ring-blue-500/20"
               />
             </div>
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
-              <label className="block text-xs font-semibold text-gray-600 uppercase mb-1.5">
+              <label className="block text-xx font-semibold text-gray-600 uppercase mb-1.5">
                 Company / Agency Name
               </label>
               <input
                 type="text"
                 placeholder="e.g. Sky Travels"
                 {...register("company")}
-                className="w-full text-sm border border-gray-200 px-3 py-2 rounded-xl focus:outline-hidden focus:ring-2 focus:ring-blue-500/20"
+                className="w-full text-xs border border-gray-200 px-3 py-2 rounded-xl focus:outline-hidden focus:ring-2 focus:ring-blue-500/20"
               />
             </div>
 
             <div>
-              <label className="block text-xs font-semibold text-gray-600 uppercase mb-1.5">
+              <label className="block text-xx font-semibold text-gray-600 uppercase mb-1.5">
                 Opening Balance / Due (৳)
               </label>
               <input
@@ -198,20 +198,20 @@ const ClientModal = ({ isOpen, onClose, selectedClient = null }) => {
                 {...register("openingBalance", {
                   setValueAs: (v) => (v === "" || isNaN(v) ? 0 : parseFloat(v)),
                 })}
-                className="w-full text-sm font-semibold font-mono border border-gray-200 px-3 py-2 rounded-xl focus:outline-hidden focus:ring-2 focus:ring-blue-500/20"
+                className="w-full text-xs font-semibold font-mono border border-gray-200 px-3 py-2 rounded-xl focus:outline-hidden focus:ring-2 focus:ring-blue-500/20"
               />
             </div>
           </div>
 
           <div>
-            <label className="block text-xs font-semibold text-gray-600 uppercase mb-1.5">
+            <label className="block text-xx font-semibold text-gray-600 uppercase mb-1.5">
               Address
             </label>
             <textarea
               rows="2"
               placeholder="House #12, Road #5, Dhanmondi, Dhaka"
               {...register("address")}
-              className="w-full text-sm border border-gray-200 p-3 rounded-xl focus:outline-hidden focus:ring-2 focus:ring-blue-500/20 resize-none"
+              className="w-full text-xs border border-gray-200 p-3 rounded-xl focus:outline-hidden focus:ring-2 focus:ring-blue-500/20 resize-none"
             ></textarea>
           </div>
 
@@ -219,14 +219,14 @@ const ClientModal = ({ isOpen, onClose, selectedClient = null }) => {
             <button
               type="button"
               onClick={onClose}
-              className="px-4 py-2 text-sm font-medium text-gray-500 border border-gray-200 rounded-xl hover:bg-gray-50 transition-colors cursor-pointer"
+              className="px-4 py-2 text-xs font-medium text-gray-500 border border-gray-200 rounded-xl hover:bg-gray-50 transition-colors cursor-pointer"
             >
               Cancel
             </button>
             <button
               type="submit"
               disabled={isAdding || isUpdating}
-              className="px-5 py-2 text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 rounded-xl shadow-xs transition-colors cursor-pointer disabled:opacity-50"
+              className="px-5 py-2 text-xs font-medium text-white bg-blue-600 hover:bg-blue-700 rounded-xl shadow-xs transition-colors cursor-pointer disabled:opacity-50"
             >
               {isAdding || isUpdating ? "Saving..." : "Save Client"}
             </button>

@@ -42,11 +42,11 @@ const Header = ({ isOpen, setIsOpen }) => {
         </button>
         <div className="h-6 w-px bg-gray-200 hidden sm:block" />
         <div className="flex items-center gap-2.5 p-1.5 rounded-lg">
-          <div className="w-8 h-8 rounded-full bg-indigo-100 text-indigo-700 flex items-center justify-center font-semibold text-sm">
+          <div className="w-8 h-8 rounded-full bg-indigo-100 text-indigo-700 flex items-center justify-center font-semibold text-xs">
             A
           </div>
           <div className="hidden sm:block text-left">
-            <p className="text-xs font-bold text-gray-900 leading-none">
+            <p className="text-xx font-bold text-gray-900 leading-none">
               Admin User
             </p>
             <p className="text-[10px] text-gray-400 font-medium mt-0.5">

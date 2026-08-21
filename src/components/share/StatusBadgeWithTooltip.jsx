@@ -6,22 +6,22 @@ const StatusBadgeWithTooltip = ({ status, issuerName, updatedAt }) => {
   const getStatusBadge = (status) => {
     switch (status?.toLowerCase()) {
       case "issued":
-        return "bg-green-50 text-green-700 border-green-200";
+        return "bg-green-50 text-xx text-green-700 border-green-200";
       case "reissue":
-        return "bg-amber-50 text-amber-700 border-amber-200";
+        return "bg-amber-50 text-xx text-amber-700 border-amber-200";
       case "refund":
-        return "bg-purple-50 text-purple-700 border-purple-200";
+        return "bg-purple-50 text-xx text-purple-700 border-purple-200";
       case "void":
-        return "bg-red-50 text-red-700 border-red-200";
+        return "bg-red-50 text-xx text-red-700 border-red-200";
       default:
-        return "bg-gray-50 text-gray-700 border-gray-200";
+        return "bg-gray-50 text-xx text-gray-700 border-gray-200";
     }
   };
 
   return (
     <td className="px-3 py-3 relative group text-right">
       <span
-        className={`inline-flex px-2.5 py-0.5 rounded-full text-xs font-semibold border capitalize cursor-pointer ${getStatusBadge(
+        className={`inline-flex px-2.5 py-0.5 rounded-full text-xx font-semibold border capitalize cursor-pointer ${getStatusBadge(
           status,
         )}`}
       >
@@ -29,8 +29,8 @@ const StatusBadgeWithTooltip = ({ status, issuerName, updatedAt }) => {
       </span>
 
       {/* Issuer Hover Tooltip */}
-      <div className="absolute bottom-full left-1/2 -translate-x-1/2 -mb-6 hidden group-hover:flex group-hover:flex-col items-center gap-0.5 bg-gray-900 text-white text-xs py-1.5 rounded-lg shadow-xl z-50 whitespace-nowrap animate-in fade-in zoom-in-95 pointer-events-none">
-        <p className="flex px-3 gap-1 uppercase text-blue-400 font-bold">
+      <div className="absolute bottom-full left-1/2 -translate-x-1/2 -mb-6 hidden group-hover:flex group-hover:flex-col items-center gap-0.5 bg-gray-900 text-white text-xx py-1.5 rounded-lg shadow-xl z-50 whitespace-nowrap animate-in fade-in zoom-in-95 pointer-events-none">
+        <p className="flex text-xx px-3 gap-1 uppercase text-blue-400 font-bold">
           <UserCheck className="w-3.5 h-3.5" />
           Issued By
         </p>

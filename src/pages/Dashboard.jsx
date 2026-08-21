@@ -67,7 +67,7 @@ const Dashboard = () => {
           <h1 className="text-2xl font-bold text-gray-900 tracking-tight">
             Travel Agency Ledger & Ticketing
           </h1>
-          <p className="text-sm text-gray-500">
+          <p className="text-xs text-gray-500">
             Real-time financial status and ticketing hub
           </p>
         </div>
@@ -75,13 +75,13 @@ const Dashboard = () => {
         {/* Action Buttons */}
         <div className="flex items-center gap-3 w-full sm:w-auto">
           <button
-            className="flex-1 sm:flex-initial flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2.5 rounded-xl text-sm font-medium transition-colors shadow-xs cursor-pointer"
+            className="flex-1 sm:flex-initial flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2.5 rounded-xl text-xs font-medium transition-colors shadow-xs cursor-pointer"
             onClick={() => setShowModal(true)}
           >
             <Plus className="w-4 h-4" /> Issue Ticket
           </button>
           <button
-            className="flex-1 sm:flex-initial flex items-center justify-center gap-2 bg-green-600 hover:bg-green-700 text-white px-4 py-2.5 rounded-xl text-sm font-medium transition-colors shadow-xs cursor-pointer"
+            className="flex-1 sm:flex-initial flex items-center justify-center gap-2 bg-green-600 hover:bg-green-700 text-white px-4 py-2.5 rounded-xl text-xs font-medium transition-colors shadow-xs cursor-pointer"
             onClick={() => setIsPaymentOpen(true)}
           >
             <Plus className="w-4 h-4" /> Receive Payment
@@ -94,7 +94,7 @@ const Dashboard = () => {
         {/* Card 1: Total Invoiced */}
         <div className="bg-white p-6 rounded-2xl border border-gray-200/80 shadow-xs">
           <div className="flex items-center justify-between mb-4">
-            <span className="text-sm font-medium text-gray-500">
+            <span className="text-xs font-medium text-gray-500">
               Total Invoiced
             </span>
             <div className="p-2.5 bg-blue-50 text-blue-600 rounded-xl">
@@ -104,7 +104,7 @@ const Dashboard = () => {
           <h3 className="text-2xl font-bold text-gray-900 font-mono">
             ৳{metrics.totalInvoiced.toLocaleString()}
           </h3>
-          <p className="text-xs text-blue-600 flex items-center gap-1 mt-2">
+          <p className="text-xx text-blue-600 flex items-center gap-1 mt-2">
             <ArrowUpRight className="w-3 h-3" /> Total generated bills
           </p>
         </div>
@@ -112,7 +112,7 @@ const Dashboard = () => {
         {/* Card 2: Total Paid */}
         <div className="bg-white p-6 rounded-2xl border border-gray-200/80 shadow-xs">
           <div className="flex items-center justify-between mb-4">
-            <span className="text-sm font-medium text-gray-500">
+            <span className="text-xs font-medium text-gray-500">
               Total Collection
             </span>
             <div className="p-2.5 bg-green-50 text-green-600 rounded-xl">
@@ -122,7 +122,7 @@ const Dashboard = () => {
           <h3 className="text-2xl font-bold text-gray-900 font-mono">
             ৳{metrics.totalPaid.toLocaleString()}
           </h3>
-          <p className="text-xs text-green-600 flex items-center gap-1 mt-2">
+          <p className="text-xx text-green-600 flex items-center gap-1 mt-2">
             <ArrowDownLeft className="w-3 h-3" /> Cash & Bank received
           </p>
         </div>
@@ -130,7 +130,7 @@ const Dashboard = () => {
         {/* Card 3: Outstanding Balance */}
         <div className="bg-white p-6 rounded-2xl border border-gray-200/80 shadow-xs">
           <div className="flex items-center justify-between mb-4">
-            <span className="text-sm font-medium text-gray-500">
+            <span className="text-xs font-medium text-gray-500">
               Market Due (Receivables)
             </span>
             <div className="p-2.5 bg-amber-50 text-amber-600 rounded-xl">
@@ -140,7 +140,7 @@ const Dashboard = () => {
           <h3 className="text-2xl font-bold text-gray-900 font-mono">
             ৳{metrics.currentBalance.toLocaleString()}
           </h3>
-          <p className="text-xs text-amber-600 flex items-center gap-1 mt-2">
+          <p className="text-xx text-amber-600 flex items-center gap-1 mt-2">
             <RefreshCw className="w-3 h-3" /> Remaining client balance
           </p>
         </div>
@@ -148,7 +148,7 @@ const Dashboard = () => {
         {/* Card 4: Profit */}
         <div className="bg-white p-6 rounded-2xl border border-gray-200/80 shadow-xs">
           <div className="flex items-center justify-between mb-4">
-            <span className="text-sm font-medium text-gray-500">
+            <span className="text-xs font-medium text-gray-500">
               Net Profit
             </span>
             <div className="p-2.5 bg-indigo-50 text-indigo-600 rounded-xl">
@@ -158,7 +158,7 @@ const Dashboard = () => {
           <h3 className="text-2xl font-bold text-gray-900 font-mono">
             ৳{metrics.totalProfit.toLocaleString()}
           </h3>
-          <p className="text-xs text-indigo-600 flex items-center gap-1 mt-2">
+          <p className="text-xx text-indigo-600 flex items-center gap-1 mt-2">
             <ArrowUpRight className="w-3 h-3" /> (Gross - Vendor Cost)
           </p>
         </div>
@@ -172,14 +172,14 @@ const Dashboard = () => {
             <h2 className="text-lg font-bold text-gray-900 tracking-tight">
               Recent Transactions
             </h2>
-            <button className="text-sm font-medium text-blue-600 hover:text-blue-700 cursor-pointer">
+            <button className="text-xs font-medium text-blue-600 hover:text-blue-700 cursor-pointer">
               View All
             </button>
           </div>
           <div className="overflow-x-auto">
             <table className="w-full text-left border-collapse">
               <thead>
-                <tr className="border-b border-gray-100 text-xs font-semibold text-gray-400 uppercase tracking-wider">
+                <tr className="border-b border-gray-100 text-xx font-semibold text-gray-400 uppercase tracking-wider">
                   <th className="pb-3.5">PNR</th>
                   <th className="pb-3.5">Passenger</th>
                   <th className="pb-3.5">Dest.</th>
@@ -187,7 +187,7 @@ const Dashboard = () => {
                   <th className="pb-3.5 text-right">Amount</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-gray-50 text-sm text-gray-700">
+              <tbody className="divide-y divide-gray-50 text-xs text-gray-700">
                 {recentTickets.map((ticket) => (
                   <tr
                     key={ticket.id}
@@ -204,7 +204,7 @@ const Dashboard = () => {
                     </td>
                     <td className="py-3.5">
                       <span
-                        className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium capitalize border ${
+                        className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xx font-medium capitalize border ${
                           ticket.status === "issued"
                             ? "bg-green-50/60 text-green-700 border-green-200"
                             : ""
@@ -243,10 +243,10 @@ const Dashboard = () => {
                   <Users className="w-4 h-4" />
                 </div>
                 <div>
-                  <h4 className="text-sm font-semibold text-gray-800">
+                  <h4 className="text-xs font-semibold text-gray-800">
                     Client Ledger Log
                   </h4>
-                  <p className="text-xs text-gray-400">Statement breakdown</p>
+                  <p className="text-xx text-gray-400">Statement breakdown</p>
                 </div>
               </div>
             </div>
@@ -256,10 +256,10 @@ const Dashboard = () => {
                   <RefreshCw className="w-4 h-4" />
                 </div>
                 <div>
-                  <h4 className="text-sm font-semibold text-gray-800">
+                  <h4 className="text-xs font-semibold text-gray-800">
                     Process Refund / Void
                   </h4>
-                  <p className="text-xs text-gray-400">
+                  <p className="text-xx text-gray-400">
                     Calculate charge rules
                   </p>
                 </div>

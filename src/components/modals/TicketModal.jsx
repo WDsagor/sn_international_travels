@@ -315,7 +315,7 @@ const TicketModal = ({
             <h2 className="text-lg font-bold text-gray-900">
               {isEditMode ? "Update Ticket Details" : "Issue New Ticket"}
             </h2>
-            <p className="text-xs text-gray-500">
+            <p className="text-xx text-gray-500">
               Enter ticket details and financial logging
             </p>
           </div>
@@ -334,14 +334,14 @@ const TicketModal = ({
         >
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
             <div>
-              <label className="block text-xs font-semibold text-gray-600 uppercase mb-1.5">
+              <label className="block text-xx font-semibold text-gray-600 uppercase mb-1.5">
                 PNR Code *
               </label>
               <input
                 type="text"
                 placeholder="e.g. 123456"
                 {...register("pnrCode", { required: "PNR is required" })}
-                className={`w-full uppercase text-sm border px-3 py-2 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500/20 font-mono ${
+                className={`w-full uppercase text-xs border px-3 py-2 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500/20 font-mono ${
                   errors.pnrCode
                     ? "border-red-500 bg-red-50/30"
                     : "border-gray-200"
@@ -350,12 +350,12 @@ const TicketModal = ({
             </div>
 
             <div>
-              <label className="block text-xs font-semibold text-gray-600 uppercase mb-1.5">
+              <label className="block text-xx font-semibold text-gray-600 uppercase mb-1.5">
                 Ticket Type *
               </label>
               <select
                 {...register("ticketType", { required: true })}
-                className="w-full text-sm border border-gray-200 px-3 py-2.5 rounded-xl bg-white focus:outline-none focus:ring-2 focus:ring-blue-500/20"
+                className="w-full text-xs border border-gray-200 px-3 py-2.5 rounded-xl bg-white focus:outline-none focus:ring-2 focus:ring-blue-500/20"
               >
                 <option value="one_way">One Way</option>
                 <option value="round_trip">Round Trip</option>
@@ -391,7 +391,7 @@ const TicketModal = ({
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
-              <label className="block text-xs font-semibold text-gray-600 uppercase mb-1.5">
+              <label className="block text-xx font-semibold text-gray-600 uppercase mb-1.5">
                 Primary Passenger Name *
               </label>
               <input
@@ -400,7 +400,7 @@ const TicketModal = ({
                 {...register("passengerName", {
                   required: "Passenger name is required",
                 })}
-                className={`w-full text-sm border px-3 py-2 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500/20 ${
+                className={`w-full text-xs border px-3 py-2 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500/20 ${
                   errors.passengerName
                     ? "border-red-500 bg-red-50/30"
                     : "border-gray-200"
@@ -409,7 +409,7 @@ const TicketModal = ({
             </div>
 
             <div>
-              <label className="block text-xs font-semibold text-gray-600 uppercase mb-1.5">
+              <label className="block text-xx font-semibold text-gray-600 uppercase mb-1.5">
                 Route (e.g. DAC{" "}
                 {currentTicketType === "round_trip" ||
                 currentTicketType === "multi_city"
@@ -442,7 +442,7 @@ const TicketModal = ({
                   },
                 })}
                 onChange={handleRouteInput}
-                className={`w-full uppercase text-sm border px-3 py-2 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500/20 font-mono ${
+                className={`w-full uppercase text-xs border px-3 py-2 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500/20 font-mono ${
                   errors.route
                     ? "border-red-500 bg-red-50/30"
                     : "border-gray-200"
@@ -470,19 +470,19 @@ const TicketModal = ({
             </div>
 
             <div>
-              <label className="block text-xs font-semibold text-gray-600 uppercase mb-1.5">
+              <label className="block text-xx font-semibold text-gray-600 uppercase mb-1.5">
                 Total Pax Details
               </label>
               <input
                 type="text"
                 placeholder="3 Adult, 1 Child, 1 Infant"
                 {...register("totalPax")}
-                className="w-full text-sm border border-gray-200 px-3 py-2 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500/20"
+                className="w-full text-xs border border-gray-200 px-3 py-2 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500/20"
               />
             </div>
 
             <div>
-              <label className="block text-xs font-semibold text-gray-600 uppercase mb-1.5">
+              <label className="block text-xx font-semibold text-gray-600 uppercase mb-1.5">
                 Issued By *
               </label>
               <select
@@ -490,7 +490,7 @@ const TicketModal = ({
                 {...register("issuedById", {
                   required: "Please select value",
                 })}
-                className={`w-full text-sm border px-3 py-2.5 rounded-xl bg-white focus:outline-none focus:ring-2 focus:ring-blue-500/20 ${
+                className={`w-full text-xs border px-3 py-2.5 rounded-xl bg-white focus:outline-none focus:ring-2 focus:ring-blue-500/20 ${
                   errors.issuedById
                     ? "border-red-500 bg-red-50/30"
                     : "border-gray-200"
@@ -515,7 +515,7 @@ const TicketModal = ({
 
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
             <div>
-              <label className="block text-xs font-semibold text-gray-600 uppercase mb-1.5">
+              <label className="block text-xx font-semibold text-gray-600 uppercase mb-1.5">
                 Client *
               </label>
               <select
@@ -523,7 +523,7 @@ const TicketModal = ({
                 {...register("clientId", {
                   required: "Please select a client",
                 })}
-                className={`w-full text-sm border px-3 py-2.5 rounded-xl bg-white focus:outline-none focus:ring-2 focus:ring-blue-500/20 ${
+                className={`w-full text-xs border px-3 py-2.5 rounded-xl bg-white focus:outline-none focus:ring-2 focus:ring-blue-500/20 ${
                   errors.clientId
                     ? "border-red-500 bg-red-50/30"
                     : "border-gray-200"
@@ -545,14 +545,14 @@ const TicketModal = ({
             </div>
 
             <div>
-              <label className="block text-xs font-semibold text-gray-600 uppercase mb-1.5">
+              <label className="block text-xx font-semibold text-gray-600 uppercase mb-1.5">
                 Airline *
               </label>
               <select
                 {...register("airline", {
                   required: "Please select an airline",
                 })}
-                className={`w-full text-sm border px-3 py-2.5 rounded-xl bg-white focus:outline-none focus:ring-2 focus:ring-blue-500/20 truncate ${
+                className={`w-full text-xs border px-3 py-2.5 rounded-xl bg-white focus:outline-none focus:ring-2 focus:ring-blue-500/20 truncate ${
                   errors.airline
                     ? "border-red-500 bg-red-50/30"
                     : "border-gray-200"
@@ -568,12 +568,12 @@ const TicketModal = ({
             </div>
 
             <div>
-              <label className="block text-xs font-semibold text-gray-600 uppercase mb-1.5">
+              <label className="block text-xx font-semibold text-gray-600 uppercase mb-1.5">
                 Status
               </label>
               <select
                 {...register("status")}
-                className="w-full text-sm border border-gray-200 px-3 py-2.5 rounded-xl bg-white focus:outline-none focus:ring-2 focus:ring-blue-500/20 uppercase"
+                className="w-full text-xs border border-gray-200 px-3 py-2.5 rounded-xl bg-white focus:outline-none focus:ring-2 focus:ring-blue-500/20 uppercase"
               >
                 <option value="issued">Issued</option>
                 <option value="reissue">Reissue</option>
@@ -589,7 +589,7 @@ const TicketModal = ({
             } gap-4 items-center`}
           >
             <div>
-              <label className="block text-xs font-bold text-gray-500 uppercase mb-1">
+              <label className="block text-xx font-bold text-gray-500 uppercase mb-1">
                 Net Cost (৳) *
               </label>
               <input
@@ -598,12 +598,12 @@ const TicketModal = ({
                   valueAsNumber: true,
                   required: true,
                 })}
-                className="w-full text-sm font-semibold font-mono border border-gray-200 px-3 py-2 rounded-xl bg-white focus:outline-none focus:ring-2 focus:ring-blue-500/20"
+                className="w-full text-xs font-semibold font-mono border border-gray-200 px-3 py-2 rounded-xl bg-white focus:outline-none focus:ring-2 focus:ring-blue-500/20"
               />
             </div>
 
             <div>
-              <label className="block text-xs font-bold text-gray-500 uppercase mb-1">
+              <label className="block text-xx font-bold text-gray-500 uppercase mb-1">
                 Client Price (৳) *
               </label>
               <input
@@ -612,26 +612,26 @@ const TicketModal = ({
                   valueAsNumber: true,
                   required: true,
                 })}
-                className="w-full text-sm font-semibold font-mono border border-gray-200 px-3 py-2 rounded-xl bg-white focus:outline-none focus:ring-2 focus:ring-blue-500/20"
+                className="w-full text-xs font-semibold font-mono border border-gray-200 px-3 py-2 rounded-xl bg-white focus:outline-none focus:ring-2 focus:ring-blue-500/20"
               />
             </div>
 
             {showServiceCharge && (
               <div className="animate-in fade-in duration-200">
-                <label className="block text-xs font-bold text-amber-600 uppercase mb-1">
+                <label className="block text-xx font-bold text-amber-600 uppercase mb-1">
                   Service Charge (৳)
                 </label>
                 <input
                   type="number"
                   {...register("serviceCharge", { valueAsNumber: true })}
                   placeholder="0"
-                  className="w-full text-sm font-semibold font-mono border border-amber-300 bg-amber-50 px-3 py-2 rounded-xl focus:outline-none focus:ring-2 focus:ring-amber-500/20"
+                  className="w-full text-xs font-semibold font-mono border border-amber-300 bg-amber-50 px-3 py-2 rounded-xl focus:outline-none focus:ring-2 focus:ring-amber-500/20"
                 />
               </div>
             )}
 
             <div>
-              <span className="block text-xs font-bold text-gray-500 uppercase mb-1">
+              <span className="block text-xx font-bold text-gray-500 uppercase mb-1">
                 Net Profit (Auto)
               </span>
               <div
@@ -650,7 +650,7 @@ const TicketModal = ({
             <button
               type="button"
               onClick={() => onClose(false)}
-              className="px-4 py-2 text-sm font-medium text-gray-500 border border-gray-200 rounded-xl hover:bg-gray-50 transition-colors cursor-pointer"
+              className="px-4 py-2 text-xs font-medium text-gray-500 border border-gray-200 rounded-xl hover:bg-gray-50 transition-colors cursor-pointer"
             >
               Cancel
             </button>

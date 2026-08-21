@@ -96,7 +96,23 @@ const Clients = () => {
 
   // 🟢 রিভার্সড লেজার এবং পেজিনেশন হিসাব (সর্বশেষ ট্রানজেকশন প্রথমে দেখানোর জন্য)
   const sortedLedger = useMemo(() => {
-    return [...ledgerList].reverse();
+    if (!ledgerList.length) return [];
+
+    return [...ledgerList].sort((a, b) => {
+      // ১. মূল তারিখ ও সময়ের তুলনা
+      const dateA = new Date(a.date).getTime();
+      const dateB = new Date(b.date).getTime();
+
+      if (dateB !== dateA) {
+        return dateB - dateA; // Newest date first
+      }
+
+      // ২. যদি তারিখ একই হয়, তবে createdAt বা id অনুযায়ী চেক (Fallback)
+      const createdA = a.createdAt ? new Date(a.createdAt).getTime() : 0;
+      const createdB = b.createdAt ? new Date(b.createdAt).getTime() : 0;
+
+      return createdB - createdA;
+    });
   }, [ledgerList]);
 
   const totalPages = Math.ceil(sortedLedger.length / itemsPerPage);
@@ -119,20 +135,20 @@ const Clients = () => {
           <h1 className="text-2xl font-bold text-gray-900 tracking-tight">
             Client Accounts Ledger
           </h1>
-          <p className="text-sm text-gray-500">
+          <p className="text-xs text-gray-500">
             Real-time financial status and ticketing hub
           </p>
         </div>
         <div className="flex items-center gap-3">
           <button
             onClick={() => setIsPaymentModalOpen(true)}
-            className="flex items-center gap-2 bg-green-600 hover:bg-green-700 text-white px-4 py-2.5 rounded-xl text-sm font-medium transition-all shadow-sm active:scale-95 cursor-pointer"
+            className="flex items-center gap-2 bg-green-600 hover:bg-green-700 text-white px-4 py-2.5 rounded-xl text-xs font-medium transition-all shadow-sm active:scale-95 cursor-pointer"
           >
             <Wallet className="w-4 h-4" /> Receive Payment
           </button>
           <button
             onClick={handleAddNew}
-            className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2.5 rounded-xl text-sm font-medium transition-all shadow-sm active:scale-95 cursor-pointer"
+            className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2.5 rounded-xl text-xs font-medium transition-all shadow-sm active:scale-95 cursor-pointer"
           >
             <UserPlus className="w-4 h-4" /> Add New Client
           </button>
@@ -145,7 +161,7 @@ const Clients = () => {
           {isClientsLoading ? (
             <div className="h-10 bg-gray-200 animate-pulse rounded-xl w-full" />
           ) : isClientsError ? (
-            <div className="flex items-center gap-2 text-sm text-red-600">
+            <div className="flex items-center gap-2 text-xs text-red-600">
               <AlertCircle size={16} />
               <span>Failed to load clients.</span>
               <button
@@ -159,7 +175,7 @@ const Clients = () => {
             <select
               value={selectedClientId}
               onChange={handleClientSelect}
-              className="w-full text-sm border border-gray-300 px-3.5 py-2.5 rounded-xl bg-white focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all cursor-pointer text-gray-800"
+              className="w-full text-xs border border-gray-300 px-3.5 py-2.5 rounded-xl bg-white focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all cursor-pointer text-gray-800"
             >
               <option value="">-- Select a Client --</option>
               {clients?.map((client) => {
@@ -186,7 +202,7 @@ const Clients = () => {
                 <User className="w-6 h-6 text-gray-400" />
               </div>
               <p className="font-medium text-gray-700">No Client Selected</p>
-              <p className="text-xs text-gray-400 mt-1">
+              <p className="text-xx text-gray-400 mt-1">
                 Please select a client from the dropdown above to view their
                 statement.
               </p>
@@ -207,22 +223,22 @@ const Clients = () => {
               {/* Client Header Info */}
               <div className="flex flex-col sm:flex-row justify-between sm:items-center border-b border-gray-100 pb-3 mb-3 gap-4">
                 <div>
-                  <h2 className="text-xl font-bold text-gray-900">
+                  <h2 className="text-xl font-bold font-mono text-gray-900">
                     {clientInfo?.fullName || clientInfo?.name || "Client"}
                   </h2>
-                  <p className="text-xs text-gray-500 mt-0.5">
+                  <p className="text-xx text-gray-500 mt-0.5">
                     Email: {clientInfo?.email || "N/A"} | Phone:{" "}
                     {clientInfo?.phone || "N/A"}
                   </p>
                   {clientInfo?.company && (
-                    <p className="text-xs text-blue-600 font-medium mt-1">
+                    <p className="text-xx text-blue-600 font-medium mt-1">
                       Company: {clientInfo?.company}
                     </p>
                   )}
                 </div>
                 <div className="flex items-center gap-4">
                   <div className="text-right">
-                    <span className="text-xs text-gray-400 block font-medium">
+                    <span className="text-xx text-gray-400 block font-medium">
                       {currentDue > 0
                         ? " Total Outstanding Due"
                         : "Total Credit Balance"}
@@ -241,7 +257,7 @@ const Clients = () => {
               {/* Ledger Table */}
               <div className="overflow-x-auto rounded-lg border border-gray-100">
                 <table className="w-full text-left border-collapse">
-                  <thead className="bg-gray-100 text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                  <thead className="bg-gray-100 text-xx font-semibold text-gray-600 uppercase tracking-wider">
                     <tr>
                       <th className="px-4 py-3.5">Date</th>
                       <th className="px-4 py-3.5">Reference / Details</th>
@@ -252,12 +268,12 @@ const Clients = () => {
                       </th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-gray-100 text-sm text-gray-600">
+                  <tbody className="divide-y divide-gray-100 text-xx text-gray-600">
                     {sortedLedger.length === 0 ? (
                       <tr>
                         <td
                           colSpan="5"
-                          className="text-center py-8 text-gray-400 text-xs"
+                          className="text-center py-8 text-gray-400 text-xx"
                         >
                           No transactions recorded.
                         </td>
@@ -268,7 +284,7 @@ const Clients = () => {
                           key={item.id}
                           className="hover:bg-gray-50/60 transition-colors"
                         >
-                          <td className="px-4 py-3.5 text-xs text-gray-500 whitespace-nowrap">
+                          <td className="px-4 py-3.5 text-xx text-gray-500 whitespace-nowrap">
                             {formatDate(item.date)}
                           </td>
                           <td className="px-4 py-3.5">
@@ -276,7 +292,7 @@ const Clients = () => {
                               {item.details}
                             </div>
                             {item.subDetails && (
-                              <div className="text-xs text-gray-400 mt-0.5">
+                              <div className="text-xx text-gray-400 mt-0.5">
                                 {item.subDetails}
                               </div>
                             )}
@@ -302,7 +318,7 @@ const Clients = () => {
               {/* 🟢 Pagination Control UI */}
               {sortedLedger.length > 0 && (
                 <div className="flex flex-col sm:flex-row items-center justify-between gap-4 mt-4 px-2 py-3 border-t border-gray-100">
-                  <p className="text-xs text-gray-500">
+                  <p className="text-xx text-gray-500">
                     Showing{" "}
                     <span className="font-medium text-gray-700">
                       {(currentPage - 1) * itemsPerPage + 1}
@@ -324,17 +340,17 @@ const Clients = () => {
                     <button
                       disabled={currentPage === 1}
                       onClick={() => setCurrentPage((prev) => prev - 1)}
-                      className="px-3 py-1.5 text-xs font-medium rounded-lg border border-gray-200 text-gray-700 hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed flex items-center gap-1 transition-colors cursor-pointer"
+                      className="px-3 py-1.5 text-xx font-medium rounded-lg border border-gray-200 text-gray-700 hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed flex items-center gap-1 transition-colors cursor-pointer"
                     >
                       <ChevronLeft size={14} /> Previous
                     </button>
-                    <span className="text-xs text-gray-600 font-medium px-2">
+                    <span className="text-xx text-gray-600 font-medium px-2">
                       Page {currentPage} of {totalPages || 1}
                     </span>
                     <button
                       disabled={currentPage === totalPages || totalPages === 0}
                       onClick={() => setCurrentPage((prev) => prev + 1)}
-                      className="px-3 py-1.5 text-xs font-medium rounded-lg border border-gray-200 text-gray-700 hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed flex items-center gap-1 transition-colors cursor-pointer"
+                      className="px-3 py-1.5 text-xx font-medium rounded-lg border border-gray-200 text-gray-700 hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed flex items-center gap-1 transition-colors cursor-pointer"
                     >
                       Next <ChevronRight size={14} />
                     </button>

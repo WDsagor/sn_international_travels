@@ -95,14 +95,14 @@ const AllClientList = () => {
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
         <div>
           <h1 className="text-xl font-bold text-gray-900">Clients & Agents</h1>
-          <p className="text-xs text-gray-500">
+          <p className="text-xx text-gray-500">
             Manage your individual clients, corporate clients, and B2B agents
           </p>
         </div>
 
         <button
           onClick={handleAddNew}
-          className="flex items-center justify-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-xl hover:bg-blue-700 transition-colors cursor-pointer text-sm font-medium"
+          className="flex items-center justify-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-xl hover:bg-blue-700 transition-colors cursor-pointer text-xs font-medium"
         >
           <Plus className="w-4 h-4" />
           Add New Client
@@ -117,17 +117,17 @@ const AllClientList = () => {
           placeholder="Search by Name, Phone or Type..."
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
-          className="w-full text-sm outline-none bg-transparent"
+          className="w-full text-xs outline-none bg-transparent"
         />
       </div>
 
       <div className="min-h-screen bg-gray-50/50 font-sans">
         {isLoading ? (
-          <div className="p-12 text-center text-sm font-medium text-gray-500">
+          <div className="p-12 text-center text-xs font-medium text-gray-500">
             Loading clients...
           </div>
         ) : isError ? (
-          <div className="p-12 text-center text-sm font-semibold text-red-500">
+          <div className="p-12 text-center text-xs font-semibold text-red-500">
             Failed to load data!
           </div>
         ) : (
@@ -158,7 +158,7 @@ const AllClientList = () => {
                             {client.fullName || client.name || "N/A"}
                           </h3>
                           {client.email && (
-                            <p className="text-xs text-gray-400 truncate mt-0.5">
+                            <p className="text-xx text-gray-400 truncate mt-0.5">
                               {client.email}
                             </p>
                           )}
@@ -166,12 +166,12 @@ const AllClientList = () => {
                       </div>
 
                       <div className="flex justify-between items-center mb-3">
-                        <h4 className="font-bold text-gray-900 text-sm">
+                        <h4 className="font-bold text-gray-900 text-xs">
                           {client.company || client.clientType || "Individual"}
                         </h4>
 
                         <span
-                          className={`text-xs font-semibold px-2.5 py-0.5 rounded-md ${
+                          className={`text-xx font-semibold px-2.5 py-0.5 rounded-md ${
                             isDue
                               ? "bg-amber-100 text-amber-800"
                               : "bg-emerald-100 text-emerald-800"
@@ -181,7 +181,7 @@ const AllClientList = () => {
                         </span>
                       </div>
 
-                      <div className="space-y-1.5 text-xs text-gray-500 mb-4">
+                      <div className="space-y-1.5 text-xx text-gray-500 mb-4">
                         <p className="flex items-center gap-2">
                           <Phone className="w-3.5 h-3.5 text-gray-400 shrink-0" />
                           <span>{client.phone || "N/A"}</span>
@@ -195,11 +195,11 @@ const AllClientList = () => {
                       </div>
 
                       <div className="border-t border-gray-200/60 pt-3 flex justify-between items-center">
-                        <span className="text-xs text-gray-400 font-medium">
+                        <span className="text-xx text-gray-400 font-medium">
                           {isDue ? "Net Outstanding:" : "Available Balance:"}
                         </span>
                         <span
-                          className={`text-base font-bold ${
+                          className={`text-base font-mono font-bold ${
                             isDue ? "text-red-600" : "text-emerald-600"
                           }`}
                         >
@@ -210,7 +210,7 @@ const AllClientList = () => {
 
                     <div className="flex flex-col xs:flex-row sm:flex-row items-center gap-2 pt-2 border-t border-gray-50">
                       <Link
-                        className="w-full xs:w-auto flex-1 cursor-pointer flex items-center justify-center gap-1.5 py-2 px-3 bg-gray-50 hover:bg-gray-100 text-gray-700 rounded-xl text-xs font-medium transition-colors border border-gray-200"
+                        className="w-full xs:w-auto flex-1 cursor-pointer flex items-center justify-center gap-1.5 py-2 px-3 bg-gray-50 hover:bg-gray-100 text-gray-700 rounded-xl text-xx font-medium transition-colors border border-gray-200"
                         to={`/clients/${clientId}`}
                       >
                         <Eye className="w-3.5 h-3.5 text-gray-500" /> Details
@@ -219,14 +219,14 @@ const AllClientList = () => {
                       <div className="flex items-center gap-2 w-full xs:w-auto flex-1">
                         <button
                           onClick={() => handleEdit(client)}
-                          className="flex-1 cursor-pointer flex items-center justify-center gap-1.5 py-2 px-3 bg-emerald-50/50 hover:bg-emerald-100 text-emerald-700 rounded-xl text-xs font-medium transition-colors border border-emerald-200/60"
+                          className="flex-1 cursor-pointer flex items-center justify-center gap-1.5 py-2 px-3 bg-emerald-50/50 hover:bg-emerald-100 text-emerald-700 rounded-xl text-xx font-medium transition-colors border border-emerald-200/60"
                           title="Edit Client"
                         >
                           <Edit2 className="w-3.5 h-3.5" /> Edit
                         </button>
                         <button
                           onClick={() => handleDelete(clientId)}
-                          className="flex-1 cursor-pointer flex items-center justify-center gap-1.5 py-2 px-3 bg-red-50/50 hover:bg-red-100 text-red-700 rounded-xl text-xs font-medium transition-colors border border-red-200/60"
+                          className="flex-1 cursor-pointer flex items-center justify-center gap-1.5 py-2 px-3 bg-red-50/50 hover:bg-red-100 text-red-700 rounded-xl text-xx font-medium transition-colors border border-red-200/60"
                           title="Delete Client"
                         >
                           <Trash2 className="w-3.5 h-3.5" /> Delete

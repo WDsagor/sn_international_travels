@@ -120,7 +120,7 @@ const ReceivePaymentModal = ({ isOpen, onClose }) => {
               <h2 className="text-lg font-bold text-gray-900">
                 Receive Payment
               </h2>
-              <p className="text-xs text-gray-500">
+              <p className="text-xx text-gray-500">
                 Log customer payment or advance collection
               </p>
             </div>
@@ -141,14 +141,14 @@ const ReceivePaymentModal = ({ isOpen, onClose }) => {
         >
           {/* Client Selection */}
           <div>
-            <label className="block text-xs font-semibold text-gray-600 uppercase mb-1.5">
+            <label className="block text-xx font-semibold text-gray-600 uppercase mb-1.5">
               Select Client / Customer *
             </label>
             <select
               {...register("clientId", {
                 required: "Please select a client",
               })}
-              className={`w-full text-sm border px-3 py-2.5 rounded-xl bg-white focus:outline-hidden focus:ring-2 focus:ring-blue-500/20 ${
+              className={`w-full text-xs border px-3 py-2.5 rounded-xl bg-white focus:outline-hidden focus:ring-2 focus:ring-blue-500/20 ${
                 errors.clientId
                   ? "border-red-500 bg-red-50/30"
                   : "border-gray-200"
@@ -169,7 +169,7 @@ const ReceivePaymentModal = ({ isOpen, onClose }) => {
               ))}
             </select>
             {errors.clientId && (
-              <span className="text-xs text-red-500 mt-1 block">
+              <span className="text-xx text-red-500 mt-1 block">
                 {errors.clientId.message}
               </span>
             )}
@@ -194,7 +194,7 @@ const ReceivePaymentModal = ({ isOpen, onClose }) => {
             </div>
 
             <div>
-              <label className="block text-xs font-semibold text-gray-600 uppercase mb-1.5">
+              <label className="block text-xx font-semibold text-gray-600 uppercase mb-1.5">
                 Amount (৳) *
               </label>
               <input
@@ -205,14 +205,14 @@ const ReceivePaymentModal = ({ isOpen, onClose }) => {
                   required: "Amount is required",
                   min: { value: 1, message: "Amount must be greater than 0" },
                 })}
-                className={`w-full text-sm font-semibold font-mono border px-3 py-2 rounded-xl focus:outline-hidden focus:ring-2 focus:ring-blue-500/20 ${
+                className={`w-full text-xs font-semibold font-mono border px-3 py-2 rounded-xl focus:outline-hidden focus:ring-2 focus:ring-blue-500/20 ${
                   errors.amount
                     ? "border-red-500 bg-red-50/30"
                     : "border-gray-200"
                 }`}
               />
               {errors.amount && (
-                <span className="text-xs text-red-500 mt-1 block">
+                <span className="text-xx text-red-500 mt-1 block">
                   {errors.amount.message}
                 </span>
               )}
@@ -221,7 +221,7 @@ const ReceivePaymentModal = ({ isOpen, onClose }) => {
 
           {/* Due Balance Calculation Box */}
           {selectedClient && (
-            <div className="p-3 bg-gray-50 rounded-xl border border-gray-100 flex items-center justify-between text-xs animate-in fade-in duration-150">
+            <div className="p-3 bg-gray-50 rounded-xl border border-gray-100 flex items-center justify-between text-xx animate-in fade-in duration-150">
               <div>
                 <span className="text-gray-500 block">
                   {currentDue < 0 ? "Current Advance:" : "Current Due:"}
@@ -256,12 +256,12 @@ const ReceivePaymentModal = ({ isOpen, onClose }) => {
             } gap-4`}
           >
             <div>
-              <label className="block text-xs font-semibold text-gray-600 uppercase mb-1.5">
+              <label className="block text-xx font-semibold text-gray-600 uppercase mb-1.5">
                 Payment Method *
               </label>
               <select
                 {...register("paymentMethod")}
-                className="w-full text-sm border border-gray-200 px-3 py-2.5 rounded-xl bg-white focus:outline-hidden focus:ring-2 focus:ring-blue-500/20"
+                className="w-full text-xs border border-gray-200 px-3 py-2.5 rounded-xl bg-white focus:outline-hidden focus:ring-2 focus:ring-blue-500/20"
               >
                 {PAYMENT_METHODS.map((m) => (
                   <option key={m.id} value={m.id}>
@@ -272,28 +272,28 @@ const ReceivePaymentModal = ({ isOpen, onClose }) => {
             </div>
 
             <div>
-              <label className="block text-xs font-semibold text-gray-600 uppercase mb-1.5">
+              <label className="block text-xx font-semibold text-gray-600 uppercase mb-1.5">
                 Transaction ID / Ref
               </label>
               <input
                 type="text"
                 placeholder="e.g. Trx7890XX"
                 {...register("referenceNo")}
-                className="w-full text-sm border border-gray-200 px-3 py-2 rounded-xl focus:outline-hidden focus:ring-2 focus:ring-blue-500/20 font-mono"
+                className="w-full text-xs border border-gray-200 px-3 py-2 rounded-xl focus:outline-hidden focus:ring-2 focus:ring-blue-500/20 font-mono"
               />
             </div>
           </div>
 
           {/* Remarks/Note */}
           <div>
-            <label className="block text-xs font-semibold text-gray-600 uppercase mb-1.5">
+            <label className="block text-xx font-semibold text-gray-600 uppercase mb-1.5">
               Note / Remarks
             </label>
             <textarea
               rows="2"
               placeholder="e.g. Payment for PNR98765 ticket"
               {...register("note")}
-              className="w-full text-sm border border-gray-200 p-3 rounded-xl focus:outline-hidden focus:ring-2 focus:ring-blue-500/20 resize-none"
+              className="w-full text-xs border border-gray-200 p-3 rounded-xl focus:outline-hidden focus:ring-2 focus:ring-blue-500/20 resize-none"
             ></textarea>
           </div>
 
@@ -303,14 +303,14 @@ const ReceivePaymentModal = ({ isOpen, onClose }) => {
               type="button"
               onClick={onClose}
               disabled={isSubmitting}
-              className="px-4 py-2 text-sm font-medium text-gray-500 border border-gray-200 rounded-xl hover:bg-gray-50 transition-colors cursor-pointer disabled:opacity-50"
+              className="px-4 py-2 text-xs font-medium text-gray-500 border border-gray-200 rounded-xl hover:bg-gray-50 transition-colors cursor-pointer disabled:opacity-50"
             >
               Cancel
             </button>
             <button
               type="submit"
               disabled={isSubmitting}
-              className="px-5 py-2 text-sm font-medium text-white bg-green-600 hover:bg-green-700 rounded-xl shadow-xs transition-colors cursor-pointer flex items-center gap-2 disabled:opacity-50"
+              className="px-5 py-2 text-xs font-medium text-white bg-green-600 hover:bg-green-700 rounded-xl shadow-xs transition-colors cursor-pointer flex items-center gap-2 disabled:opacity-50"
             >
               {isSubmitting && <Loader2 className="w-4 h-4 animate-spin" />}
               {isSubmitting ? "Saving..." : "Save Payment"}

@@ -62,13 +62,13 @@ const Users = () => {
           <h1 className="text-2xl font-bold text-gray-900">
             Staff & Roles Portal
           </h1>
-          <p className="text-sm text-gray-500">
+          <p className="text-xs text-gray-500">
             Manage internal users, security access, and system roles
           </p>
         </div>
         <button
           onClick={() => setIsStaffModalOpen(true)}
-          className="flex items-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors"
+          className="flex items-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg text-xs font-medium transition-colors"
         >
           <UserPlus className="w-4 h-4" /> Add New Staff
         </button>
@@ -96,30 +96,30 @@ const Users = () => {
                 </div>
                 <div>
                   <h3 className="font-bold text-gray-900">{user?.fullName}</h3>
-                  <p className="text-xs text-gray-400">{user?.email}</p>
+                  <p className="text-xx text-gray-400">{user?.email}</p>
                 </div>
               </div>
 
-              <div className="space-y-2 text-sm text-gray-600 border-t border-b border-gray-100 py-3 my-4">
+              <div className="space-y-2 text-xs text-gray-600 border-t border-b border-gray-100 py-3 my-4">
                 <div className="flex justify-between">
-                  <span className="text-gray-400 text-xs">Access Level:</span>
-                  <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-semibold bg-indigo-50 text-indigo-700 border border-indigo-100">
+                  <span className="text-gray-400 text-xx">Access Level:</span>
+                  <span className="inline-flex items-center px-2 py-0.5 rounded text-xx font-semibold bg-indigo-50 text-indigo-700 border border-indigo-100">
                     {user.role}
                   </span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-gray-400 text-xs">Phone:</span>
-                  <span className="text-xs font-medium text-gray-800">
+                  <span className="text-gray-400 text-xx">Phone:</span>
+                  <span className="text-xx font-medium text-gray-800">
                     {user?.phone}
                   </span>
                 </div>
               </div>
 
               <div className="flex gap-2 relative z-10">
-                <button className="flex-1 flex items-center justify-center gap-1 py-2 bg-gray-50 hover:bg-gray-100 text-gray-600 rounded-lg text-xs font-medium transition-colors border border-gray-200">
+                <button className="flex-1 flex items-center justify-center gap-1 py-2 bg-gray-50 hover:bg-gray-100 text-gray-600 rounded-lg text-xx font-medium transition-colors border border-gray-200">
                   <Edit2 className="w-3 h-3" /> Edit Profile
                 </button>
-                <button className="flex-1 flex items-center justify-center gap-1 py-2 bg-red-50 hover:bg-red-100 text-red-600 rounded-lg text-xs font-medium transition-colors border border-red-100">
+                <button className="flex-1 flex items-center justify-center gap-1 py-2 bg-red-50 hover:bg-red-100 text-red-600 rounded-lg text-xx font-medium transition-colors border border-red-100">
                   <KeyRound className="w-3 h-3" /> Reset Pin
                 </button>
               </div>

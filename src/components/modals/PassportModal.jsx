@@ -209,6 +209,16 @@ const PassportModal = ({ isOpen, onClose, initialData = null }) => {
         onClose(false);
       }
     } catch (error) {
+      // console.log(error?.data?.message);
+
+      Swal.fire({
+        icon: "error",
+        title: "Failed..!",
+        text: `${error?.data?.message}`,
+        timer: 2000,
+        showConfirmButton: false,
+      });
+
       console.error("Form Submission Error:", error);
     }
   };
@@ -224,7 +234,7 @@ const PassportModal = ({ isOpen, onClose, initialData = null }) => {
             <h2 className="text-lg font-bold text-gray-900">
               {isEditMode ? "Update Passport Details" : "Add New Passport"}
             </h2>
-            <p className="text-xs text-gray-500">
+            <p className="text-xx text-gray-500">
               Fill in the passport and visa details for client processing
             </p>
           </div>
@@ -244,7 +254,7 @@ const PassportModal = ({ isOpen, onClose, initialData = null }) => {
             <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
               {/* Issue Date */}
               <div className="relative">
-                <label className="block text-xs font-semibold text-gray-700 mb-1.5">
+                <label className="block text-xx font-semibold text-gray-700 mb-1.5">
                   Issue Date <span className="text-red-500">*</span>
                 </label>
                 <Controller
@@ -259,7 +269,7 @@ const PassportModal = ({ isOpen, onClose, initialData = null }) => {
                           setIsCalendarOpen(!isCalendarOpen);
                           setIsSubCalOpen(false);
                         }}
-                        className="w-full flex items-center justify-between px-3.5 py-2.5 bg-white border border-gray-200 rounded-xl text-sm text-gray-800 hover:bg-gray-100 transition-colors cursor-pointer"
+                        className="w-full flex items-center justify-between px-3.5 py-2.5 bg-white border border-gray-200 rounded-xl text-xs text-gray-800 hover:bg-gray-100 transition-colors cursor-pointer"
                       >
                         <span>{safeFormatDate(field.value)}</span>
                         <CalendarIcon className="w-4 h-4 text-gray-500" />
@@ -282,7 +292,7 @@ const PassportModal = ({ isOpen, onClose, initialData = null }) => {
                   )}
                 />
                 {errors.date && (
-                  <span className="text-xs text-red-500 mt-1 block">
+                  <span className="text-xx text-red-500 mt-1 block">
                     {errors.date.message}
                   </span>
                 )}
@@ -290,7 +300,7 @@ const PassportModal = ({ isOpen, onClose, initialData = null }) => {
 
               {/* Client Selection */}
               <div>
-                <label className="block text-xs font-semibold text-gray-700 mb-1.5">
+                <label className="block text-xx font-semibold text-gray-700 mb-1.5">
                   Client name <span className="text-red-500">*</span>
                 </label>
                 <select
@@ -298,7 +308,7 @@ const PassportModal = ({ isOpen, onClose, initialData = null }) => {
                   {...register("clientId", {
                     required: "Please select a client",
                   })}
-                  className={`w-full text-sm border px-3 py-2.5 rounded-xl bg-white focus:outline-none focus:ring-2 focus:ring-blue-500/20 ${
+                  className={`w-full text-xs border px-3 py-2.5 rounded-xl bg-white focus:outline-none focus:ring-2 focus:ring-blue-500/20 ${
                     errors.clientId
                       ? "border-red-500 bg-red-50/30"
                       : "border-gray-200"
@@ -322,7 +332,7 @@ const PassportModal = ({ isOpen, onClose, initialData = null }) => {
 
               {/* Issued By */}
               <div>
-                <label className="block text-xs font-semibold text-gray-700 mb-1.5">
+                <label className="block text-xx font-semibold text-gray-700 mb-1.5">
                   Issued by <span className="text-red-500">*</span>
                 </label>
                 <select
@@ -330,7 +340,7 @@ const PassportModal = ({ isOpen, onClose, initialData = null }) => {
                   {...register("issuedById", {
                     required: "Please select issuer name",
                   })}
-                  className={`w-full text-sm border px-3 py-2.5 rounded-xl bg-white focus:outline-none focus:ring-2 focus:ring-blue-500/20 ${
+                  className={`w-full text-xs border px-3 py-2.5 rounded-xl bg-white focus:outline-none focus:ring-2 focus:ring-blue-500/20 ${
                     errors.issuedById
                       ? "border-red-500 bg-red-50/30"
                       : "border-gray-200"
@@ -354,14 +364,14 @@ const PassportModal = ({ isOpen, onClose, initialData = null }) => {
 
             {/* Row 2: Passport Information */}
             <div className="p-4 bg-gray-50/60 rounded-xl border border-gray-100 space-y-4">
-              <h3 className="text-xs font-bold text-gray-500 uppercase tracking-wider">
+              <h3 className="text-xx font-bold text-gray-500 uppercase tracking-wider">
                 Passport Information
               </h3>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                 {/* Inputs */}
                 <div className="space-y-4">
                   <div>
-                    <label className="block text-xs font-semibold text-gray-700 mb-1">
+                    <label className="block text-xx font-semibold text-gray-700 mb-1">
                       Passport Name <span className="text-red-500">*</span>
                     </label>
                     <input
@@ -370,10 +380,10 @@ const PassportModal = ({ isOpen, onClose, initialData = null }) => {
                       {...register("passportName", {
                         required: "Name is required",
                       })}
-                      className="w-full text-sm border border-gray-200 px-3.5 py-2 rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-blue-500/20"
+                      className="w-full text-xs border border-gray-200 px-3.5 py-2 rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-blue-500/20"
                     />
                     {errors.passportName && (
-                      <span className="text-xs text-red-500 mt-1 block">
+                      <span className="text-xx text-red-500 mt-1 block">
                         {errors.passportName.message}
                       </span>
                     )}
@@ -381,26 +391,27 @@ const PassportModal = ({ isOpen, onClose, initialData = null }) => {
 
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
-                      <label className="block text-xs font-semibold text-gray-700 mb-1">
+                      <label className="block text-xx font-semibold text-gray-700 mb-1">
                         Passport Number <span className="text-red-500">*</span>
                       </label>
                       <input
                         type="text"
+                        maxLength={9}
                         placeholder="e.g. A00151750"
                         {...register("passportNumber", {
                           required: "Passport number required",
                         })}
-                        className="w-full text-sm border border-gray-200 px-3.5 py-2 rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-blue-500/20 uppercase"
+                        className="w-full text-xs border border-gray-200 px-3.5 py-2 rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-blue-500/20 uppercase"
                       />
                       {errors.passportNumber && (
-                        <span className="text-xs text-red-500 mt-1 block">
+                        <span className="text-xx text-red-500 mt-1 block">
                           {errors.passportNumber.message}
                         </span>
                       )}
                     </div>
 
                     <div>
-                      <label className="block text-xs font-semibold text-gray-700 mb-1">
+                      <label className="block text-xx font-semibold text-gray-700 mb-1">
                         Number of Passports (Pax)
                       </label>
                       <input
@@ -409,7 +420,7 @@ const PassportModal = ({ isOpen, onClose, initialData = null }) => {
                         {...register("numberOfPassport", {
                           valueAsNumber: true,
                         })}
-                        className="w-full text-sm border border-gray-200 px-3.5 py-2 rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-blue-500/20"
+                        className="w-full text-xs border border-gray-200 px-3.5 py-2 rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-blue-500/20"
                       />
                     </div>
                   </div>
@@ -417,7 +428,7 @@ const PassportModal = ({ isOpen, onClose, initialData = null }) => {
 
                 {/* Passport Image Upload */}
                 <div>
-                  <label className="block text-xs font-semibold text-gray-700 mb-1">
+                  <label className="block text-xx font-semibold text-gray-700 mb-1">
                     Passport Image
                   </label>
 
@@ -442,7 +453,7 @@ const PassportModal = ({ isOpen, onClose, initialData = null }) => {
                       <div className="p-2.5 bg-blue-50 text-blue-600 rounded-full mb-2">
                         <Upload className="w-5 h-5" />
                       </div>
-                      <span className="text-xs font-medium text-gray-700">
+                      <span className="text-xx font-medium text-gray-700">
                         Click or drag image to upload
                       </span>
                       <span className="text-[10px] text-gray-400 mt-0.5">
@@ -464,13 +475,13 @@ const PassportModal = ({ isOpen, onClose, initialData = null }) => {
 
             {/* Row 3: Visa Category & Dynamic Agency Input */}
             <div className="p-4 bg-gray-50/60 rounded-xl border border-gray-100 space-y-3">
-              <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider">
+              <label className="block text-xx font-bold text-gray-500 uppercase tracking-wider">
                 Visa Category
               </label>
 
               <div className="flex flex-col md:flex-row gap-5 items-start md:items-center">
                 <div className="flex items-center gap-6 pt-2 pb-8">
-                  <label className="flex items-center gap-2 text-sm font-medium text-gray-700 cursor-pointer">
+                  <label className="flex items-center gap-2 text-xs font-medium text-gray-700 cursor-pointer">
                     <input
                       type="radio"
                       value="agency"
@@ -479,7 +490,7 @@ const PassportModal = ({ isOpen, onClose, initialData = null }) => {
                     />
                     Agency
                   </label>
-                  <label className="flex items-center gap-2 text-sm font-medium text-gray-700 cursor-pointer">
+                  <label className="flex items-center gap-2 text-xs font-medium text-gray-700 cursor-pointer">
                     <input
                       type="radio"
                       value="e-visa"
@@ -492,7 +503,7 @@ const PassportModal = ({ isOpen, onClose, initialData = null }) => {
 
                 {selectedVisaCategory === "agency" && (
                   <div className="flex-1 w-full animate-in fade-in duration-200">
-                    <label className="block text-xs font-semibold text-gray-700 mb-1">
+                    <label className="block text-xx font-semibold text-gray-700 mb-1">
                       Agency Name <span className="text-red-500">*</span>
                     </label>
                     <input
@@ -504,10 +515,10 @@ const PassportModal = ({ isOpen, onClose, initialData = null }) => {
                             ? "Agency name is required"
                             : false,
                       })}
-                      className="w-full text-sm border border-gray-200 px-3.5 py-2 rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-blue-500/20 "
+                      className="w-full text-xs border border-gray-200 px-3.5 py-2 rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-blue-500/20 "
                     />
                     {errors.agencyName && (
-                      <span className="text-xs text-red-500 mt-1 block">
+                      <span className="text-xx text-red-500 mt-1 block">
                         {errors.agencyName.message}
                       </span>
                     )}
@@ -518,7 +529,7 @@ const PassportModal = ({ isOpen, onClose, initialData = null }) => {
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 pt-2">
                 {/* Submission Date */}
                 <div className="relative">
-                  <label className="block text-xs font-semibold text-gray-700 mb-1.5">
+                  <label className="block text-xx font-semibold text-gray-700 mb-1.5">
                     Submission Date <span className="text-red-500">*</span>
                   </label>
                   <Controller
@@ -533,7 +544,7 @@ const PassportModal = ({ isOpen, onClose, initialData = null }) => {
                             setIsSubCalOpen(!isSubCalOpen);
                             setIsCalendarOpen(false);
                           }}
-                          className="w-full flex items-center justify-between px-3.5 py-2.5 bg-white border border-gray-200 rounded-xl text-sm text-gray-800 hover:bg-gray-50 transition-colors cursor-pointer"
+                          className="w-full flex items-center justify-between px-3.5 py-2.5 bg-white border border-gray-200 rounded-xl text-xs text-gray-800 hover:bg-gray-50 transition-colors cursor-pointer"
                         >
                           <span>{safeFormatDate(field.value)}</span>
                           <CalendarIcon className="w-4 h-4 text-gray-500" />
@@ -556,7 +567,7 @@ const PassportModal = ({ isOpen, onClose, initialData = null }) => {
                     )}
                   />
                   {errors.submissionDate && (
-                    <span className="text-xs text-red-500 mt-1 block">
+                    <span className="text-xx text-red-500 mt-1 block">
                       {errors.submissionDate.message}
                     </span>
                   )}
@@ -564,7 +575,7 @@ const PassportModal = ({ isOpen, onClose, initialData = null }) => {
 
                 {/* Visa Country */}
                 <div>
-                  <label className="block text-xs font-semibold text-gray-700 mb-1.5">
+                  <label className="block text-xx font-semibold text-gray-700 mb-1.5">
                     Visa Country <span className="text-red-500">*</span>
                   </label>
                   <input
@@ -573,10 +584,10 @@ const PassportModal = ({ isOpen, onClose, initialData = null }) => {
                     {...register("visaCountry", {
                       required: "Country is required",
                     })}
-                    className="w-full text-sm border border-gray-200 px-3.5 py-2 rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-blue-500/20 "
+                    className="w-full text-xs border border-gray-200 px-3.5 py-2 rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-blue-500/20 "
                   />
                   {errors.visaCountry && (
-                    <span className="text-xs text-red-500 mt-1 block">
+                    <span className="text-xx text-red-500 mt-1 block">
                       {errors.visaCountry.message}
                     </span>
                   )}
@@ -584,25 +595,25 @@ const PassportModal = ({ isOpen, onClose, initialData = null }) => {
 
                 {/* Visa Details */}
                 <div>
-                  <label className="block text-xs font-semibold text-gray-700 mb-1.5">
+                  <label className="block text-xx font-semibold text-gray-700 mb-1.5">
                     Visa Duration & Details
                   </label>
                   <input
                     type="text"
                     placeholder="e.g. 2 Years, Multiple"
                     {...register("visaDetails")}
-                    className="w-full text-sm border border-gray-200 px-3.5 py-2 rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-blue-500/20 "
+                    className="w-full text-xs border border-gray-200 px-3.5 py-2 rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-blue-500/20 "
                   />
                 </div>
 
                 {/* Status */}
                 <div>
-                  <label className="block text-xs font-semibold text-gray-700 mb-1.5">
+                  <label className="block text-xx font-semibold text-gray-700 mb-1.5">
                     Visa Status
                   </label>
                   <select
                     {...register("status")}
-                    className="w-full text-sm border border-gray-200 px-3.5 py-2.5 rounded-xl bg-white focus:outline-none focus:ring-2 focus:ring-blue-500/20 cursor-pointer"
+                    className="w-full text-xs border border-gray-200 px-3.5 py-2.5 rounded-xl bg-white focus:outline-none focus:ring-2 focus:ring-blue-500/20 cursor-pointer"
                   >
                     <option value="Submitted">Submitted</option>
                     <option value="Processing">Processing</option>
@@ -617,32 +628,32 @@ const PassportModal = ({ isOpen, onClose, initialData = null }) => {
             {/* Row 4: Financials & Live Profit Card */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <div>
-                <label className="block text-xs font-semibold text-gray-700 mb-1.5">
+                <label className="block text-xx font-semibold text-gray-700 mb-1.5">
                   Net Cost (৳)
                 </label>
                 <input
                   type="number"
                   placeholder="0"
                   {...register("netCost")}
-                  className="w-full text-sm border border-gray-200 px-3.5 py-2 rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-blue-500/20 "
+                  className="w-full text-xs border border-gray-200 px-3.5 py-2 rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-blue-500/20 "
                 />
               </div>
 
               <div>
-                <label className="block text-xs font-semibold text-gray-700 mb-1.5">
+                <label className="block text-xx font-semibold text-gray-700 mb-1.5">
                   Client Price (৳)
                 </label>
                 <input
                   type="number"
                   placeholder="0"
                   {...register("clientPrice")}
-                  className="w-full text-sm border border-gray-200 px-3.5 py-2 rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-blue-500/20 "
+                  className="w-full text-xs border border-gray-200 px-3.5 py-2 rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-blue-500/20 "
                 />
               </div>
 
               {/* Live Profit Display */}
               <div>
-                <span className="block text-xs font-bold text-gray-500 mb-1">
+                <span className="block text-xx font-bold text-gray-500 mb-1">
                   Net Profit (Auto)
                 </span>
                 <div
@@ -663,7 +674,7 @@ const PassportModal = ({ isOpen, onClose, initialData = null }) => {
                 type="button"
                 onClick={() => onClose(false)}
                 disabled={isSubmitting}
-                className="px-5 py-2.5 text-xs font-semibold rounded-xl border border-gray-200 text-gray-600 hover:bg-gray-50 transition-colors cursor-pointer disabled:opacity-50"
+                className="px-5 py-2.5 text-xx font-semibold rounded-xl border border-gray-200 text-gray-600 hover:bg-gray-50 transition-colors cursor-pointer disabled:opacity-50"
               >
                 Cancel
               </button>
@@ -672,7 +683,7 @@ const PassportModal = ({ isOpen, onClose, initialData = null }) => {
               <button
                 type="submit"
                 disabled={isSubmitting}
-                className="flex items-center gap-2 px-6 py-2.5 text-xs font-semibold rounded-xl bg-blue-600 hover:bg-blue-700 text-white shadow-sm transition-all active:scale-95 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+                className="flex items-center gap-2 px-6 py-2.5 text-xx font-semibold rounded-xl bg-blue-600 hover:bg-blue-700 text-white shadow-sm transition-all active:scale-95 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {isSubmitting ||
                   (isCreating && <Loader2 className="w-4 h-4 animate-spin" />)}

@@ -32,8 +32,8 @@ const PassportRow = ({ passport, onEdit }) => {
     passport?.status === "void" || passport?.status === "refund";
 
   return (
-    <tr className="hover:bg-blue-50/50 transition-colors">
-      <td className="px-4 py-3">
+    <tr className="hover:bg-blue-50/50 text-xx transition-colors">
+      <td className="px-4 text-xx py-3">
         <div className="font-mono font-semibold text-gray-900 ">
           {formatDate(passport?.issueDate)}
         </div>
@@ -42,13 +42,13 @@ const PassportRow = ({ passport, onEdit }) => {
         </div> */}
       </td>
 
-      <td className="px-4 py-3">
+      <td className="px-4 text-xx py-3">
         <div className="font-medium text-gray-900">
           {passport?.passportName}
         </div>
-        <div className="text-xs flex items-center gap-1 text-blue-600 font-bold py-0.5">
+        <div className="text-xx flex items-center gap-1 text-blue-600 font-bold py-0.5">
           <span>{passport?.passportNumber}</span>
-          <div className="w-5 h-5 bg-black rounded-full text-white text-center font-bold p-0.5">
+          <div className="w-4 h-4 bg-green-600 rounded-full flex justify-center items-center text-white text-center font-bold">
             {passport?.numberOfPassport}
           </div>
 

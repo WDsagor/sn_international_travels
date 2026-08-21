@@ -7,3 +7,6 @@ body,
   width: 100%;
   background-color: #f9fafb;
 }
+@utility text-xx {
+  font-size: 10px;
+}

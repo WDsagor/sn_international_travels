@@ -60,13 +60,13 @@ const Passports = () => {
           <h1 className="text-2xl font-bold text-gray-900">
             Passport & Visa Information
           </h1>
-          <p className="text-sm text-gray-500">
+          <p className="text-xs text-gray-500">
             Manage all passport and visa information status
           </p>
         </div>
         <button
           onClick={handleOpenCreateModal}
-          className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors cursor-pointer"
+          className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-xs font-medium transition-colors cursor-pointer"
         >
           <Plus className="w-4 h-4" /> Passport & Visa
         </button>
@@ -81,14 +81,14 @@ const Passports = () => {
             placeholder="Search by Passport no, Visa or Client..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-full pl-9 pr-4 py-2 bg-gray-50 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20"
+            className="w-full pl-9 pr-4 py-2 bg-gray-50 border border-gray-200 rounded-lg text-xs focus:outline-none focus:ring-2 focus:ring-blue-500/20"
           />
         </div>
         <div className="flex gap-2 w-full md:w-auto">
           <select
             value={selectedStatus}
             onChange={(e) => setSelectedStatus(e.target.value)}
-            className="bg-gray-50 border border-gray-200 px-3 py-2 rounded-lg text-sm focus:outline-none w-full md:w-auto cursor-pointer uppercase"
+            className="bg-gray-50 border border-gray-200 px-3 py-2 rounded-lg text-xs focus:outline-none w-full md:w-auto cursor-pointer uppercase"
           >
             <option value="All Status">All Status</option>
             <option value="Submitted">Submitted</option>
@@ -102,7 +102,7 @@ const Passports = () => {
       <div className="bg-white rounded-xl border border-gray-200 shadow-xs overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full text-left border-collapse">
-            <thead className="bg-gray-100 text-xs font-semibold text-gray-700 uppercase tracking-wider border-b border-gray-200">
+            <thead className="bg-gray-100 text-xx font-semibold text-gray-700 uppercase tracking-wider border-b border-gray-200">
               <tr>
                 <th className="p-4">Date</th>
                 <th className="p-4">Passport Details</th>
@@ -116,7 +116,7 @@ const Passports = () => {
                 <th className="p-4 text-center">Actions</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-gray-100 text-sm text-gray-700">
+            <tbody className="divide-y divide-gray-100 text-xs text-gray-700">
               {isLoading ? (
                 <tr>
                   <td colSpan="10" className="text-center py-8 text-gray-500">
@@ -157,7 +157,7 @@ const Passports = () => {
         {/* 🟢 Pagination UI */}
         {passportsData?.length > 0 && (
           <div className="flex flex-col sm:flex-row items-center justify-between gap-4 p-4 border-t border-gray-200">
-            <p className="text-xs text-gray-500">
+            <p className="text-xx text-gray-500">
               Showing{" "}
               <span className="font-medium text-gray-700">
                 {(currentPage - 1) * itemsPerPage + 1}
@@ -176,17 +176,17 @@ const Passports = () => {
               <button
                 disabled={currentPage === 1}
                 onClick={() => setCurrentPage((prev) => prev - 1)}
-                className="px-3 py-1.5 text-xs font-medium rounded-lg border border-gray-200 text-gray-700 hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed flex items-center gap-1 transition-colors cursor-pointer"
+                className="px-3 py-1.5 text-xx font-medium rounded-lg border border-gray-200 text-gray-700 hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed flex items-center gap-1 transition-colors cursor-pointer"
               >
                 <ChevronLeft size={14} /> Previous
               </button>
-              <span className="text-xs text-gray-600 font-medium px-2">
+              <span className="text-xx text-gray-600 font-medium px-2">
                 Page {currentPage} of {totalPages || 1}
               </span>
               <button
                 disabled={currentPage === totalPages || totalPages === 0}
                 onClick={() => setCurrentPage((prev) => prev + 1)}
-                className="px-3 py-1.5 text-xs font-medium rounded-lg border border-gray-200 text-gray-700 hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed flex items-center gap-1 transition-colors cursor-pointer"
+                className="px-3 py-1.5 text-xx font-medium rounded-lg border border-gray-200 text-gray-700 hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed flex items-center gap-1 transition-colors cursor-pointer"
               >
                 Next <ChevronRight size={14} />
               </button>

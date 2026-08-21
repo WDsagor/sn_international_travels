@@ -65,7 +65,7 @@ const ReportCalender = ({ onGenerateReport }) => {
         <button
           type="button"
           onClick={() => setIsPickerOpen(!isPickerOpen)}
-          className="w-full text-xs font-medium border border-gray-300 px-3.5 py-2.5 rounded-xl text-gray-700 bg-white flex items-center justify-between gap-2 focus:outline-none focus:ring-2 focus:ring-blue-500/20 cursor-pointer"
+          className="w-full text-xx font-medium border border-gray-300 px-3.5 py-2.5 rounded-xl text-gray-700 bg-white flex items-center justify-between gap-2 focus:outline-none focus:ring-2 focus:ring-blue-500/20 cursor-pointer"
         >
           <div className="flex items-center gap-2">
             <Calendar size={16} className="text-gray-500" />
@@ -99,7 +99,7 @@ const ReportCalender = ({ onGenerateReport }) => {
       <button
         disabled={!isFormValid || isGenerating}
         onClick={handleReportAction}
-        className={`text-sm flex shrink-0 items-center justify-center gap-2 py-2.5 px-5 rounded-xl font-medium transition-all cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed ${
+        className={`text-xx flex shrink-0 items-center justify-center gap-2 py-2.5 px-5 rounded-xl font-medium transition-all cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed ${
           isReportReady
             ? "bg-green-600 hover:bg-green-700 text-white shadow-xs"
             : "border border-blue-200 bg-blue-50 text-blue-700 hover:bg-blue-100"

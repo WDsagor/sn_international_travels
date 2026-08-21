@@ -75,7 +75,7 @@ const LoginPage = () => {
           </div>
 
           <h1 className="text-xl font-bold text-white">Welcome Back</h1>
-          <p className="text-xs text-gray-200 mt-1">
+          <p className="text-xx text-gray-200 mt-1">
             Please enter your details to sign in to your account
           </p>
         </div>
@@ -87,7 +87,7 @@ const LoginPage = () => {
         >
           {/* ইমেইল ফিল্ড */}
           <div>
-            <label className="block text-xs font-semibold uppercase mb-1.5 text-gray-200">
+            <label className="block text-xx font-semibold uppercase mb-1.5 text-gray-200">
               Email Address *
             </label>
             <div className="relative">
@@ -102,7 +102,7 @@ const LoginPage = () => {
                     message: "Invalid email address",
                   },
                 })}
-                className={`w-full text-sm border pl-10 pr-3 py-2.5 rounded-xl bg-white/10 text-white placeholder-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-400 transition-all ${
+                className={`w-full text-xs border pl-10 pr-3 py-2.5 rounded-xl bg-white/10 text-white placeholder-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-400 transition-all ${
                   errors.email ? "border-red-400" : "border-white/30"
                 }`}
               />
@@ -116,7 +116,7 @@ const LoginPage = () => {
 
           {/* পাসওয়ার্ড ফিল্ড */}
           <div>
-            <label className="block text-xs font-semibold uppercase mb-1.5 text-gray-200">
+            <label className="block text-xx font-semibold uppercase mb-1.5 text-gray-200">
               Password *
             </label>
             <div className="relative">
@@ -131,7 +131,7 @@ const LoginPage = () => {
                     message: "Password must be at least 6 characters",
                   },
                 })}
-                className={`w-full text-sm border pl-10 pr-10 py-2.5 rounded-xl bg-white/10 text-white placeholder-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-400 transition-all ${
+                className={`w-full text-xs border pl-10 pr-10 py-2.5 rounded-xl bg-white/10 text-white placeholder-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-400 transition-all ${
                   errors.password ? "border-red-400" : "border-white/30"
                 }`}
               />
@@ -155,7 +155,7 @@ const LoginPage = () => {
           </div>
 
           {/* Remember Me & Forgot Password */}
-          <div className="flex items-center justify-between text-xs py-1">
+          <div className="flex items-center justify-between text-xx py-1">
             {/* <label className="flex items-center gap-2 cursor-pointer text-gray-200">
               <input
                 type="checkbox"
@@ -176,14 +176,14 @@ const LoginPage = () => {
           <button
             type="submit"
             disabled={isSubmitting}
-            className="w-full py-2.5 px-4 text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 disabled:opacity-50 rounded-xl shadow-lg hover:shadow-xl transition-all cursor-pointer mt-2"
+            className="w-full py-2.5 px-4 text-xs font-medium text-white bg-blue-600 hover:bg-blue-700 disabled:opacity-50 rounded-xl shadow-lg hover:shadow-xl transition-all cursor-pointer mt-2"
           >
             {isLoading ? "Signing in..." : "Sign In"}
           </button>
         </form>
 
         {/* ফুটনোট */}
-        <p className="text-center text-xs text-gray-200 mt-6">
+        <p className="text-center text-xx text-gray-200 mt-6">
           Don't have an account?{" "}
           <a
             href="#contact-admin"
