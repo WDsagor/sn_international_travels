@@ -1,5 +1,5 @@
-import { PrismaClient } from "@prisma/client";
-
+import { PrismaClient, Prisma } from "@prisma/client";
+// import { Prisma } from '@prisma/client';
 const prisma = new PrismaClient();
 
 // ১. নতুন VisaInfo তৈরি করা (Create)
@@ -23,50 +23,86 @@ export const createVisaInfo = async (req, res) => {
       netCost,
       clientPrice,
     } = req.body;
-
+    if (!issuedById || !clientId) {
+      return res.status(400).json({
+        message: "issuedById and clientId are required!",
+      });
+    }
     const netProfit = Number(clientPrice) - Number(netCost);
-    console.log(req.body);
+    // console.log(req.body);
     // console.log(submissionDate);
+    const result = await prisma.$transaction(
+      async (tx) => {
+        const newVisaInfo = await prisma.visaInfo.create({
+          data: {
+            issueDate: new Date(issueDate),
+            clientId,
+            issuedById,
+            passportName,
+            passportNumber,
+            numberOfPassport,
+            passportImage,
+            visaCategory,
+            visaType,
+            agencyName,
+            submissionDate: new Date(submissionDate),
+            visaCountry,
+            visaDetails,
+            status: status || "Submitted",
+            netCost: parseFloat(netCost),
+            clientPrice: parseFloat(clientPrice),
+            netProfit,
+          },
+          // include: {
+          //   client: true, // ক্লায়েন্টের বিস্তারিত ডাটা পেতে
+          //   issuedBy: true, // ইস্যুকারীর বিস্তারিত ডাটা পেতে
+          // },
+        });
+        await tx.payment.create({
+          data: {
+            clientId: clientId,
+            amount: parseFloat(clientPrice),
+            type: "debit",
+            paymentMethod: ` ${visaCountry?.toUpperCase()} VISA ${status?.toUpperCase()}`,
+            paymentDate: new Date(),
+            note: ` Visa detail: ${visaType}. (${visaDetails})`,
+          },
+        });
+        await tx.user.update({
+          where: { id: issuedById },
+          data: {
+            totalProfit: { increment: netProfit },
+          },
+        });
 
-    const newVisaInfo = await prisma.visaInfo.create({
-      data: {
-        issueDate: new Date(issueDate),
-        clientId,
-        issuedById,
-        passportName,
-        passportNumber,
-        numberOfPassport,
-        passportImage,
-        visaCategory,
-        visaType,
-        agencyName,
-        submissionDate: new Date(submissionDate),
-        visaCountry,
-        visaDetails,
-        status: status || "Submitted",
-        netCost: parseFloat(netCost),
-        clientPrice: parseFloat(clientPrice),
-        netProfit,
+        return newVisaInfo;
       },
-      include: {
-        client: true, // ক্লায়েন্টের বিস্তারিত ডাটা পেতে
-        issuedBy: true, // ইস্যুকারীর বিস্তারিত ডাটা পেতে
+      {
+        maxWait: 10000,
+        timeout: 15000,
       },
-    });
+    );
     // console.log(newVisaInfo);
 
     res.status(201).json({
       success: true,
       message: "VisaInfo successfully created",
-      data: newVisaInfo,
+      data: result,
     });
   } catch (error) {
-    res.status(500).json({
+    console.log(error?.code);
+    if (error?.code === "P2003") {
+      return res.status(400).json({
+        success: false,
+        message: " Already added this information",
+      });
+    }
+
+    return res.status(500).json({
       success: false,
       message: "Failed to create VisaInfo",
       error: error.message,
     });
-    console.log(error);
   }
 };
 

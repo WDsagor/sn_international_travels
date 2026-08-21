@@ -78,7 +78,7 @@ model VisaInfo {
   clientId          String
   issuedById        String
   passportName      String
-  passportNumber    String
+  passportNumber    String 
   numberOfPassport  Float?
   passportImage     String?
   visaCategory      String
@@ -99,7 +99,7 @@ model VisaInfo {
   createdAt         DateTime  @default(now())
   updatedAt         DateTime  @updatedAt
 
-
+@@unique([passportNumber, visaCountry, submissionDate, visaCategory])
 }
 model Payment {
   id            String   @id @default(uuid())

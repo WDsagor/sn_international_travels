@@ -57,6 +57,7 @@ export const createPayment = async (req, res) => {
           },
         },
       },
+      orderBy: [{ paymentDate: "desc" }, { createdAt: "desc" }],
     });
 
     return res.status(201).json({
@@ -123,15 +124,26 @@ export const getAllPayments = async (req, res) => {
           },
         },
       },
-      orderBy: {
-        paymentDate: "desc",
-      },
+      orderBy: [{ paymentDate: "desc" }, { createdAt: "desc" }],
     });
-
+    // payments.sort(
+    //   (a, b) =>
+    //     new Date(b.paymentDate).getTime() - new Date(a.paymentDate).getTime(),
+    // );
+    const formattedPayments = payments.map((payment) => ({
+      ...payment,
+      formattedDate: new Date(payment.paymentDate).toLocaleDateString("bn-BD", {
+        year: "numeric",
+        month: "long",
+        day: "numeric",
+        hour: "2-digit",
+        minute: "2-digit",
+      }),
+    }));
     return res.status(200).json({
       success: true,
       count: payments.length,
-      data: payments,
+      data: formattedPayments,
     });
   } catch (error) {
     console.error("Error fetching payments:", error);
