@@ -10,8 +10,8 @@ const Sidebar = ({ isOpen, setIsOpen }) => {
   const menuItems = [
     { path: "/", label: "Dashboard", icon: LayoutDashboard },
     { path: "/tickets", label: "Tickets", icon: Ticket },
-    { path: "/clients", label: "Clients & Ledger", icon: Users },
     { path: "/passports&visa", label: "Passport & Visa", icon: Dock },
+    { path: "/clients", label: "Clients & Ledger", icon: Users },
     { path: "/users", label: "Staff Portal", icon: Settings },
   ];
   const handleLogout = () => {

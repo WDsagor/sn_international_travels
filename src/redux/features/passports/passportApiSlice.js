@@ -29,7 +29,13 @@ export const passportApiSlice = apiSlice.injectEndpoints({
         method: "POST",
         body,
       }),
-      invalidatesTags: ["VisaInfo"],
+      invalidatesTags: [
+        "VisaInfo",
+        "Client",
+        "Clients",
+        "User",
+        "ClientLedger",
+      ],
     }),
   }),
 });

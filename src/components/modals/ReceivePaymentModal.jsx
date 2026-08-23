@@ -64,6 +64,7 @@ const ReceivePaymentModal = ({ isOpen, onClose }) => {
 
   // ব্যাংক বা মোবাইল ব্যাংকিং সিলেক্ট করলে অ্যাকাউন্ট ইনপুট দেখাবে
   const showAccountField = [
+    "CASH PAYMENT",
     "BANK TRANSFER",
     "BKASH PAYMENT",
     "NAGAD",
@@ -250,11 +251,7 @@ const ReceivePaymentModal = ({ isOpen, onClose }) => {
           )}
 
           {/* Payment Method, Account & Transaction Ref */}
-          <div
-            className={`grid grid-cols-1 ${
-              showAccountField ? "sm:grid-cols-3" : "sm:grid-cols-2"
-            } gap-4`}
-          >
+          <div className={"grid grid-cols-1 sm:grid-cols-2 gap-4"}>
             <div>
               <label className="block text-xx font-semibold text-gray-600 uppercase mb-1.5">
                 Payment Method *

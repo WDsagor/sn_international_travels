@@ -94,33 +94,12 @@ const Clients = () => {
   const ledgerList = clientInfo?.ledger || [];
   const currentDue = clientInfo?.totalOutstandingDue ?? 0;
 
-  // 🟢 রিভার্সড লেজার এবং পেজিনেশন হিসাব (সর্বশেষ ট্রানজেকশন প্রথমে দেখানোর জন্য)
-  const sortedLedger = useMemo(() => {
-    if (!ledgerList.length) return [];
-
-    return [...ledgerList].sort((a, b) => {
-      // ১. মূল তারিখ ও সময়ের তুলনা
-      const dateA = new Date(a.date).getTime();
-      const dateB = new Date(b.date).getTime();
-
-      if (dateB !== dateA) {
-        return dateB - dateA; // Newest date first
-      }
-
-      // ২. যদি তারিখ একই হয়, তবে createdAt বা id অনুযায়ী চেক (Fallback)
-      const createdA = a.createdAt ? new Date(a.createdAt).getTime() : 0;
-      const createdB = b.createdAt ? new Date(b.createdAt).getTime() : 0;
-
-      return createdB - createdA;
-    });
-  }, [ledgerList]);
-
-  const totalPages = Math.ceil(sortedLedger.length / itemsPerPage);
+  const totalPages = Math.ceil(ledgerList.length / itemsPerPage);
 
   const paginatedLedger = useMemo(() => {
     const startIndex = (currentPage - 1) * itemsPerPage;
-    return sortedLedger.slice(startIndex, startIndex + itemsPerPage);
-  }, [sortedLedger, currentPage, itemsPerPage]);
+    return ledgerList.slice(startIndex, startIndex + itemsPerPage);
+  }, [ledgerList, currentPage, itemsPerPage]);
 
   const handleAddNew = () => {
     setSelectedClientModal(null);
@@ -269,7 +248,7 @@ const Clients = () => {
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-gray-100 text-xx text-gray-600">
-                    {sortedLedger.length === 0 ? (
+                    {ledgerList.length === 0 ? (
                       <tr>
                         <td
                           colSpan="5"
@@ -316,7 +295,7 @@ const Clients = () => {
               </div>
 
               {/* 🟢 Pagination Control UI */}
-              {sortedLedger.length > 0 && (
+              {ledgerList.length > 0 && (
                 <div className="flex flex-col sm:flex-row items-center justify-between gap-4 mt-4 px-2 py-3 border-t border-gray-100">
                   <p className="text-xx text-gray-500">
                     Showing{" "}
@@ -325,14 +304,11 @@ const Clients = () => {
                     </span>{" "}
                     to{" "}
                     <span className="font-medium text-gray-700">
-                      {Math.min(
-                        currentPage * itemsPerPage,
-                        sortedLedger.length,
-                      )}
+                      {Math.min(currentPage * itemsPerPage, ledgerList.length)}
                     </span>{" "}
                     of{" "}
                     <span className="font-medium text-gray-700">
-                      {sortedLedger.length}
+                      {ledgerList.length}
                     </span>{" "}
                     entries
                   </p>
