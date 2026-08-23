@@ -199,31 +199,51 @@ export const getClientById = async (req, res) => {
     const client = await prisma.client.findUnique({
       where: { id },
       include: {
-        payments: {
-          orderBy: [{ paymentDate: "asc" }, { createdAt: "asc" }],
-        },
+        payments: true,
       },
     });
 
     if (!client) {
-      return res.status(404).json({ message: "Client not found!" });
+      return res
+        .status(404)
+        .json({ success: false, message: "Client not found!" });
     }
+
+    // ১. একই তারিখের লেনদেনগুলোকে তৈরি হওয়ার আসল সময় (createdAt) অনুযায়ী সাজানো
+    const sortedPayments = [...client.payments].sort((a, b) => {
+      // শুধুমাত্র তারিখের অংশটুকু তুলনা (YYYY-MM-DD)
+      const dayA = new Date(a.paymentDate || a.createdAt)
+        .toISOString()
+        .split("T")[0];
+      const dayB = new Date(b.paymentDate || b.createdAt)
+        .toISOString()
+        .split("T")[0];
+
+      // দিন আলাদা হলে দিন অনুযায়ী সাজাবে (Oldest day first)
+      if (dayA !== dayB) {
+        return new Date(dayA) - new Date(dayB);
+      }
+
+      // দিন একই হলে, যে এনট্রিটি আগে ক্রিয়েট হয়েছে (createdAt) সেটি আগে আসবে
+      return new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime();
+    });
 
     let runningBalance = Number(client.openingBalance || 0);
 
-    const ledger = client.payments.map((p) => {
+    // ২. এবার প্রতিটি লেনদেনের পর সঠিক রানিং ব্যালেন্স হিসাব
+    const ledger = sortedPayments.map((p) => {
       const amt = Number(p.amount || 0);
       const pType = (p.type || "").toLowerCase();
 
       const debit = pType === "debit" ? amt : 0;
       const credit = pType === "credit" ? amt : 0;
 
-      // রানিং ব্যালেন্স এডজাস্টমেন্ট
       runningBalance = runningBalance + debit - credit;
 
       return {
         id: p.id,
         date: p.paymentDate || p.createdAt,
+        createdAt: p.createdAt, // ট্রেসিং এর জন্য
         details: p.paymentMethod,
         subDetails: p.note,
         debit,
@@ -239,7 +259,7 @@ export const getClientById = async (req, res) => {
       data: {
         ...clientData,
         totalOutstandingDue: runningBalance,
-        ledger,
+        ledger: ledger.reverse(), // নতুনগুলো UI-তে উপরে দেখাবে
       },
     });
   } catch (error) {
@@ -256,7 +276,7 @@ export const deleteClient = async (req, res) => {
     const existingClient = await prisma.client.findUnique({
       where: { id },
     });
-
+    // console.log(existingClient);
     if (!existingClient) {
       return res.status(404).json({ message: "Client not found!" });
     }
@@ -267,6 +287,11 @@ export const deleteClient = async (req, res) => {
 
     res.status(200).json({ message: "Client deleted successfully!" });
   } catch (error) {
-    res.status(500).json({ message: "Server error", error: error.message });
+    // console.log(error.message);
+    res.status(500).json({
+      message: "Server error client can not deleted",
+
+      error: error.message,
+    });
   }
 };

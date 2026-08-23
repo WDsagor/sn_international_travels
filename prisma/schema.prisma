@@ -64,10 +64,10 @@ model Ticket {
   netProfit    Float 
 
   issuedById   String
-  issuedBy     User      @relation(fields: [issuedById], references: [id])
+  issuedBy     User      @relation(fields: [issuedById], references: [id], onDelete: Cascade)
 
   clientId     String
-  client       Client    @relation(fields: [clientId], references: [id])
+  client       Client    @relation(fields: [clientId], references: [id], onDelete: Cascade)
 
   createdAt    DateTime  @default(now())
   updatedAt    DateTime  @updatedAt
@@ -92,9 +92,9 @@ model VisaInfo {
   clientPrice       Float
   netProfit         Float 
 
-  issuedBy          User @relation(fields: [issuedById], references: [id])
+  issuedBy          User @relation(fields: [issuedById], references: [id], onDelete: Cascade)
 
-  client            Client    @relation(fields: [clientId], references: [id])
+  client            Client    @relation(fields: [clientId], references: [id], onDelete: Cascade)
 
   createdAt         DateTime  @default(now())
   updatedAt         DateTime  @updatedAt

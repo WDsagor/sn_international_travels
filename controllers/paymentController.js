@@ -57,7 +57,6 @@ export const createPayment = async (req, res) => {
           },
         },
       },
-      orderBy: [{ paymentDate: "desc" }, { createdAt: "desc" }],
     });
 
     return res.status(201).json({
