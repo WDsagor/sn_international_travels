@@ -141,12 +141,17 @@ export const loginUser = async (req, res) => {
       { expiresIn: "12h" },
     );
 
-    const { password: _, ...userWithoutPassword } = user;
+    // const { password: _, ...userWithoutPassword } = user;
 
     res.status(200).json({
       message: "Login successful!",
       token,
-      user: userWithoutPassword,
+      user: {
+        fullName: user?.fullName,
+        email: user?.email,
+        role: user?.role,
+        status: user?.status,
+      },
     });
   } catch (error) {
     res.status(500).json({ message: "Server error", error: error.message });

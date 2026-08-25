@@ -9,13 +9,16 @@ export const verifyAdmin = (req, res, next) => {
     }
 
     // Role 'admin' কিনা চেক করা (Small case & Capital case উভয়টাই হ্যান্ডেল করা হয়েছে)
-    if (req.user.role !== "Admin" || req.user.role !== "Accounts") {
-      return res.status(403).json({
-        message: "Forbidden! Access required.",
-      });
+    const role = req.user.role?.toLowerCase();
+
+    // ৩. Role যদি 'admin' অথবা 'accounts' হয়, তবে পরের ধাপে যাবে
+    if (role === "admin" || role === "accounts") {
+      return next();
     }
 
-    next();
+    return res.status(403).json({
+      message: "Forbidden! Access required.",
+    });
   } catch (error) {
     return res
       .status(500)

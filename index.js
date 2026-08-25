@@ -25,8 +25,8 @@ app.get("/", (req, res) => {
 app.use("/api/users", userRoutes);
 app.use("/api/clients", clientRoutes);
 app.use("/api/tickets", ticketRoutes);
-app.use("/api/payments", paymentRoutes);
 app.use("/api/visaInfo", visaInfoRoutes);
+app.use("/api/payments", paymentRoutes);
 // Database Connection Check
 async function main() {
   try {
