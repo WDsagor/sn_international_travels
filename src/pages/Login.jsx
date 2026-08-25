@@ -1,22 +1,26 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { Mail, Lock, Eye, EyeOff } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import logo from "../assets/images/SN-logo.png";
 import { useLoginUserMutation } from "../redux/features/user/userApi";
 import Swal from "sweetalert2";
+import { useDispatch } from "react-redux";
+import { setCredentials } from "../redux/features/auth/authSlice";
 
 const backgroundImageUrl =
   "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?q=80&w=1920&auto=format&fit=crop";
 
 const LoginPage = () => {
   const [showPassword, setShowPassword] = useState(false);
-  const [loginUser, { isLoading }] = useLoginUserMutation();
+  const [loginUser, { isLoading, isSubmitting, error }] =
+    useLoginUserMutation();
 
   const {
     register,
     handleSubmit,
-    formState: { errors, isSubmitting },
+    reset,
+    formState: { errors },
   } = useForm({
     defaultValues: {
       email: "",
@@ -25,28 +29,42 @@ const LoginPage = () => {
   });
 
   const navigate = useNavigate();
+  const dispatch = useDispatch();
 
   const onSubmit = async (data) => {
     try {
-      console.log("Login Data Submitted:", data);
+      // console.log("Login Data Submitted:", data);
       const res = await loginUser(data).unwrap();
-      localStorage.setItem("token", res.token);
-      Swal.fire({
-        icon: "success",
-        title: "Success!",
-        text: "Log in Successfully!",
-        confirmButtonColor: "#2563eb", // Tailwind blue-600
-        timer: 2000,
-        showConfirmButton: false,
-      });
-      navigate("/");
+      console.log(res);
+
+      const token = res?.token || res?.data?.token;
+
+      if (token) {
+        // localStorage.setItem("token", token);
+        dispatch(setCredentials(res));
+
+        Swal.fire({
+          icon: "success",
+          title: "Success!",
+          text: "Log in Successfully!",
+          confirmButtonColor: "#2563eb",
+          timer: 1500,
+          showConfirmButton: false,
+        });
+
+        reset();
+        navigate("/");
+      }
     } catch (err) {
-      // console.log(error);
+      reset();
       Swal.fire({
         icon: "error",
         title: "Login failed!",
-        text: err?.data?.message || "Failed to login. Please try again.",
-        confirmButtonColor: "#dc2626", // Tailwind red-600
+        text:
+          err?.data?.message ||
+          err?.error ||
+          "Failed to login. Please try again.",
+        confirmButtonColor: "#dc2626",
       });
     }
   };

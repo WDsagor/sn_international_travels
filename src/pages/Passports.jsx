@@ -25,19 +25,20 @@ const Passports = () => {
     search: searchTerm,
     status: selectedStatus,
   });
+  // console.log(error);
   // 🟢 সার্চ বা ফিল্টার পরিবর্তন হলে পেজ নম্বর ১-এ রিসেট হবে
   useEffect(() => {
     setCurrentPage(1);
   }, [searchTerm, selectedStatus]);
 
   const totalPages = Math.ceil((passportsData?.length || 0) / itemsPerPage);
-  console.log(passportsData);
+  // console.log(passportsData);
   const paginatedPassports = useMemo(() => {
     if (!Array.isArray(passportsData)) return [];
     const startIndex = (currentPage - 1) * itemsPerPage;
     return passportsData.slice(startIndex, startIndex + itemsPerPage);
   }, [passportsData, currentPage, itemsPerPage]);
-  console.log(paginatedPassports);
+  // console.log(paginatedPassports);
   const handleOpenCreateModal = () => {
     setSelectedPassport(null);
     setShowModal(true);
@@ -130,8 +131,7 @@ const Passports = () => {
               ) : isError ? (
                 <tr>
                   <td colSpan="10" className="text-center py-8 text-red-500">
-                    Failed to load Visa:{" "}
-                    {error?.message || "Something went wrong"}
+                    {error?.data?.message || "Something went wrong"}
                   </td>
                 </tr>
               ) : passportsData?.length === 0 ? (

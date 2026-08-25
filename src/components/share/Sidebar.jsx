@@ -2,10 +2,13 @@ import React from "react";
 import { LayoutDashboard, Ticket, Users, Settings, LogOut } from "lucide-react";
 import { useLocation, Link, useNavigate } from "react-router-dom";
 import { Dock } from "lucide-react";
+import { logout } from "../../redux/features/auth/authSlice";
+import { useDispatch } from "react-redux";
 
 const Sidebar = ({ isOpen, setIsOpen }) => {
   const location = useLocation();
   const navigate = useNavigate();
+  const dispatch = useDispatch();
 
   const menuItems = [
     { path: "/", label: "Dashboard", icon: LayoutDashboard },
@@ -15,7 +18,7 @@ const Sidebar = ({ isOpen, setIsOpen }) => {
     { path: "/users", label: "Staff Portal", icon: Settings },
   ];
   const handleLogout = () => {
-    localStorage.removeItem("token");
+    dispatch(logout());
     navigate("/login");
   };
   return (

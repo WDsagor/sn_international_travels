@@ -17,10 +17,10 @@ const authSlice = createSlice({
       localStorage.setItem("token", token);
     },
     logout: (state) => {
-      state.user = null;
-      state.token = null;
       localStorage.removeItem("user");
       localStorage.removeItem("token");
+      state.user = null;
+      state.token = null;
     },
   },
 });

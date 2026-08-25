@@ -1,19 +1,11 @@
-import {
-  LayoutDashboard,
-  Ticket,
-  Users,
-  CreditCard,
-  Settings,
-  Menu,
-  X,
-  Bell,
-  User as UserIcon,
-  LogOut,
-} from "lucide-react";
-import React from "react";
+import { Menu, X, Bell } from "lucide-react";
+
 import snLogo from "../../assets/images/SN-logo.png";
 
 const Header = ({ isOpen, setIsOpen }) => {
+  const user = localStorage.getItem("user");
+  const userData = JSON.parse(user);
+  // console.log(userData?.fullName);
   return (
     <header className="fixed top-0 left-0 right-0 h-16 bg-white border-b border-gray-200 z-40 flex items-center justify-between px-4 lg:px-6">
       <div className="flex items-center gap-3">
@@ -42,15 +34,18 @@ const Header = ({ isOpen, setIsOpen }) => {
         </button>
         <div className="h-6 w-px bg-gray-200 hidden sm:block" />
         <div className="flex items-center gap-2.5 p-1.5 rounded-lg">
-          <div className="w-8 h-8 rounded-full bg-indigo-100 text-indigo-700 flex items-center justify-center font-semibold text-xs">
-            A
+          <div className="w-8 h-8 relative rounded-full bg-indigo-100 text-indigo-700 flex items-center justify-center font-semibold text-xs">
+            {userData?.fullName?.charAt(0)}
+            <span
+              className={`absolute top-0 right-0 w-2 h-2 ${userData?.status === "active" ? " bg-green-600" : " bg-red-600"} rounded-full`}
+            />
           </div>
           <div className="hidden sm:block text-left">
             <p className="text-xx font-bold text-gray-900 leading-none">
-              Admin User
+              {userData?.fullName}
             </p>
             <p className="text-[10px] text-gray-400 font-medium mt-0.5">
-              Accounts Dept.
+              {userData?.role}
             </p>
           </div>
         </div>

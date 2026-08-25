@@ -1,11 +1,11 @@
 import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
-import { logout } from "../features/auth/authSlice"; // আপনার authSlice-এর সঠিক পাথ দিন
+import { logout } from "../features/auth/authSlice";
 
-// মূল baseQuery
 const baseQuery = fetchBaseQuery({
   baseUrl: import.meta.env.VITE_API_URL,
   prepareHeaders: (headers, { getState }) => {
-    const token = getState().auth.token || localStorage.getItem("token");
+    // optional chaining ব্যবহার করা নিরাপদ
+    const token = getState()?.auth?.token || localStorage.getItem("token");
     if (token) {
       headers.set("authorization", `Bearer ${token}`);
     }
@@ -13,17 +13,20 @@ const baseQuery = fetchBaseQuery({
   },
 });
 
-// Reauth / 401 Handling সহ কাস্টম baseQuery
 const baseQueryWithReauth = async (args, api, extraOptions) => {
   let result = await baseQuery(args, api, extraOptions);
 
-  // যদি API থেকে ৪০১ (Unauthorized) রেসপন্স আসে
+  // যদি API থেকে ৪০১ রেসপন্স আসে
   if (result.error && result.error.status === 401) {
-    // Redux স্টেট ও LocalStorage থেকে ইউজার ডাটা ক্লিয়ার করার জন্য logout অ্যাকশন ডিসপ্যাচ
-    api.dispatch(logout());
+    // API Request-এর URL চেক করা (যাতে Login Request হলে রিডাইরেক্ট না হয়)
+    const requestUrl = typeof args === "string" ? args : args.url;
 
-    // প্রয়োজনে ব্যবহারকারীকে লগইন পেজে পাঠাতে পারেন
-    window.location.href = "/login";
+    const isAuthRequest = requestUrl?.includes("/login");
+
+    if (!isAuthRequest) {
+      api.dispatch(logout());
+      window.location.href = "/login";
+    }
   }
 
   return result;
@@ -31,7 +34,7 @@ const baseQueryWithReauth = async (args, api, extraOptions) => {
 
 export const apiSlice = createApi({
   reducerPath: "api",
-  baseQuery: baseQueryWithReauth, // 👈 এখানে কাস্টম baseQuery টি বসিয়ে দিন
+  baseQuery: baseQueryWithReauth,
   tagTypes: [
     "User",
     "Account",
