@@ -76,13 +76,24 @@ export const createUser = async (req, res) => {
 
 export const getAllUsers = async (req, res) => {
   try {
+    const now = new Date();
+    const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+    const endOfMonth = new Date(
+      now.getFullYear(),
+      now.getMonth() + 1,
+      0,
+      23,
+      59,
+      59,
+      999,
+    );
     const users = await prisma.user.findMany({
       orderBy: { createdAt: "desc" },
       select: {
         id: true,
         fullName: true,
         phone: true,
-        password: true,
+        totalProfit: true,
         email: true,
         role: true,
         status: true,
@@ -90,9 +101,57 @@ export const getAllUsers = async (req, res) => {
         monthlySalary: true,
         address: true,
         createdAt: true,
+        tickets: {
+          where: {
+            createdAt: {
+              gte: startOfMonth,
+              lte: endOfMonth,
+            },
+          },
+          select: {
+            id: true,
+            netProfit: true,
+            createdAt: true,
+          },
+        },
+        // 🟢 শুধু চলতি মাসের Visa ফিল্টার করে আনা
+        visa: {
+          where: {
+            createdAt: {
+              gte: startOfMonth,
+              lte: endOfMonth,
+            },
+          },
+          select: {
+            id: true,
+            netProfit: true,
+            createdAt: true,
+          },
+        },
       },
     });
-    res.status(200).json(users);
+    const formattedUsers = users.map((user) => {
+      const monthlyTicketProfit = user.tickets.reduce(
+        (sum, item) => sum + (Number(item.netProfit) || 0),
+        0,
+      );
+      const monthlyVisaProfit = user.visa.reduce(
+        (sum, item) => sum + (Number(item.netProfit) || 0),
+        0,
+      );
+      const currentMonthProfit = monthlyTicketProfit + monthlyVisaProfit;
+      const finalTotalProfit =
+        (Number(user.totalProfit) || 0) + currentMonthProfit;
+
+      return {
+        ...user,
+        monthlyTicketProfit,
+        monthlyVisaProfit,
+        monthlyProfit: currentMonthProfit,
+        totalProfit: finalTotalProfit,
+      };
+    });
+    res.status(200).json(formattedUsers);
   } catch (error) {
     res.status(500).json({ message: "Server error", error: error.message });
   }

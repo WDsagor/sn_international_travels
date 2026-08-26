@@ -103,7 +103,7 @@ export const createTicket = async (req, res) => {
       async (tx) => {
         const ticket = await tx.ticket.create({
           data: {
-            pnrCode,
+            pnrCode: pnrCode?.toUpperCase(),
             ticketType,
             issueDate: new Date(issueDate),
             passengerName,
@@ -124,6 +124,7 @@ export const createTicket = async (req, res) => {
           data: {
             clientId: clientId,
             amount: price,
+            trxId: pnrCode?.toUpperCase(),
             type: "debit",
             paymentMethod: `Ticket ${status?.toUpperCase()} PNR - ${pnrCode?.toUpperCase()}`,
             paymentDate: new Date(),
@@ -203,8 +204,8 @@ export const updateTicket = async (req, res) => {
     }
 
     // const oldProfit = oldTicket.netProfit;
-    const targetIssuedById = issuedById || oldTicket.issuedById;
-    const targetClientId = clientId || oldTicket.clientId;
+    const targetIssuedById = issuedById;
+    const targetClientId = clientId;
 
     const updatedTicket = await prisma.$transaction(
       async (tx) => {
@@ -236,7 +237,27 @@ export const updateTicket = async (req, res) => {
             clientId: targetClientId,
           },
         });
-
+        if (
+          issuedById !== oldTicket?.issuedById ||
+          clientId !== oldTicket?.clientId
+        ) {
+          await tx.payment.updateMany({
+            where: {
+              trxId: {
+                contains: oldTicket?.pnrCode,
+              },
+            },
+            data: {
+              clientId: targetClientId,
+            },
+          });
+          await tx.user.update({
+            where: { id: issuedById },
+            data: {
+              totalProfit: { decrement: oldTicket?.netProfit },
+            },
+          });
+        }
         if (status === "refund" || status === "void") {
           const netRefundAmount = oldTicket.clientPrice - charge;
 
