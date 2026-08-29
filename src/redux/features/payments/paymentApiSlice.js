@@ -31,7 +31,7 @@ export const paymentApiSlice = apiSlice.injectEndpoints({
         method: "POST",
         body: newPayment,
       }),
-      invalidatesTags: ["Payment", "Client"], // 👈 ক্লায়েন্ট লেজার অটো রিফ্রেশ হবে
+      invalidatesTags: ["Payment", "Client", "Clients"],
     }),
 
     // ৪. পেমেন্ট আপডেট করা
@@ -41,7 +41,7 @@ export const paymentApiSlice = apiSlice.injectEndpoints({
         method: "PUT",
         body: patch,
       }),
-      invalidatesTags: ["Payment", "Client"], // 👈 ক্লায়েন্ট লেজার অটো রিফ্রেশ হবে
+      invalidatesTags: ["Payment", "Client", "Clients"],
     }),
 
     // ৫. পেমেন্ট ডিলিট করা
@@ -50,7 +50,7 @@ export const paymentApiSlice = apiSlice.injectEndpoints({
         url: `/payments/${id}`,
         method: "DELETE",
       }),
-      invalidatesTags: ["Payment", "Client"], // 👈 ক্লায়েন্ট লেজার অটো রিফ্রেশ হবে
+      invalidatesTags: ["Payment", "Client", "Clients"],
     }),
   }),
 });

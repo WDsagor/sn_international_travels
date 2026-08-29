@@ -161,8 +161,7 @@ const Clients = () => {
                 const clientId = client.id || client._id;
                 return (
                   <option key={clientId} value={clientId}>
-                    {client.fullName || client.name}{" "}
-                    {client.company ? `(${client.company})` : ""}
+                    {client.fullName || client.name}
                   </option>
                 );
               })}
@@ -261,12 +260,12 @@ const Clients = () => {
                       paginatedLedger.map((item) => (
                         <tr
                           key={item.id}
-                          className="hover:bg-gray-50/60 transition-colors"
+                          className="hover:bg-gray-50 transition-colors"
                         >
-                          <td className="px-4 py-3.5 text-xx text-gray-500 whitespace-nowrap">
+                          <td className="px-4 py-1.5 text-xx text-gray-500 whitespace-nowrap">
                             {formatDate(item.date)}
                           </td>
-                          <td className="px-4 py-3.5">
+                          <td className="px-4 py-1.5">
                             <div className="font-medium text-gray-900">
                               {item.details}
                             </div>
@@ -276,15 +275,15 @@ const Clients = () => {
                               </div>
                             )}
                           </td>
-                          <td className="px-4 py-3.5 text-right font-mono text-red-600 font-medium whitespace-nowrap">
+                          <td className="px-4 py-1.5 text-right font-mono text-red-600 font-medium whitespace-nowrap">
                             {item.debit > 0 ? formatCurrency(item.debit) : "-"}
                           </td>
-                          <td className="px-4 py-3.5 text-right font-mono text-emerald-600 font-medium whitespace-nowrap">
+                          <td className="px-4 py-1.5 text-right font-mono text-emerald-600 font-medium whitespace-nowrap">
                             {item.credit > 0
                               ? formatCurrency(item.credit)
                               : "-"}
                           </td>
-                          <td className="px-4 py-3.5 text-right font-mono font-bold text-gray-900 whitespace-nowrap">
+                          <td className="px-4 py-1.5 text-right font-mono font-bold text-gray-900 whitespace-nowrap">
                             {formatCurrency(Math.abs(item.runningBalance))}
                           </td>
                         </tr>

@@ -292,7 +292,7 @@ const TicketModal = ({
       reset();
       onClose(false);
     } catch (err) {
-      console.error("Redux Mutation Error:", err);
+      // console.error("Redux Mutation Error:", err);
       Swal.fire({
         icon: "error",
         title: "Something Went Wrong!",

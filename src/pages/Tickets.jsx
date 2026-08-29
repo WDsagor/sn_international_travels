@@ -1,7 +1,10 @@
 import React, { useState, useMemo, useEffect } from "react";
 import { Plus, Search, ChevronLeft, ChevronRight } from "lucide-react";
 import TicketModal from "../components/modals/TicketModal";
-import { useGetTicketsQuery } from "../redux/features/tickets/ticketsApiSlice";
+import {
+  useDeleteTicketMutation,
+  useGetTicketsQuery,
+} from "../redux/features/tickets/ticketsApiSlice";
 import TicketRow from "../components/tickets/TicketRow";
 import Swal from "sweetalert2";
 import ReportCalender from "../components/share/ReportCalender";
@@ -25,6 +28,8 @@ const Tickets = () => {
     search: searchTerm,
     status: selectedStatus,
   });
+  const [deleteTicket, { isLoading: deleteLoading }] =
+    useDeleteTicketMutation();
 
   // 🟢 সার্চ বা ফিল্টার পরিবর্তন হলে পেজ নম্বর ১-এ রিসেট হবে
   useEffect(() => {
@@ -61,22 +66,50 @@ const Tickets = () => {
       text: `You are about to delete PNR: ${ticket.pnrCode?.toUpperCase()}`,
       icon: "warning",
       showCancelButton: true,
-      confirmButtonColor: "#dc2626", // Red button
-      cancelButtonColor: "#6b7280", // Gray button
+      confirmButtonColor: "#dc2626",
+      cancelButtonColor: "#6b7280",
       confirmButtonText: "Yes, delete it!",
       cancelButtonText: "Cancel",
       customClass: {
         popup: "rounded-2xl",
       },
-    }).then((result) => {
+    }).then(async (result) => {
       if (result.isConfirmed) {
         Swal.fire({
-          title: "Deleted!",
-          text: "Ticket has been deleted successfully.",
-          icon: "success",
-          timer: 1500,
-          showConfirmButton: false,
+          title: "Deleting Ticket...",
+          text: "Please wait a moment.",
+          allowOutsideClick: false,
+          allowEscapeKey: false,
+          didOpen: () => {
+            Swal.showLoading();
+          },
+          customClass: {
+            popup: "rounded-2xl",
+          },
         });
+
+        try {
+          await deleteTicket(ticket?.id).unwrap();
+          Swal.fire({
+            title: "Deleted!",
+            text: "Ticket has been deleted successfully.",
+            icon: "success",
+            timer: 1500,
+            showConfirmButton: false,
+            customClass: {
+              popup: "rounded-2xl",
+            },
+          });
+        } catch (error) {
+          Swal.fire({
+            title: "Delete Failed!",
+            text: error?.data?.message || "Failed to delete the ticket.",
+            icon: "error",
+            customClass: {
+              popup: "rounded-2xl",
+            },
+          });
+        }
       }
     });
   };

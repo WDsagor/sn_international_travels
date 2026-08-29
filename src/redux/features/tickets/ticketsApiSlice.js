@@ -50,7 +50,7 @@ export const ticketsApiSlice = apiSlice.injectEndpoints({
         url: `/tickets/${id}`,
         method: "DELETE",
       }),
-      invalidatesTags: ["Ticket", "Client", "User"],
+      invalidatesTags: ["Ticket", "Client", "User", "Clients"],
     }),
   }),
 });
