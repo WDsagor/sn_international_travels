@@ -90,7 +90,7 @@ export const createVisaInfo = async (req, res) => {
       data: result,
     });
   } catch (error) {
-    console.log(error?.code);
+    // console.log(error?.code);
     if (error?.code === "P2003") {
       return res.status(400).json({
         success: false,

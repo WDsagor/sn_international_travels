@@ -197,10 +197,10 @@ export const updateTicket = async (req, res) => {
 
     let newNetProfit = 0;
 
-    if (status === "refund" || status === "void") {
-      newNetProfit = charge;
-    } else {
+    if (charge > 0) {
       newNetProfit = price - cost + charge;
+    } else {
+      newNetProfit = price - cost;
     }
 
     // const oldProfit = oldTicket.netProfit;
