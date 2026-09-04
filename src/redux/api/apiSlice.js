@@ -4,7 +4,6 @@ import { logout } from "../features/auth/authSlice";
 const baseQuery = fetchBaseQuery({
   baseUrl: import.meta.env.VITE_API_URL,
   prepareHeaders: (headers, { getState }) => {
-    // optional chaining ব্যবহার করা নিরাপদ
     const token = getState()?.auth?.token || localStorage.getItem("token");
     if (token) {
       headers.set("authorization", `Bearer ${token}`);
@@ -16,9 +15,7 @@ const baseQuery = fetchBaseQuery({
 const baseQueryWithReauth = async (args, api, extraOptions) => {
   let result = await baseQuery(args, api, extraOptions);
 
-  // যদি API থেকে ৪০১ রেসপন্স আসে
   if (result.error && result.error.status === 401) {
-    // API Request-এর URL চেক করা (যাতে Login Request হলে রিডাইরেক্ট না হয়)
     const requestUrl = typeof args === "string" ? args : args.url;
 
     const isAuthRequest = requestUrl?.includes("/login");
