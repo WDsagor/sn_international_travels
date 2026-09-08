@@ -98,6 +98,7 @@ const TicketModal = ({
     serviceCharge,
     currentTicketType,
     currentStatus,
+    currentDate,
     issueDate,
   ] = useWatch({
     control,
@@ -107,13 +108,21 @@ const TicketModal = ({
       "serviceCharge",
       "ticketType",
       "status",
+      "travelDate",
       "issueDate",
     ],
   });
 
-  const showServiceCharge = ["reissue", "refund", "void"].includes(
-    currentStatus,
-  );
+  const isTravelDateChanged =
+    currentDate && initialData?.travelDate
+      ? new Date(initialData.travelDate).getTime() !==
+        new Date(currentDate).getTime()
+      : false;
+
+  const isStatusChanged = initialData?.status !== currentStatus;
+
+  const showServiceCharge =
+    currentStatus === "issued" ? false : isStatusChanged || isTravelDateChanged;
 
   // 1. Data Reset Effect with Fallbacks & Airline Matcher
   useEffect(() => {
@@ -173,9 +182,7 @@ const TicketModal = ({
         clientPrice: Number(
           initialData.clientPrice ?? initialData.client_price ?? 0,
         ),
-        serviceCharge: Number(
-          initialData.serviceCharge ?? initialData.service_charge ?? 0,
-        ),
+
         status: (initialData.status || "issued").toLowerCase(),
       });
     } else {
@@ -619,7 +626,7 @@ const TicketModal = ({
             {showServiceCharge && (
               <div className="animate-in fade-in duration-200">
                 <label className="block text-xx font-bold text-amber-600 uppercase mb-1">
-                  Service Charge (৳)
+                  {currentStatus} Charge (৳)
                 </label>
                 <input
                   type="number"
