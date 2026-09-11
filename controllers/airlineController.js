@@ -1,3 +1,4 @@
+import prisma from "../prisma/prisma.js";
 export const getAllAirlines = async (req, res) => {
   try {
     const airlines = await prisma.airline.findMany({

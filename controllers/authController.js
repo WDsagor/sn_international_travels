@@ -93,7 +93,7 @@ export const getAllUsers = async (req, res) => {
         id: true,
         fullName: true,
         phone: true,
-        totalProfit: true,
+
         email: true,
         role: true,
         status: true,
