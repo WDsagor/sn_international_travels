@@ -41,6 +41,7 @@ export const apiSlice = createApi({
     "Payment",
     "Client",
     "VisaInfo",
+    "Airline",
   ],
   endpoints: (builder) => ({}),
 });

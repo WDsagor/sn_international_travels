@@ -57,7 +57,7 @@ const TicketRow = ({ ticket, onEdit, onDelete }) => {
       </td>
 
       <td className="px-4 py-3 font-medium">{ticket?.client?.fullName}</td>
-      <td className="px-4 py-3 font-medium">{ticket?.airline}</td>
+      <td className="px-4 py-3 font-medium">{ticket?.airline?.name}</td>
 
       <td className="px-4 py-3 text-right font-mono text-gray-500">
         ৳{Number(ticket?.netCost || 0).toLocaleString()}
