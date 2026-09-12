@@ -23,6 +23,7 @@ export const passportApiSlice = apiSlice.injectEndpoints({
       },
       providesTags: ["VisaInfo"],
     }),
+
     addVisaInfo: builder.mutation({
       query: (body) => ({
         url: "/visaInfo",
@@ -37,8 +38,41 @@ export const passportApiSlice = apiSlice.injectEndpoints({
         "ClientLedger",
       ],
     }),
+
+    updateVisaInfo: builder.mutation({
+      query: ({ id, ...body }) => ({
+        url: `/visaInfo/${id}`,
+        method: "PUT", // or PATCH depending on your backend
+        body,
+      }),
+      invalidatesTags: [
+        "VisaInfo",
+        "Client",
+        "Clients",
+        "User",
+        "ClientLedger",
+      ],
+    }),
+
+    deleteVisaInfo: builder.mutation({
+      query: (id) => ({
+        url: `/visaInfo/${id}`,
+        method: "DELETE",
+      }),
+      invalidatesTags: [
+        "VisaInfo",
+        "Client",
+        "Clients",
+        "User",
+        "ClientLedger",
+      ],
+    }),
   }),
 });
 
-export const { useGetAllVisaInfoQuery, useAddVisaInfoMutation } =
-  passportApiSlice;
+export const {
+  useGetAllVisaInfoQuery,
+  useAddVisaInfoMutation,
+  useUpdateVisaInfoMutation,
+  useDeleteVisaInfoMutation,
+} = passportApiSlice;

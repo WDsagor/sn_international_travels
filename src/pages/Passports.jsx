@@ -5,8 +5,12 @@ import { ChevronLeft } from "lucide-react";
 import { ChevronRight } from "lucide-react";
 import PassportRow from "../components/passport/PassportRow";
 import PassportModal from "../components/modals/PassportModal";
-import { useGetAllVisaInfoQuery } from "../redux/features/passports/passportApiSlice";
+import {
+  useDeleteVisaInfoMutation,
+  useGetAllVisaInfoQuery,
+} from "../redux/features/passports/passportApiSlice";
 import { useMemo, useEffect, useState } from "react";
+import Swal from "sweetalert2";
 
 const Passports = () => {
   const [showModal, setShowModal] = useState(false);
@@ -25,6 +29,8 @@ const Passports = () => {
     search: searchTerm,
     status: selectedStatus,
   });
+  const [deleteVisaInfo] = useDeleteVisaInfoMutation();
+
   // console.log(error);
   // 🟢 সার্চ বা ফিল্টার পরিবর্তন হলে পেজ নম্বর ১-এ রিসেট হবে
   useEffect(() => {
@@ -44,6 +50,59 @@ const Passports = () => {
     setShowModal(true);
   };
 
+  const handleDeleteVisa = (visaInfo) => {
+    Swal.fire({
+      title: "Are you sure?",
+      text: `You are about to delete ${visaInfo?.passportName?.toUpperCase()} Visa Info`,
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonColor: "#dc2626",
+      cancelButtonColor: "#6b7280",
+      confirmButtonText: "Yes, delete it!",
+      cancelButtonText: "Cancel",
+      customClass: {
+        popup: "rounded-2xl",
+      },
+    }).then(async (result) => {
+      if (result.isConfirmed) {
+        Swal.fire({
+          title: "Deleting visaInfo...",
+          text: "Please wait a moment.",
+          allowOutsideClick: false,
+          allowEscapeKey: false,
+          didOpen: () => {
+            Swal.showLoading();
+          },
+          customClass: {
+            popup: "rounded-2xl",
+          },
+        });
+
+        try {
+          await deleteVisaInfo(visaInfo?.id).unwrap();
+          Swal.fire({
+            title: "Deleted!",
+            text: "Visa info has been deleted successfully.",
+            icon: "success",
+            timer: 1500,
+            showConfirmButton: false,
+            customClass: {
+              popup: "rounded-2xl",
+            },
+          });
+        } catch (error) {
+          Swal.fire({
+            title: "Delete Failed!",
+            text: error?.data?.message || "Failed to delete the visa info.",
+            icon: "error",
+            customClass: {
+              popup: "rounded-2xl",
+            },
+          });
+        }
+      }
+    });
+  };
   const handleOpenEditModal = (passport) => {
     setSelectedPassport(passport);
     setShowModal(true);
@@ -146,7 +205,7 @@ const Passports = () => {
                     key={passport.id}
                     passport={passport}
                     onEdit={handleOpenEditModal}
-                    // onDelete={handleDeleteTicket}
+                    onDelete={handleDeleteVisa}
                   />
                 ))
               )}

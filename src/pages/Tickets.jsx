@@ -28,8 +28,7 @@ const Tickets = () => {
     search: searchTerm,
     status: selectedStatus,
   });
-  const [deleteTicket, { isLoading: deleteLoading }] =
-    useDeleteTicketMutation();
+  const [deleteTicket] = useDeleteTicketMutation();
 
   // 🟢 সার্চ বা ফিল্টার পরিবর্তন হলে পেজ নম্বর ১-এ রিসেট হবে
   useEffect(() => {

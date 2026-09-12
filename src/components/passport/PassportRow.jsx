@@ -1,5 +1,5 @@
 import React from "react";
-import { PlaneTakeoff, Trash2, SquarePen } from "lucide-react";
+import { Trash2, SquarePen } from "lucide-react";
 
 import StatusBadgeWithTooltip from "../share/StatusBadgeWithTooltip";
 import CustomTooltip from "../share/CustomTooltip";
@@ -7,12 +7,14 @@ import { formatDate } from "../../utils/dateFormate";
 import { Image } from "lucide-react";
 import { useState } from "react";
 import ImageModal from "../modals/ImageModal";
+import { useDeleteVisaInfoMutation } from "../../redux/features/passports/passportApiSlice";
 
-const PassportRow = ({ passport, onEdit }) => {
+const PassportRow = ({ passport, onEdit, onDelete }) => {
   const [isImageModalOpen, setIsImageModalOpen] = useState(false);
   const [selectedImage, setSelectedImage] = useState("");
-  console.log(passport);
-  // বাটনে ক্লিক করলে Prop হিসেবে পাঠানোর জন্য ইমেজ লিঙ্ক সেট হবে
+
+  const [deleteVisaInfo] = useDeleteVisaInfoMutation();
+
   const handleOpenImageModal = (imageLink) => {
     setSelectedImage(imageLink);
     setIsImageModalOpen(true);
@@ -22,6 +24,7 @@ const PassportRow = ({ passport, onEdit }) => {
     setIsImageModalOpen(false);
     setSelectedImage("");
   };
+
   const issuerName =
     passport?.issuedBy?.fullName ||
     passport?.issuedBy ||
@@ -134,7 +137,7 @@ const PassportRow = ({ passport, onEdit }) => {
           <div className="relative group">
             <button
               type="button"
-              // onClick={() => !isDisableEdit && onDelete && onDelete(passport)}
+              onClick={() => !isDisableEdit && onDelete && onDelete(passport)}
               disabled={isDisableEdit}
               className={`p-1.5 rounded-lg transition-colors ${
                 isDisableEdit

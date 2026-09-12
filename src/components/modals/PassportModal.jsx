@@ -5,7 +5,10 @@ import { format, isValid } from "date-fns";
 import { Calendar as CalendarIcon, Upload, X, Loader2 } from "lucide-react";
 import { useGetClientsQuery } from "../../redux/features/clients/clientApiSlice";
 import { useGetUsersQuery } from "../../redux/features/user/userApi";
-import { useAddVisaInfoMutation } from "../../redux/features/passports/passportApiSlice";
+import {
+  useAddVisaInfoMutation,
+  useUpdateVisaInfoMutation,
+} from "../../redux/features/passports/passportApiSlice";
 import Swal from "sweetalert2";
 
 const PassportModal = ({ isOpen, onClose, initialData = null }) => {
@@ -17,6 +20,8 @@ const PassportModal = ({ isOpen, onClose, initialData = null }) => {
   const [createVisaInfo, { isLoading: isCreating }] = useAddVisaInfoMutation();
   const { data: usersData, isLoading: usersLoading } = useGetUsersQuery();
   const { data: clientsData, isLoading: clientsLoading } = useGetClientsQuery();
+  const [updateVisaInfo, { isLoading: isUpdateLoading }] =
+    useUpdateVisaInfoMutation();
 
   const users = Array.isArray(usersData?.users)
     ? usersData.users
@@ -36,7 +41,7 @@ const PassportModal = ({ isOpen, onClose, initialData = null }) => {
     control,
     reset,
     setValue,
-    formState: { errors, isSubmitting }, // 🟢 1. Double Click Preventer
+    formState: { errors, isSubmitting, isDirty },
   } = useForm({
     defaultValues: {
       issueDate: new Date(),
@@ -162,33 +167,30 @@ const PassportModal = ({ isOpen, onClose, initialData = null }) => {
     try {
       const finalVisaType =
         data.visaCategory === "e-visa" ? "e-Visa" : data.agencyName;
-      // console.log(data);
-      // console.log(file);
+
+      let passportImageUrl = data.passportImage;
       const file = data?.passportImage?.[0];
-      if (data?.passportImage?.length) {
-        const formData = new FormData();
-        formData.append("image", file);
-        const response = await fetch(
-          `https://api.imgbb.com/1/upload?key=${import.meta.env.VITE_IMGBB_API_KEY}`,
-          {
-            method: "POST",
-            body: formData,
-          },
-        );
-        const imgData = await response.json();
-        // console.log(data?.data?.display_url);
-        await setValue("passportImage", imgData?.data?.display_url);
+
+      if (!initialData?.passportImage && file instanceof File) {
+        passportImageUrl = await uploadToImgbb(file);
+        setValue("passportImage", passportImageUrl);
       }
+
       const formattedData = {
         ...data,
         issueDate: data?.issueDate,
         submissionDate: data?.submissionDate,
         visaType: finalVisaType,
         passportNumber: data?.passportNumber?.toUpperCase(),
+        passportImage: passportImageUrl,
       };
-      // console.log(formattedData);
+
       if (isEditMode) {
-        // await onSubmitSuccess(formattedData);
+        await updateVisaInfo({
+          id: initialData?.id || initialData?._id,
+          ...formattedData,
+        }).unwrap();
+
         Swal.fire({
           icon: "success",
           title: "Update Successfully!",
@@ -196,8 +198,10 @@ const PassportModal = ({ isOpen, onClose, initialData = null }) => {
           timer: 2000,
           showConfirmButton: false,
         });
+        onClose(false);
       } else {
         await createVisaInfo(formattedData).unwrap();
+
         Swal.fire({
           icon: "success",
           title: "Created Successfully!",
@@ -209,18 +213,33 @@ const PassportModal = ({ isOpen, onClose, initialData = null }) => {
         onClose(false);
       }
     } catch (error) {
-      // console.log(error?.data?.message);
-
       Swal.fire({
         icon: "error",
         title: "Failed..!",
-        text: `${error?.data?.message}`,
+        text: `${error?.data?.message || error?.message || "Something went wrong"}`,
         timer: 2000,
         showConfirmButton: false,
       });
-
       console.error("Form Submission Error:", error);
     }
+  };
+
+  const uploadToImgbb = async (file) => {
+    const formData = new FormData();
+    formData.append("image", file);
+
+    const response = await fetch(
+      `https://api.imgbb.com/1/upload?key=${import.meta.env.VITE_IMGBB_API_KEY}`,
+      { method: "POST", body: formData },
+    );
+
+    const imgData = await response.json();
+
+    if (!response.ok || !imgData?.data?.display_url) {
+      throw new Error(imgData?.error?.message || "Image upload failed");
+    }
+
+    return imgData.data.display_url;
   };
 
   if (!isOpen) return null;
@@ -673,7 +692,7 @@ const PassportModal = ({ isOpen, onClose, initialData = null }) => {
               <button
                 type="button"
                 onClick={() => onClose(false)}
-                disabled={isSubmitting}
+                disabled={isSubmitting || isUpdateLoading}
                 className="px-5 py-2.5 text-xx font-semibold rounded-xl border border-gray-200 text-gray-600 hover:bg-gray-50 transition-colors cursor-pointer disabled:opacity-50"
               >
                 Cancel
@@ -682,13 +701,14 @@ const PassportModal = ({ isOpen, onClose, initialData = null }) => {
               {/* Submit button with loading state */}
               <button
                 type="submit"
-                disabled={isSubmitting}
-                className="flex items-center gap-2 px-6 py-2.5 text-xx font-semibold rounded-xl bg-blue-600 hover:bg-blue-700 text-white shadow-sm transition-all active:scale-95 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+                disabled={isSubmitting || (isEditMode && !isDirty)}
+                className="flex items-center gap-2 px-6 py-2.5 text-xx font-semibold rounded-xl bg-blue-600 hover:bg-blue-700 text-white shadow-sm transition-all active:scale-95 cursor-pointer disabled:cursor-not-allowed disabled:bg-gray-300 disabled:text-gray-500"
               >
                 {isSubmitting ||
                   (isCreating && <Loader2 className="w-4 h-4 animate-spin" />)}
-                {isSubmitting || isCreating
-                  ? "Saving..."
+
+                {isSubmitting
+                  ? "Processing..."
                   : isEditMode
                     ? "Update Visa Record"
                     : "Save Visa Record"}
