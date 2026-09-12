@@ -604,6 +604,10 @@ export const deleteTicket = async (req, res) => {
 
     const ticket = await prisma.ticket.findUnique({
       where: { id },
+      select: {
+        id: true,
+        pnrCode: true,
+      },
     });
 
     if (!ticket) {
@@ -612,13 +616,24 @@ export const deleteTicket = async (req, res) => {
       });
     }
 
-    await prisma.ticket.delete({
-      where: { id },
+    const result = await prisma.$transaction(async (tx) => {
+      const deletedPayments = await tx.payment.deleteMany({
+        where: {
+          trxId: ticket.pnrCode,
+        },
+      });
+
+      await tx.ticket.delete({
+        where: { id },
+      });
+
+      return deletedPayments.count;
     });
 
     return res.status(200).json({
       success: true,
-      message: "Ticket deleted successfully!",
+      message: "Ticket and payment history deleted successfully!",
+      deletedPayments: result,
     });
   } catch (error) {
     console.error("Delete Ticket Error:", error);
