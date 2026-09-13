@@ -14,6 +14,7 @@ import LoginPage from "./pages/Login";
 import ProtectedRoute from "./components/share/ProtectedRoute";
 import AllClientList from "./pages/AllClientsList";
 import Passports from "./pages/Passports";
+import UserById from "./pages/UserById";
 
 function App() {
   const [count, setCount] = useState(0);
@@ -31,6 +32,7 @@ function App() {
             <Route path="/clients/:id?" element={<Clients />} />
             <Route path="/passports&visa" element={<Passports />} />
             <Route path="/users" element={<Users />} />
+            <Route path="/users/:id?" element={<UserById />} />
           </Route>
         </Route>
 
