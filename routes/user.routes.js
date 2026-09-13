@@ -3,6 +3,7 @@ import {
   createUser,
   deleteUser,
   getAllUsers,
+  getUserById,
   loginUser,
   updateUser,
 } from "../controllers/authController.js";
@@ -14,6 +15,7 @@ const router = express.Router();
 router.post("/", createUser);
 router.post("/login", loginUser);
 router.get("/", verifyToken, getAllUsers);
+router.get("/:id", verifyToken, getUserById);
 
 router.put("/:id", verifyToken, verifyAdmin, updateUser); // or router.patch
 router.delete("/:id", verifyToken, verifyAdmin, deleteUser);

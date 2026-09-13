@@ -74,26 +74,123 @@ export const createUser = async (req, res) => {
   }
 };
 
+// export const getAllUsers = async (req, res) => {
+//   try {
+//     const now = new Date();
+//     const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+//     const endOfMonth = new Date(
+//       now.getFullYear(),
+//       now.getMonth() + 1,
+//       0,
+//       23,
+//       59,
+//       59,
+//       999,
+//     );
+//     const users = await prisma.user.findMany({
+//       orderBy: { createdAt: "desc" },
+//       select: {
+//         id: true,
+//         fullName: true,
+//         phone: true,
+//         email: true,
+//         role: true,
+//         status: true,
+//         joiningDate: true,
+//         monthlySalary: true,
+//         address: true,
+//         createdAt: true,
+//         tickets: {
+//           where: {
+//             createdAt: {
+//               gte: startOfMonth,
+//               lte: endOfMonth,
+//             },
+//           },
+//           select: {
+//             id: true,
+//             netProfit: true,
+//             createdAt: true,
+//           },
+//         },
+//         // 🟢 শুধু চলতি মাসের Visa ফিল্টার করে আনা
+//         visa: {
+//           where: {
+//             createdAt: {
+//               gte: startOfMonth,
+//               lte: endOfMonth,
+//             },
+//           },
+//           select: {
+//             id: true,
+//             netProfit: true,
+//             createdAt: true,
+//           },
+//         },
+//       },
+//     });
+//     const formattedUsers = users.map((user) => {
+//       const monthlyTicketProfit = user.tickets.reduce(
+//         (sum, item) => sum + (Number(item.netProfit) || 0),
+//         0,
+//       );
+//       const monthlyVisaProfit = user.visa.reduce(
+//         (sum, item) => sum + (Number(item.netProfit) || 0),
+//         0,
+//       );
+//       const currentMonthProfit = monthlyTicketProfit + monthlyVisaProfit;
+//       const finalTotalProfit =
+//         (Number(user.totalProfit) || 0) + currentMonthProfit;
+
+//       return {
+//         ...user,
+//         monthlyTicketProfit,
+//         monthlyVisaProfit,
+//         monthlyProfit: currentMonthProfit,
+//         totalProfit: finalTotalProfit,
+//       };
+//     });
+//     res.status(200).json(formattedUsers);
+//   } catch (error) {
+//     res.status(500).json({ message: "Server error", error: error.message });
+//   }
+// };
 export const getAllUsers = async (req, res) => {
   try {
+    const { month, startDate, endDate } = req.query;
+
     const now = new Date();
-    const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
-    const endOfMonth = new Date(
-      now.getFullYear(),
-      now.getMonth() + 1,
-      0,
-      23,
-      59,
-      59,
-      999,
-    );
+
+    let start;
+    let end;
+
+    if (month) {
+      const [year, mon] = month.split("-").map(Number);
+
+      start = new Date(year, mon - 1, 1);
+      end = new Date(year, mon, 0, 23, 59, 59, 999);
+    } else if (startDate && endDate) {
+      start = new Date(`${startDate}T00:00:00`);
+      end = new Date(`${endDate}T23:59:59.999`);
+    } else {
+      start = new Date(now.getFullYear(), now.getMonth(), 1);
+
+      end = new Date(now.getFullYear(), now.getMonth() + 1, 0, 23, 59, 59, 999);
+    }
+
+    if (isNaN(start.getTime()) || isNaN(end.getTime()) || start > end) {
+      return res.status(400).json({
+        message: "Invalid date range",
+      });
+    }
+
     const users = await prisma.user.findMany({
       orderBy: { createdAt: "desc" },
+
       select: {
         id: true,
         fullName: true,
         phone: true,
-
         email: true,
         role: true,
         status: true,
@@ -101,11 +198,12 @@ export const getAllUsers = async (req, res) => {
         monthlySalary: true,
         address: true,
         createdAt: true,
+
         tickets: {
           where: {
             createdAt: {
-              gte: startOfMonth,
-              lte: endOfMonth,
+              gte: start,
+              lte: end,
             },
           },
           select: {
@@ -114,12 +212,12 @@ export const getAllUsers = async (req, res) => {
             createdAt: true,
           },
         },
-        // 🟢 শুধু চলতি মাসের Visa ফিল্টার করে আনা
+
         visa: {
           where: {
             createdAt: {
-              gte: startOfMonth,
-              lte: endOfMonth,
+              gte: start,
+              lte: end,
             },
           },
           select: {
@@ -130,32 +228,146 @@ export const getAllUsers = async (req, res) => {
         },
       },
     });
+
     const formattedUsers = users.map((user) => {
-      const monthlyTicketProfit = user.tickets.reduce(
+      const ticketProfit = user.tickets.reduce(
         (sum, item) => sum + (Number(item.netProfit) || 0),
         0,
       );
-      const monthlyVisaProfit = user.visa.reduce(
+
+      const visaProfit = user.visa.reduce(
         (sum, item) => sum + (Number(item.netProfit) || 0),
         0,
       );
-      const currentMonthProfit = monthlyTicketProfit + monthlyVisaProfit;
-      const finalTotalProfit =
-        (Number(user.totalProfit) || 0) + currentMonthProfit;
 
       return {
         ...user,
-        monthlyTicketProfit,
-        monthlyVisaProfit,
-        monthlyProfit: currentMonthProfit,
-        totalProfit: finalTotalProfit,
+        monthlyTicketCount: user.tickets.length,
+        monthlyVisaCount: user.visa.length,
+        monthlyTicketProfit: ticketProfit,
+        monthlyVisaProfit: visaProfit,
+        monthlyProfit: ticketProfit + visaProfit,
       };
     });
-    res.status(200).json(formattedUsers);
+
+    res.status(200).json({
+      success: true,
+      filter: { month, startDate, endDate },
+      users: formattedUsers,
+    });
   } catch (error) {
-    res.status(500).json({ message: "Server error", error: error.message });
+    res.status(500).json({
+      message: "Server error",
+      error: error.message,
+    });
   }
 };
+export const getUserById = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { month, startDate, endDate } = req.query;
+
+    const now = new Date();
+
+    let start;
+    let end;
+
+    if (month) {
+      const [year, mon] = month.split("-").map(Number);
+
+      start = new Date(year, mon - 1, 1);
+      end = new Date(year, mon, 0, 23, 59, 59, 999);
+    } else if (startDate && endDate) {
+      start = new Date(`${startDate}T00:00:00`);
+      end = new Date(`${endDate}T23:59:59.999`);
+    } else {
+      start = new Date(now.getFullYear(), now.getMonth(), 1);
+      end = new Date(now.getFullYear(), now.getMonth() + 1, 0, 23, 59, 59, 999);
+    }
+
+    if (isNaN(start.getTime()) || isNaN(end.getTime()) || start > end) {
+      return res.status(400).json({
+        message: "Invalid date range",
+      });
+    }
+
+    const user = await prisma.user.findUnique({
+      where: { id },
+
+      select: {
+        id: true,
+        fullName: true,
+        phone: true,
+        email: true,
+        role: true,
+        status: true,
+        joiningDate: true,
+        monthlySalary: true,
+        address: true,
+        createdAt: true,
+
+        tickets: {
+          where: {
+            createdAt: {
+              gte: start,
+              lte: end,
+            },
+          },
+        },
+
+        visa: {
+          where: {
+            createdAt: {
+              gte: start,
+              lte: end,
+            },
+          },
+        },
+      },
+    });
+
+    if (!user) {
+      return res.status(404).json({
+        message: "User not found",
+      });
+    }
+
+    const ticketProfit = user.tickets.reduce(
+      (sum, item) => sum + (Number(item.netProfit) || 0),
+      0,
+    );
+
+    const visaProfit = user.visa.reduce(
+      (sum, item) => sum + (Number(item.netProfit) || 0),
+      0,
+    );
+
+    res.status(200).json({
+      success: true,
+
+      filter: {
+        month: month || null,
+        startDate: startDate || null,
+        endDate: endDate || null,
+      },
+
+      user: {
+        ...user,
+        monthlyTicketCount: user.tickets.length,
+        monthlyVisaCount: user.visa.length,
+        monthlyTicketProfit: ticketProfit,
+        monthlyVisaProfit: visaProfit,
+        monthlyProfit: ticketProfit + visaProfit,
+      },
+    });
+  } catch (error) {
+    res.status(500).json({
+      message: "Server error",
+      error: error.message,
+    });
+  }
+};
+
 export const loginUser = async (req, res) => {
   try {
     const { email, password } = req.body;
