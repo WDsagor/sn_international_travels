@@ -140,7 +140,7 @@ export const createVisaInfo = async (req, res) => {
           type: "debit",
           paymentDate: new Date(),
           paymentMethod: `Visa ${targetStatus.toUpperCase()}, Passport - ${targetPassportNumber}`,
-          note: `Visa detail: ${targetVisaType}. (${targetCountry.toUpperCase()}, ${targetVisaDetails})`,
+          note: `Visa detail: ${visaType}. (${targetCountry.toUpperCase()}, ${visaDetails})`,
         },
       });
 
@@ -169,6 +169,7 @@ export const createVisaInfo = async (req, res) => {
       });
     }
 
+    // console.log(error.message),
     return res.status(500).json({
       success: false,
       message: "Failed to create visa",
@@ -336,7 +337,7 @@ export const updateVisaInfo = async (req, res) => {
     const targetVisaType = hasValue(visaType)
       ? String(visaType).trim()
       : oldVisa.visaType;
-
+    // console.log(targetVisaType);
     const targetVisaDetails = hasValue(visaDetails)
       ? visaDetails
       : oldVisa.visaDetails;
